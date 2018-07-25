@@ -1,0 +1,20 @@
+version: "3.4"
+
+services:
+
+  consul:
+    image: consul
+    ports:
+      - 8500:8500
+
+  redis:
+    image: redis:latest
+    user: redis
+    ports:
+      - "7000:6379"
+    environment:
+      - TZ=Europe/Berlin
+    volumes:
+      - type: bind
+        source: ./data/redis
+        target: /data

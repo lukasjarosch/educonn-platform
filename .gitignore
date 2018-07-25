@@ -36,3 +36,4 @@ vendor/
 #IDE files
 *.iml
 .idea/
+data/
