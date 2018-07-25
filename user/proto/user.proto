@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package educonn.user;
+
+service User {
+    rpc Create (UserDetails) returns (UserResponse) {}
+    rpc Get (UserDetails) returns (UserResponse) {}
+    rpc GetAll (Request) returns (UserResponse) {}
+    rpc Auth (UserDetails) returns (Token) {}
+    rpc ValidateToken (Token) returns (Token) {}
+    rpc Delete (DeleteRequest) returns (DeleteResponse) {}
+}
+
+message UserDetails {
+    string id = 1;
+    string firstName = 2;
+    string lastName = 3;
+    string email = 4;
+    string password = 5;
+}
+
+message Request {}
+
+message UserResponse {
+    UserDetails user = 1;
+    repeated UserDetails users = 2;
+    repeated Error errors = 3;
+}
+
+message Token {
+    string token = 1;
+    bool valid = 2;
+    repeated Error errors = 3;
+}
+
+message Error {
+    int32 code = 1;
+    string description = 2;
+}
+
+message DeleteRequest {
+    UserDetails user = 1;
+}
+
+message DeleteResponse {
+    repeated Error errors = 1;
+}
+
+
+message UserCreatedEvent {
+    UserDetails user = 1;
+}
+
+message UserDeletedEvent {
+    UserDetails user = 1;
+}
