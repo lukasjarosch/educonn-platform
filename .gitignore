@@ -29,7 +29,11 @@ _testmain.go
 vendor/
 
 # Service specific binaries
+videod
+maild
+userd
 
+docker-compose.local.yml
 
 .DS_Store
 

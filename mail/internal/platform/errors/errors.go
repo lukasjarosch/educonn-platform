@@ -8,5 +8,5 @@ func (e Error) Error() string {
 
 const (
 	InvalidEmail = Error("The email address is invalid")
+	SqsNoMessages = Error("No SQS messages retrieved")
 )
-

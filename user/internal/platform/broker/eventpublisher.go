@@ -1,10 +1,10 @@
 package broker
 
 import (
-	log "github.com/sirupsen/logrus"
+	"context"
 	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
 	"github.com/micro/go-micro"
-	"context"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -19,7 +19,7 @@ type EventPublisher struct {
 }
 
 // NewEventPublisher creates a new broker event publisher
-func NewEventPublisher(userCreatedPublisher micro.Publisher) *EventPublisher  {
+func NewEventPublisher(userCreatedPublisher micro.Publisher) *EventPublisher {
 	return &EventPublisher{userCreatedPublisher: userCreatedPublisher}
 }
 

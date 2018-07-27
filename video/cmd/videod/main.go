@@ -1,11 +1,17 @@
 package main
 
 import (
-	"github.com/micro/go-micro"
+	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/broker"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/config"
-	"time"
+	"github.com/lukasjarosch/educonn-master-thesis/video/internal/service"
+	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	log "github.com/sirupsen/logrus"
+	"time"
+	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
+	"github.com/aws/aws-lambda-go/events"
+	"context"
 )
 
 func main() {
@@ -28,6 +34,27 @@ func main() {
 		log.Fatalf("Broker Connect error: %v", err)
 	}
 	micro.Broker(rabbitBroker)
+
+	// setup SQS
+	videoUploadChannel := make(chan *events.S3EventRecord)
+	sqsConsumer, err := amazon.NewSqsS3EventConsumer(videoUploadChannel, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
+	if err != nil {
+	    log.Fatal(err)
+	}
+	sqsContext, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
+
+	// Attach handler
+	educonn_video.RegisterVideoHandler(
+		svc.Server(),
+		service.NewVideoService(
+			broker.NewEventPublisher(videoCreatedPublisher),
+			sqsConsumer,
+			sqsContext,
+		),
+	)
 
 	if err := svc.Run(); err != nil {
 		panic(err)

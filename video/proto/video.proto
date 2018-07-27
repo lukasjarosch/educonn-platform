@@ -6,15 +6,65 @@ service Video {
    rpc Create(CreateVideoRequest) returns (CreateVideoResponse) {}
 }
 
+// ----------------------------
+// VIDEO RESOURCE
+// ----------------------------
 message VideoDetails {
    string id = 1;
-   string uri = 2;
-   string status = 3;
+   string title = 2;
+   string description = 3;
+   repeated string tags = 4;
+   VideoStatus status = 5;
+   VideoStatistics statistics = 6;
+   repeated VideoThumbnail thumbnails = 7;
 }
 
+message VideoStatus {
+}
+
+message VideoStatistics {
+    int64 viewCount = 1;
+    int64 likeCount = 2;
+    int64 dislikeCound = 3;
+}
+
+message VideoThumbnail {
+    string url = 1;
+    string width = 2;
+    string height = 3;
+}
+
+message VideoUpload {
+    string filename = 1;
+    int32 size = 2;
+}
+
+// ----------------------------
+// EVENTS
+// ----------------------------
+message VideoCreatedEvent {
+    VideoDetails video = 1;
+    string userId = 2;
+}
+
+// ----------------------------
+// REQUESTS AND RESPONSES
+// ----------------------------
 
 message CreateVideoRequest {
+    VideoDetails video = 1;
+    VideoUpload upload = 2;
 }
 
 message CreateVideoResponse {
+    VideoDetails video = 1;
+    repeated Error errors = 2;
+}
+
+// ----------------------------
+// MISC
+// ----------------------------
+message Error {
+    int32 code = 1;
+    string message = 2;
 }

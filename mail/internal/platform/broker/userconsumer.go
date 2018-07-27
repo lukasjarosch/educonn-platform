@@ -1,10 +1,10 @@
 package broker
 
 import (
-	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
-	log "github.com/sirupsen/logrus"
 	"context"
+	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
 	"github.com/micro/go-micro/metadata"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -14,13 +14,13 @@ const (
 	UserDeletedQueue = "user-deleted-queue"
 )
 
-type UserCreatedSubscriber struct{
+type UserCreatedSubscriber struct {
 	userCreatedChan chan *educonn_user.UserCreatedEvent
 }
 
-func NewUserCreatedSubscriber (userCreatedChannel chan *educonn_user.UserCreatedEvent) *UserCreatedSubscriber {
+func NewUserCreatedSubscriber(userCreatedChannel chan *educonn_user.UserCreatedEvent) *UserCreatedSubscriber {
 	return &UserCreatedSubscriber{
-		userCreatedChan:userCreatedChannel,
+		userCreatedChan: userCreatedChannel,
 	}
 }
 
@@ -33,13 +33,13 @@ func (s *UserCreatedSubscriber) Process(ctx context.Context, event *educonn_user
 
 // ---------------------------
 
-type UserDeletedSubscriber struct{
+type UserDeletedSubscriber struct {
 	userDeletedChan chan *educonn_user.UserDeletedEvent
 }
 
-func NewUserDeletedSubscriber (userDeletedChannel chan *educonn_user.UserDeletedEvent) *UserDeletedSubscriber{
+func NewUserDeletedSubscriber(userDeletedChannel chan *educonn_user.UserDeletedEvent) *UserDeletedSubscriber {
 	return &UserDeletedSubscriber{
-		userDeletedChan:userDeletedChannel,
+		userDeletedChan: userDeletedChannel,
 	}
 }
 
