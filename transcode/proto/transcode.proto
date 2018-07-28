@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package educonn.transcode;
+
+service Transcode {
+    rpc CreateJob(CreateJobRequest) returns (CreateJobResponse) {}
+}
+
+// ----------------------------
+// TRANSCODE RESOURCE
+// ----------------------------
+message TranscodeDetails {
+    string jobId = 1;
+    string pipelineId = 2;
+    string inputKey = 3;
+    string outputKeyPrefix = 4;
+    string outputKey = 5;
+    TranscodeStatus status = 6;
+}
+
+message TranscodeStatus {
+    bool started = 4;
+    bool completed = 1;
+    bool error = 2;
+    repeated string errorMessages = 3;
+}
+
+// ----------------------------
+// EVENTS
+// ----------------------------
+message TranscodingFinishedEvent {
+    TranscodeDetails transcode = 1;
+}
+
+// ----------------------------
+// REQUESTS AND RESPONSES
+// ----------------------------
+message CreateJobRequest {
+    TranscodeDetails job = 1;
+}
+
+message CreateJobResponse {
+    TranscodeDetails job = 1;
+}
+
+// ----------------------------
+// MISC
+// ----------------------------
+message Error {
+    int32 code = 1;
+    string description = 2;
+}
