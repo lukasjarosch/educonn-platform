@@ -21,9 +21,9 @@ func NewEventPublisher(videoCreatedPublisher micro.Publisher) *EventPublisher {
 
 func (p *EventPublisher) PublishVideoCreated(event *educonn_video.VideoCreatedEvent) (err error) {
 	if err = p.videoCreatedPublisher.Publish(context.Background(), event); err != nil {
-		log.Warnf("[pub] failed pub to %s: %+v", VideoCreatedTopic, err)
+		log.Warnf("[PUB] failed pub to %s: %+v", VideoCreatedTopic, err)
 		return nil
 	}
-	log.Infof("[pub] published to %s: %v", VideoCreatedTopic, event)
+	log.Infof("[PUB] published to %s: %v", VideoCreatedTopic, event)
 	return nil
 }

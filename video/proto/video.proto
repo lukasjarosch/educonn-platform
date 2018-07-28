@@ -17,9 +17,19 @@ message VideoDetails {
    VideoStatus status = 5;
    VideoStatistics statistics = 6;
    repeated VideoThumbnail thumbnails = 7;
+   VideoStorage storage = 8;
+}
+
+message VideoStorage {
+    string rawKey = 1;
 }
 
 message VideoStatus {
+    bool completed = 1;
+    bool warning = 2;
+    bool error = 3;
+    repeated string warningMessages = 4;
+    repeated string errorMessages = 5;
 }
 
 message VideoStatistics {
@@ -66,5 +76,5 @@ message CreateVideoResponse {
 // ----------------------------
 message Error {
     int32 code = 1;
-    string message = 2;
+    string description = 2;
 }

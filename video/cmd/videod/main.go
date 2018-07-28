@@ -43,6 +43,11 @@ func main() {
 	sqsContext, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Setup S3
+	bucket, err := amazon.NewS3Bucket(config.AwsS3VideoBucket, config.AwsRegion, config.AwsAccessKey, config.AwsSecretKey)
+	log.Infof("[S3] attached to bucket: %s", bucket.Bucket)
+
+
 	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
 
 	// Attach handler
@@ -52,6 +57,7 @@ func main() {
 			broker.NewEventPublisher(videoCreatedPublisher),
 			sqsConsumer,
 			sqsContext,
+			bucket,
 		),
 	)
 
