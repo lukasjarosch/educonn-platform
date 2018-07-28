@@ -7,7 +7,7 @@ import (
 	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
-	log "github.com/sirupsen/logrus"
+	"github.com/prometheus/common/log"
 	"time"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
 	"context"

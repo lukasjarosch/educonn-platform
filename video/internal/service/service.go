@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
-	log "github.com/sirupsen/logrus"
+	"github.com/prometheus/common/log"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/config"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/errors"
 )
@@ -53,6 +53,23 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	    return err
 	}
 	log.Infof("[S3] key '%s' exists in bucket", fileKey)
+
+	// ElasticTranscoder
+	transcoder, err := amazon.NewElasticTranscoderClient(config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion)
+	if err != nil {
+		log.Infof("Unable to create ElasticTranscoder client: %v", err)
+	    return err
+	}
+	log.Infof("[ElasticTranscoder] attached")
+
+
+	output, err := transcoder.CreateJob(req.Video.Storage.RawKey)
+	if err != nil {
+	    log.Warnf("transcoding failed: %v", err)
+	    return err
+	}
+	log.Info(output.String())
+
 
 	return nil
 }
