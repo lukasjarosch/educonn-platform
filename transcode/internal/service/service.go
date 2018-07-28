@@ -5,6 +5,7 @@ import (
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/amazon"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
 	"github.com/prometheus/common/log"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/config"
 )
 
 type transcodeService struct {
@@ -14,11 +15,17 @@ type transcodeService struct {
 }
 
 func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer, sqsContext context.Context, transcoderClient *amazon.ElasticTranscoderClient) *transcodeService {
-	return &transcodeService{
+	svc := &transcodeService{
 		sqsConsumer:      sqsConsumer,
 		sqsContext:       sqsContext,
 		transcoderClient: transcoderClient,
 	}
+
+	log.Infof("[SQS] start consuming from: %s", config.AwsSqsVideoQueueName)
+	go svc.sqsConsumer.Consume(NewTranscodeHandler())
+	go svc.awaitSQSEvent()
+
+	return svc
 }
 
 func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_transcode.CreateJobRequest, response *educonn_transcode.CreateJobResponse) error {
@@ -56,4 +63,36 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 	log.Infof("[ElasticTranscoder] started new job '%s' on pipeline '%s'", response.Job.JobId, response.Job.PipelineId)
 
 	return nil
+}
+
+func (t *transcodeService) awaitSQSEvent() {
+	handler := NewTranscodeHandler()
+	for msg := range t.sqsConsumer.ElasticTranscoderChannel {
+		// COMPLETED
+		if msg.State == amazon.TranscodeStatusCompleted {
+			err := handler.OnCompleted(msg)
+			if err != nil {
+				log.Info(err)
+				continue
+			}
+		}
+
+		// WARNING
+		if msg.State == amazon.TranscodeStatusWarning{
+			err := handler.OnWarning(msg)
+			if err != nil {
+				log.Info(err)
+				continue
+			}
+		}
+
+		// ERROR
+		if msg.State == amazon.TranscodeStatusError{
+			err := handler.OnError(msg)
+			if err != nil {
+				log.Info(err)
+				continue
+			}
+		}
+	}
 }

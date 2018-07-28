@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/amazon"
 	"github.com/prometheus/common/log"
 )
 
