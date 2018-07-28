@@ -27,11 +27,6 @@ func NewVideoService(vidCreatedPub videoCreatedPublisher, bucket *amazon.S3Bucke
 }
 
 func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVideoRequest, res *educonn_video.CreateVideoResponse) error {
-	v.videoCreatedPublisher.PublishVideoCreated(&educonn_video.VideoCreatedEvent{
-		Video:  res.Video,
-		UserId: "asdfasdf",
-	})
-
 	// Check if file actually exists
 	fileKey := req.Video.Storage.RawKey
 	err := v.s3Bucket.CheckFileExists(fileKey, config.AwsS3VideoBucket)
@@ -45,11 +40,16 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	}
 	log.Infof("[S3] key '%s' exists in bucket", fileKey)
 
-	// TODO: Start JOB via transcode
-	log.Warn("RPC transcode.CreateJob")
+	// TODO: insert into DB
 
-	// Job is now SUBMITTED
+	v.videoCreatedPublisher.PublishVideoCreated(&educonn_video.VideoCreatedEvent{
+		Video:  req.Video,
+		UserId: "TODO",
+	})
 
+	res.Video = &educonn_video.VideoDetails{
+		Title: "test",
+	}
 
 	return nil
 }

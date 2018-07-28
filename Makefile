@@ -4,6 +4,7 @@ VERSION:=${MAIN_VERSION}\-$(shell git log -n 1 --pretty=format:"%h")
 LDFLAGS_USER:=-ldflags "-X github.com/lukasjarosch/educonn-master-thesis/user/internal/platform/config.Version=${VERSION}"
 LDFLAGS_MAIL:=-ldflags "-X github.com/lukasjarosch/educonn-master-thesis/mail/internal/platform/config.Version=${VERSION}"
 LDFLAGS_VIDEO:=-ldflags "-X github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/config.Version=${VERSION}"
+LDFLAGS_TRANSCODE:=-ldflags "-X github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/config.Version=${VERSION}"
 
 default: run
 
@@ -37,8 +38,17 @@ video-docker:
 	@echo Building VIDEO docker image ...
 	@cd video && docker build -t derwaldemar/educonn-video:${VERSION} -t derwaldemar/educonn-video:dev .
 
-all: user mail video
-all-docker: user-docker mail-docker video-docker
+transcode: clean
+	@echo Building TRANSCODE service...
+	@cd transcode/cmd/transcoded && CGO_ENABLED=0 go build ${LDFLAGS_TRANSCODE} -a -installsuffix cgo -o transcoded main.go
+
+transcode-docker:
+	@echo Building TRANSCODE docker image ...
+	@cd transcode && docker build -t derwaldemar/educonn-transcode:${VERSION} -t derwaldemar/educonn-transcode:dev .
+
+
+all: user mail video transcode
+all-docker: user-docker mail-docker video-docker transcode-docker
 
 proto: user-proto mail-proto video-proto
 	@echo "All protobufs regenerated"
@@ -54,3 +64,7 @@ mail-proto:
 video-proto:
 	@echo protoc VIDEO
 	@cd video/proto && protoc -I. --go_out=plugins=micro:$(GOPATH)/src/github.com/lukasjarosch/educonn-master-thesis/video/proto --micro_out=. video.proto
+
+transcode-proto:
+	@echo protoc TRANSCODE
+	@cd transcode/proto && protoc -I. --go_out=plugins=micro:$(GOPATH)/src/github.com/lukasjarosch/educonn-master-thesis/transcode/proto --micro_out=. transcode.proto

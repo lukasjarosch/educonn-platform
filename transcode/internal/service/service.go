@@ -3,23 +3,33 @@ package service
 import (
 	"context"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
-	"github.com/prometheus/common/log"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/config"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
+	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/prometheus/common/log"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
 )
 
 type transcodeService struct {
 	sqsConsumer      *amazon.SQSTranscodeEventConsumer
 	sqsContext       context.Context
 	transcoderClient *amazon.ElasticTranscoderClient
+	videoCreatedChan chan *educonn_video.VideoCreatedEvent
 }
 
-func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer, sqsContext context.Context, transcoderClient *amazon.ElasticTranscoderClient) *transcodeService {
+func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
+	sqsContext context.Context,
+	transcoderClient *amazon.ElasticTranscoderClient,
+	videoCreatedChan chan *educonn_video.VideoCreatedEvent) *transcodeService {
 	svc := &transcodeService{
 		sqsConsumer:      sqsConsumer,
 		sqsContext:       sqsContext,
 		transcoderClient: transcoderClient,
+		videoCreatedChan: videoCreatedChan,
 	}
+
+	log.Infof("[SUB] consuming '%s' from '%s'", broker.VideoCreatedTopic, broker.VideoCreatedQueue)
+	go svc.awaitVideoCreatedEvent()
 
 	log.Infof("[SQS] start consuming from: %s", config.AwsSqsVideoQueueName)
 	go svc.sqsConsumer.Consume(NewTranscodeHandler())
@@ -47,8 +57,8 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 	jobStatus := *res.Job.Status
 	status := &educonn_transcode.TranscodeStatus{
 		Completed: false,
-		Error: false,
-		Started: false,
+		Error:     false,
+		Started:   false,
 	}
 
 	if jobStatus == "Submitted" {
@@ -78,7 +88,7 @@ func (t *transcodeService) awaitSQSEvent() {
 		}
 
 		// WARNING
-		if msg.State == amazon.TranscodeStatusWarning{
+		if msg.State == amazon.TranscodeStatusWarning {
 			err := handler.OnWarning(msg)
 			if err != nil {
 				log.Info(err)
@@ -87,12 +97,27 @@ func (t *transcodeService) awaitSQSEvent() {
 		}
 
 		// ERROR
-		if msg.State == amazon.TranscodeStatusError{
+		if msg.State == amazon.TranscodeStatusError {
 			err := handler.OnError(msg)
 			if err != nil {
 				log.Info(err)
 				continue
 			}
+		}
+	}
+}
+
+func (t *transcodeService) awaitVideoCreatedEvent() {
+	for videoCreated := range t.videoCreatedChan {
+		req := &educonn_transcode.CreateJobRequest{
+			Job: &educonn_transcode.TranscodeDetails{
+				PipelineId: config.AwsTranscodePipelineId,
+				InputKey: videoCreated.Video.Storage.RawKey,
+			},
+		}
+		err := t.CreateJob(context.Background(), req, &educonn_transcode.CreateJobResponse{})
+		if err != nil {
+		    log.Error(err)
 		}
 	}
 }

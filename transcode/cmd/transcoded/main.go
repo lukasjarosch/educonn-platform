@@ -11,9 +11,16 @@ import (
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/prometheus/common/log"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
+	"github.com/micro/go-micro/server"
 )
 
 func main() {
+
+	// setup consumer
+	videoCreatedChannel := make(chan *educonn_video.VideoCreatedEvent)
+	videoCreatedSubscriber := broker.NewVideoCreatedSubscriber(videoCreatedChannel)
 
 	// setup micro service
 	svc := micro.NewService(
@@ -51,6 +58,15 @@ func main() {
 	}
 	log.Infof("[ElasticTranscoder] attached")
 
+	// register video.events.created subscriber
+	err = micro.RegisterSubscriber(
+		broker.VideoCreatedTopic,
+		svc.Server(),
+		videoCreatedSubscriber,
+		server.SubscriberQueue(broker.VideoCreatedQueue),
+	)
+
+
 	// register service handler
 	educonn_transcode.RegisterTranscodeHandler(
 		svc.Server(),
@@ -58,6 +74,7 @@ func main() {
 			sqsConsumer,
 			sqsContext,
 			transcoder,
+			videoCreatedChannel,
 		),
 	)
 
