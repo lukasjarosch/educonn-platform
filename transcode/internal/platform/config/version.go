@@ -5,5 +5,5 @@ package config
 var Version = "(undefined)"
 
 // ServiceName is the discovery identity for this service.
-const ServiceName = "educonn.video"
+const ServiceName = "educonn.transcode"
 
