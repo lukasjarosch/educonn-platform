@@ -10,7 +10,6 @@ import (
 	"github.com/prometheus/common/log"
 	"time"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
-	"context"
 )
 
 func main() {
@@ -34,19 +33,14 @@ func main() {
 	}
 	micro.Broker(rabbitBroker)
 
-	// setup SQS
-	elasticTranscoderChan := make(chan *amazon.ElasticTranscoderMessage)
-	sqsConsumer, err := amazon.NewSQSTranscodeEventConsumer(elasticTranscoderChan, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
-	if err != nil {
-	    log.Fatal(err)
-	}
-	sqsContext, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	// Setup S3
 	bucket, err := amazon.NewS3Bucket(config.AwsS3VideoBucket, config.AwsRegion, config.AwsAccessKey, config.AwsSecretKey)
+	if err != nil {
+	    log.Warn(err)
+	    return
+	}
 	log.Infof("[S3] attached to bucket: %s", bucket.Bucket)
-
 
 	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
 
@@ -55,8 +49,6 @@ func main() {
 		svc.Server(),
 		service.NewVideoService(
 			broker.NewEventPublisher(videoCreatedPublisher),
-			sqsConsumer,
-			sqsContext,
 			bucket,
 		),
 	)

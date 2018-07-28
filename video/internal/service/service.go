@@ -11,8 +11,6 @@ import (
 
 type videoService struct {
 	videoCreatedPublisher videoCreatedPublisher
-	sqsConsumer *amazon.SQSTranscodeEventConsumer
-	sqsS3Context context.Context
 	s3Bucket *amazon.S3Bucket
 }
 
@@ -20,18 +18,11 @@ type videoCreatedPublisher interface {
 	PublishVideoCreated(event *educonn_video.VideoCreatedEvent) (err error)
 }
 
-func NewVideoService(vidCreatedPub videoCreatedPublisher, sqsS3EventConsumer *amazon.SQSTranscodeEventConsumer, sqsS3Context context.Context, bucket *amazon.S3Bucket) educonn_video.VideoHandler {
+func NewVideoService(vidCreatedPub videoCreatedPublisher, bucket *amazon.S3Bucket) educonn_video.VideoHandler {
 	svc := &videoService{
 		videoCreatedPublisher: vidCreatedPub,
-		sqsConsumer:sqsS3EventConsumer,
-		sqsS3Context:sqsS3Context,
 		s3Bucket:bucket,
 	}
-
-	log.Infof("[SQS] start consuming from: %s", config.AwsSqsVideoQueueName)
-	go svc.sqsConsumer.Consume(NewTranscodeHandler())
-	go svc.awaitSQSEvent()
-
 	return svc
 }
 
@@ -54,56 +45,12 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	}
 	log.Infof("[S3] key '%s' exists in bucket", fileKey)
 
-	// ElasticTranscoder
-	transcoder, err := amazon.NewElasticTranscoderClient(config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion)
-	if err != nil {
-		log.Infof("Unable to create ElasticTranscoder client: %v", err)
-	    return err
-	}
-	log.Infof("[ElasticTranscoder] attached")
+	// TODO: Start JOB via transcode
+	log.Warn("RPC transcode.CreateJob")
 
-
-	output, err := transcoder.CreateJob(req.Video.Storage.RawKey)
-	if err != nil {
-	    log.Warnf("transcoding failed: %v", err)
-	    return err
-	}
-	log.Info(output.String())
+	// Job is now SUBMITTED
 
 
 	return nil
 }
 
-func (v *videoService) awaitSQSEvent() {
-	handler := NewTranscodeHandler()
-	for msg := range v.sqsConsumer.ElasticTranscoderChannel {
-		log.Infof("Handling: %s", msg.MessageDetails)
-
-		// COMPLETED
-		if msg.State == amazon.TranscodeStatusCompleted {
-			err := handler.OnCompleted(msg)
-			if err != nil {
-				log.Info(err)
-				continue
-			}
-		}
-
-		// WARNING
-		if msg.State == amazon.TranscodeStatusWarning{
-			err := handler.OnWarning(msg)
-			if err != nil {
-				log.Info(err)
-				continue
-			}
-		}
-
-		// ERROR
-		if msg.State == amazon.TranscodeStatusError{
-			err := handler.OnError(msg)
-			if err != nil {
-				log.Info(err)
-				continue
-			}
-		}
-	}
-}
