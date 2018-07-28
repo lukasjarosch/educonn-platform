@@ -37,7 +37,7 @@ func main() {
 
 	// setup SQS
 	videoUploadChannel := make(chan *events.S3EventRecord)
-	sqsConsumer, err := amazon.NewSqsS3EventConsumer(videoUploadChannel, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
+	sqsConsumer, err := amazon.NewSQSTranscodeEventConsumer(videoUploadChannel, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
 	if err != nil {
 	    log.Fatal(err)
 	}

@@ -9,7 +9,7 @@ import (
 
 type videoService struct {
 	videoCreatedPublisher videoCreatedPublisher
-	sqsConsumer *amazon.SqsS3EventConsumer
+	sqsConsumer *amazon.SQSTranscodeEventConsumer
 	sqsS3Context context.Context
 }
 
@@ -17,7 +17,7 @@ type videoCreatedPublisher interface {
 	PublishVideoCreated(event *educonn_video.VideoCreatedEvent) (err error)
 }
 
-func NewVideoService(vidCreatedPub videoCreatedPublisher, sqsS3EventConsumer *amazon.SqsS3EventConsumer, sqsS3Context context.Context) educonn_video.VideoHandler {
+func NewVideoService(vidCreatedPub videoCreatedPublisher, sqsS3EventConsumer *amazon.SQSTranscodeEventConsumer, sqsS3Context context.Context) educonn_video.VideoHandler {
 	svc := &videoService{
 		videoCreatedPublisher: vidCreatedPub,
 		sqsConsumer:sqsS3EventConsumer,
@@ -25,7 +25,7 @@ func NewVideoService(vidCreatedPub videoCreatedPublisher, sqsS3EventConsumer *am
 	}
 
 	log.Info("Start consuming SQS S3 events")
-	go svc.sqsConsumer.Consume()
+	go svc.sqsConsumer.Consume(NewTranscodeHandler())
 	go svc.awaitSqsS3Event()
 
 	return svc
