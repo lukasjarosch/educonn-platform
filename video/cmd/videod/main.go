@@ -10,7 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"time"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
-	"github.com/aws/aws-lambda-go/events"
 	"context"
 )
 
@@ -36,8 +35,8 @@ func main() {
 	micro.Broker(rabbitBroker)
 
 	// setup SQS
-	videoUploadChannel := make(chan *events.S3EventRecord)
-	sqsConsumer, err := amazon.NewSQSTranscodeEventConsumer(videoUploadChannel, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
+	elasticTranscoderChan := make(chan *amazon.ElasticTranscoderMessage)
+	sqsConsumer, err := amazon.NewSQSTranscodeEventConsumer(elasticTranscoderChan, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
 	if err != nil {
 	    log.Fatal(err)
 	}

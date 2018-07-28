@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/evalphobia/aws-sdk-go-wrapper/config"
 	"github.com/evalphobia/aws-sdk-go-wrapper/sqs"
 	log "github.com/sirupsen/logrus"
@@ -16,9 +15,9 @@ const TranscodeStatusWarning = "WARNING"
 const TranscodeStatusError = "ERROR"
 
 type SQSTranscodeEventConsumer struct {
-	sqs                  *sqs.SQS
-	queue                *sqs.Queue
-	VideoUploadedChannel chan *events.S3EventRecord
+	sqs                      *sqs.SQS
+	queue                    *sqs.Queue
+	ElasticTranscoderChannel chan *ElasticTranscoderMessage
 }
 
 // ElasticTranscoderMessage
@@ -55,7 +54,7 @@ type ElasticTranscodeEventHandler interface {
 }
 
 // NewSQSTranscodeEventConsumer creates a new consumer object
-func NewSQSTranscodeEventConsumer(videoUploadedChannel chan *events.S3EventRecord, accessKey string, secretKey string, region string, queueName string) (*SQSTranscodeEventConsumer, error) {
+func NewSQSTranscodeEventConsumer(videoUploadedChannel chan *ElasticTranscoderMessage, accessKey string, secretKey string, region string, queueName string) (*SQSTranscodeEventConsumer, error) {
 	svc, err := sqs.New(config.Config{
 		AccessKey: accessKey,
 		SecretKey: secretKey,
@@ -71,9 +70,9 @@ func NewSQSTranscodeEventConsumer(videoUploadedChannel chan *events.S3EventRecor
 	}
 
 	return &SQSTranscodeEventConsumer{
-		sqs:                  svc,
-		queue:                queue,
-		VideoUploadedChannel: videoUploadedChannel,
+		sqs:                      svc,
+		queue:                    queue,
+		ElasticTranscoderChannel: videoUploadedChannel,
 	}, nil
 }
 
@@ -127,33 +126,7 @@ func (s *SQSTranscodeEventConsumer) Consume(eventHandler ElasticTranscodeEventHa
 		    return err
 		}
 
-		// TODO: These if's could be replaced by a cool callback map
+		s.ElasticTranscoderChannel <- transcodeMessage
 
-		// COMPLETED
-		if transcodeMessage.State == TranscodeStatusCompleted {
-			err := eventHandler.OnCompleted(transcodeMessage)
-			if err != nil {
-				log.Info(err)
-				continue
-			}
-		}
-
-		// WARNING
-		if transcodeMessage.State == TranscodeStatusWarning {
-			err := eventHandler.OnWarning(transcodeMessage)
-			if err != nil {
-				log.Info(err)
-				continue
-			}
-		}
-
-		// ERROR
-		if transcodeMessage.State == TranscodeStatusError {
-			err := eventHandler.OnError(transcodeMessage)
-			if err != nil {
-				log.Info(err)
-				continue
-			}
-		}
 	}
 }

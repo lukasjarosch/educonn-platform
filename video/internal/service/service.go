@@ -40,12 +40,35 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 }
 
 func (v *videoService) awaitSqsS3Event() {
-	for s3event := range v.sqsConsumer.VideoUploadedChannel {
-		log.Infof("HANDLING event %s: %s", s3event.EventName, s3event.S3.Object.Key)
+	handler := NewTranscodeHandler()
+	for msg := range v.sqsConsumer.ElasticTranscoderChannel {
+		log.Infof("Handling: %s", msg.MessageDetails)
 
-		// Find video entry by object-key in our db
-		// Update entry
-		// Check video
-		// Pub event: VideoUploadedEvent
+		// COMPLETED
+		if msg.State == amazon.TranscodeStatusCompleted {
+			err := handler.OnCompleted(msg)
+			if err != nil {
+				log.Info(err)
+				continue
+			}
+		}
+
+		// WARNING
+		if msg.State == amazon.TranscodeStatusWarning{
+			err := handler.OnWarning(msg)
+			if err != nil {
+				log.Info(err)
+				continue
+			}
+		}
+
+		// ERROR
+		if msg.State == amazon.TranscodeStatusError{
+			err := handler.OnError(msg)
+			if err != nil {
+				log.Info(err)
+				continue
+			}
+		}
 	}
 }
