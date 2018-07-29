@@ -11,6 +11,7 @@ before_install:
   - go get -u github.com/golang/dep/cmd/dep
   - go get -u github.com/golang/protobuf/protoc-gen-go
   - go get -u github.com/micro/protoc-gen-micro
+  - export PATH=$PATH:$HOME/protobuf/bin
 
 script:
   - make proto
