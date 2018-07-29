@@ -9,6 +9,7 @@ import (
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
 	log "github.com/sirupsen/logrus"
+	_ "github.com/joho/godotenv/autoload"
 	"time"
 )
 
