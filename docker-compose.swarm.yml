@@ -1,0 +1,36 @@
+version: "3.4"
+
+services:
+
+  consul:
+    image: consul
+    ports:
+      - 8500:8500
+
+  user:
+    image: derwaldemar/educonn-user:dev
+    depends_on:
+      - consul
+    volumes:
+      - ./user/cmd/userd/.env-docker:/app/.env
+
+  mail:
+    image: derwaldemar/educonn-mail:dev
+    depends_on:
+      - consul
+    volumes:
+      - ./mail/cmd/maild/.env-docker:/app/.env
+
+  video:
+    image: derwaldemar/educonn-video:dev
+    depends_on:
+      - consul
+    volumes:
+      - ./video/cmd/videod/.env-docker:/app/.env
+
+  transcode:
+    image: derwaldemar/educonn-transcode:dev
+    depends_on:
+      - consul
+    volumes:
+      - ./transcode/cmd/transcoded/.env-docker:/app/.env

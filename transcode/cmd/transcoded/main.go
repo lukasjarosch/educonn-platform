@@ -70,7 +70,6 @@ func main() {
 	transcodingCompletedPublisher := micro.NewPublisher(broker.VideoTranscodingCompleted, svc.Client())
 	transcodingFailedPublisher := micro.NewPublisher(broker.VideoTranscodingFailed, svc.Client())
 
-
 	// register service handler
 	educonn_transcode.RegisterTranscodeHandler(
 		svc.Server(),

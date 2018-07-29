@@ -52,7 +52,7 @@ func (t *transcodeHandler) OnWarning(message *amazon.ElasticTranscoderMessage) e
 func (t *transcodeHandler) OnError(message *amazon.ElasticTranscoderMessage) error {
 	log.Infof("[ElasticTranscoder] FAILED job '%s' on pipeline '%s': %s", message.JobId, message.PipelineId, message.Outputs[0].Key)
 
-	evt := &educonn_transcode.TranscodingCompletedEvent{
+	evt := &educonn_transcode.TranscodingFailedEvent{
 		Transcode: &educonn_transcode.TranscodeDetails{
 			JobId: message.JobId,
 			InputKey: message.Input.Key,

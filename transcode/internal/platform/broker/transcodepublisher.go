@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	VideoTranscodingCompleted = "transcoding.events.completed"
-	VideoTranscodingFailed    = "transcoding.events.failed"
+	VideoTranscodingCompleted = "transcode.events.completed"
+	VideoTranscodingFailed    = "transcode.events.failed"
 )
 
 type TranscodeEventPublisher struct {

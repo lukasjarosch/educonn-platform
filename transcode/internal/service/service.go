@@ -75,7 +75,7 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 
 	response.Job.Status = status
 
-	log.Infof("[ElasticTranscoder] started new job '%s' on pipeline '%s'", response.Job.JobId, response.Job.PipelineId)
+	log.Infof("[ElasticTranscoder] CREATED job '%s' on pipeline '%s'", response.Job.JobId, response.Job.PipelineId)
 
 	return nil
 }
