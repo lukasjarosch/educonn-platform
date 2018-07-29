@@ -28,7 +28,10 @@ message TranscodeStatus {
 // ----------------------------
 // EVENTS
 // ----------------------------
-message TranscodingFinishedEvent {
+message TranscodingCompletedEvent {
+    TranscodeDetails transcode = 1;
+}
+message TranscodingFailedEvent {
     TranscodeDetails transcode = 1;
 }
 

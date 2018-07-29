@@ -8,7 +8,7 @@ import (
 
 const (
 	VideoCreatedTopic = "video.events.created"
-	VideoCreatedQueue = "video-qreated-queue"
+	VideoCreatedQueue = "video-created-queue"
 )
 
 type VideoCreatedSubscriber struct {

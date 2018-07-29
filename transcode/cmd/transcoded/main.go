@@ -66,6 +66,10 @@ func main() {
 		server.SubscriberQueue(broker.VideoCreatedQueue),
 	)
 
+	// register publishers
+	transcodingCompletedPublisher := micro.NewPublisher(broker.VideoTranscodingCompleted, svc.Client())
+	transcodingFailedPublisher := micro.NewPublisher(broker.VideoTranscodingFailed, svc.Client())
+
 
 	// register service handler
 	educonn_transcode.RegisterTranscodeHandler(
@@ -75,6 +79,8 @@ func main() {
 			sqsContext,
 			transcoder,
 			videoCreatedChannel,
+			transcodingCompletedPublisher,
+			transcodingFailedPublisher,
 		),
 	)
 

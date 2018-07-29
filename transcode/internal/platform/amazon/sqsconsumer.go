@@ -110,7 +110,7 @@ func (s *SQSTranscodeEventConsumer) ExtractElasticTranscoderMessage(message map[
 }
 
 // Consume is the actual polling method
-func (s *SQSTranscodeEventConsumer) Consume(eventHandler ElasticTranscodeEventHandler) error {
+func (s *SQSTranscodeEventConsumer) Consume() error {
 	for {
 		message, err := s.FetchMessage()
 		if err != nil {

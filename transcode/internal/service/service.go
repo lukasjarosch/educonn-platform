@@ -8,6 +8,7 @@ import (
 	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
 	"github.com/prometheus/common/log"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
+	"github.com/micro/go-micro"
 )
 
 type transcodeService struct {
@@ -15,24 +16,28 @@ type transcodeService struct {
 	sqsContext       context.Context
 	transcoderClient *amazon.ElasticTranscoderClient
 	videoCreatedChan chan *educonn_video.VideoCreatedEvent
+	transcodingCompletedPublisher micro.Publisher
+	transcodingFailedPublisher micro.Publisher
 }
 
 func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
 	sqsContext context.Context,
 	transcoderClient *amazon.ElasticTranscoderClient,
-	videoCreatedChan chan *educonn_video.VideoCreatedEvent) *transcodeService {
+	videoCreatedChan chan *educonn_video.VideoCreatedEvent, completedPublisher micro.Publisher, failedPublisher micro.Publisher) *transcodeService {
 	svc := &transcodeService{
 		sqsConsumer:      sqsConsumer,
 		sqsContext:       sqsContext,
 		transcoderClient: transcoderClient,
 		videoCreatedChan: videoCreatedChan,
+		transcodingCompletedPublisher:completedPublisher,
+		transcodingFailedPublisher: failedPublisher,
 	}
 
 	log.Infof("[SUB] consuming '%s' from '%s'", broker.VideoCreatedTopic, broker.VideoCreatedQueue)
 	go svc.awaitVideoCreatedEvent()
 
 	log.Infof("[SQS] start consuming from: %s", config.AwsSqsVideoQueueName)
-	go svc.sqsConsumer.Consume(NewTranscodeHandler())
+	go svc.sqsConsumer.Consume()
 	go svc.awaitSQSEvent()
 
 	return svc
@@ -76,7 +81,7 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 }
 
 func (t *transcodeService) awaitSQSEvent() {
-	handler := NewTranscodeHandler()
+	handler := NewTranscodeHandler(t.transcodingCompletedPublisher, t.transcodingFailedPublisher)
 	for msg := range t.sqsConsumer.ElasticTranscoderChannel {
 		// COMPLETED
 		if msg.State == amazon.TranscodeStatusCompleted {

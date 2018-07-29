@@ -10,7 +10,8 @@ It is generated from these files:
 It has these top-level messages:
 	TranscodeDetails
 	TranscodeStatus
-	TranscodingFinishedEvent
+	TranscodingCompletedEvent
+	TranscodingFailedEvent
 	CreateJobRequest
 	CreateJobResponse
 	Error
