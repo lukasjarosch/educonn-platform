@@ -2,35 +2,119 @@ version: "3.4"
 
 services:
 
+  ## CONSUL
   consul:
     image: consul
+    networks:
+      - consul
+    environment:
+      TZ: Europe/Berlin
     ports:
       - 8500:8500
 
+
+  ## API
+  micro:
+    command: --registry_address=consul:8500 api --handler=rpc
+    image: microhq/micro:latest
+    ports:
+      - 8080:8080
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_NAMESPACE: educonn.api
+    networks:
+      - consul
+
+  ## USER service
   user:
     image: derwaldemar/educonn-user:dev
+    networks:
+      - consul
     depends_on:
       - consul
-    volumes:
-      - ./user/cmd/userd/.env-docker:/app/.env
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+    secrets:
+      - source: user-secrets-01
+        target: /app/.env
 
+  ## MAIL service
   mail:
     image: derwaldemar/educonn-mail:dev
+    networks:
+      - consul
     depends_on:
       - consul
-    volumes:
-      - ./mail/cmd/maild/.env-docker:/app/.env
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+      SMTP_HOST: smtp.mailtrap.io
+      SMTP_PORT: 2525
+    secrets:
+      - source: mail-secrets-01
+        target: /app/.env
 
+  ## VIDEO service
   video:
     image: derwaldemar/educonn-video:dev
+    networks:
+      - consul
     depends_on:
       - consul
-    volumes:
-      - ./video/cmd/videod/.env-docker:/app/.env
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+      AWS_REGION: eu-west-1
+      AWS_S3_VIDEO_BUCKET: videos.educonn.de
+    secrets:
+      - source: video-secrets-01
+        target: /app/.env
 
+  ## TRANSCODE service
   transcode:
     image: derwaldemar/educonn-transcode:dev
+    networks:
+      - consul
     depends_on:
       - consul
-    volumes:
-      - ./transcode/cmd/transcoded/.env-docker:/app/.env
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+      AWS_REGION: eu-west-1
+      AWS_TRANSCODE_PRESET: 1351620000001-100070
+      AWS_TRANSCODE_PIPELINE: 1532629797407-jfd8uk
+      AWS_TRANSCODE_OUTPUT_PREFIX: transcoded/
+      AWS_VIDEO_QUEUE: educonn-videos
+    secrets:
+      - source: transcode-secrets-01
+        target: /app/.env
+
+networks:
+  default:
+    external:
+      name: educonn-backend
+  consul:
+    external:
+      name: consul-net
+
+
+secrets:
+  user-secrets-01:
+    external: true
+  mail-secrets-01:
+    external: true
+  video-secrets-01:
+    external: true
+  transcode-secrets-01:
+    external: true

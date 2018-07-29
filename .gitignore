@@ -34,7 +34,8 @@ maild
 userd
 
 docker-compose.local.yml
-
+.env
+.env-docker
 .DS_Store
 
 #IDE files

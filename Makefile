@@ -18,6 +18,10 @@ user: clean
 	@echo Building USER service...
 	@cd user/cmd/userd && CGO_ENABLED=0 go build ${LDFLAGS_USER} -a -installsuffix cgo -o userd main.go
 
+user-run:
+	@echo Starting the USER service
+	@cd user/cmd/userd && go run main.go
+
 user-docker:
 	@echo Building USER docker image ...
 	@cd user && docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev .
@@ -25,6 +29,10 @@ user-docker:
 mail: clean
 	@echo Building MAIL service...
 	@cd mail/cmd/maild && CGO_ENABLED=0 go build ${LDFLAGS_MAIL} -a -installsuffix cgo -o maild main.go
+
+mail-run:
+	@echo Starting the MAIL service
+	@cd mail/cmd/maild && go run main.go
 
 mail-docker:
 	@echo Building MAIL docker image ...
@@ -34,6 +42,10 @@ video: clean
 	@echo Building VIDEO service...
 	@cd video/cmd/videod && CGO_ENABLED=0 go build ${LDFLAGS_VIDEO} -a -installsuffix cgo -o videod main.go
 
+video-run:
+	@echo Starting the VIDEO service
+	@cd video/cmd/videod && go run main.go
+
 video-docker:
 	@echo Building VIDEO docker image ...
 	@cd video && docker build -t derwaldemar/educonn-video:${VERSION} -t derwaldemar/educonn-video:dev .
@@ -41,6 +53,10 @@ video-docker:
 transcode: clean
 	@echo Building TRANSCODE service...
 	@cd transcode/cmd/transcoded && CGO_ENABLED=0 go build ${LDFLAGS_TRANSCODE} -a -installsuffix cgo -o transcoded main.go
+
+transcode-run:
+	@echo Starting the TRANSCODE service
+	@cd transcode/cmd/transcoded && go run main.go
 
 transcode-docker:
 	@echo Building TRANSCODE docker image ...
