@@ -27,7 +27,7 @@ func NewUserCreatedSubscriber(userCreatedChannel chan *educonn_user.UserCreatedE
 func (s *UserCreatedSubscriber) Process(ctx context.Context, event *educonn_user.UserCreatedEvent) error {
 	s.userCreatedChan <- event
 	event.User.Password = "" // unset the password or we would log the plaintext password
-	log.Infof("[sub] received event '%s': %+v ", UserCreatedTopic, event.User)
+	log.Infof("[sub] received event '%s' for user '%s'", UserCreatedTopic, event.User.Id)
 	return nil
 }
 
@@ -48,6 +48,6 @@ func (s *UserDeletedSubscriber) Process(ctx context.Context, event *educonn_user
 	log.Infof("%+v", md)
 	s.userDeletedChan <- event
 	event.User.Password = "" // unset the password or we would log the plaintext password
-	log.Infof("[sub] received event '%s': %+v ", UserDeletedTopic, event.User)
+	log.Infof("[sub] received event '%s' for user '%s' ", UserDeletedTopic, event.User.Id)
 	return nil
 }

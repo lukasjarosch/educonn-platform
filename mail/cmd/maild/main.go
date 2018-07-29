@@ -41,6 +41,7 @@ func main() {
 	if err := rabbitBroker.Connect(); err != nil {
 		log.Fatalf("Broker Connect error: %v", err)
 	}
+	micro.Broker(rabbitBroker)
 
 	// setup mail
 	mailer, err := mail.NewSmtpMail(
@@ -63,6 +64,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Infof("Subscribed %s", broker.UserCreatedTopic)
 
 	// UserDeletedSubscriber
 	err = micro.RegisterSubscriber(
@@ -74,9 +76,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Infof("Subscribed %s", broker.UserDeletedTopic)
 
-	micro.Broker(rabbitBroker)
-
+	// service handler
 	educonn_mail.RegisterEmailHandler(
 		svc.Server(),
 		service.NewMailService(
@@ -85,6 +87,7 @@ func main() {
 			mailer,
 		))
 
+	// fire
 	if err := svc.Run(); err != nil {
 		panic(err)
 	}
