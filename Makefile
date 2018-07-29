@@ -50,7 +50,7 @@ transcode-docker:
 all: user mail video transcode
 docker: user-docker mail-docker video-docker transcode-docker
 	@echo "Building all docker images"
-proto: user-proto mail-proto video-proto
+proto: user-proto mail-proto video-proto transcode-proto
 	@echo "All protobufs regenerated"
 
 user-proto:
