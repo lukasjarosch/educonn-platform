@@ -24,7 +24,6 @@ func main() {
 	)
 
 	svc.Init()
-	log.Infof("%v", svc.Options().Broker.Address())
 
 	// setup rabbitmq
 	rabbitBroker := svc.Server().Options().Broker

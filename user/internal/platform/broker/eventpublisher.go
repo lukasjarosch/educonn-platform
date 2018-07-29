@@ -28,7 +28,7 @@ func (p *EventPublisher) PublishUserCreated(event *educonn_user.UserCreatedEvent
 		log.Warnf("[pub] Unable to publish to %s: %+v", UserCreatedTopic, err)
 		return nil
 	}
-	log.Infof("[pub] published to %s: %+v", UserCreatedTopic, event)
+	log.Infof("[pub] published '%s' for user '%s'", UserCreatedTopic, event.User.Id)
 	return nil
 }
 
@@ -37,6 +37,6 @@ func (p *EventPublisher) PublishUserDeleted(event *educonn_user.UserDeletedEvent
 		log.Warnf("[pub] Unable to publish to %s: %+v", UserDeletedTopic, err)
 		return nil
 	}
-	log.Infof("[pub] published to %s: %+v", UserDeletedTopic, event.User)
+	log.Infof("[pub] published to '%s' '%s'", UserDeletedTopic, event.User.Id)
 	return nil
 }
