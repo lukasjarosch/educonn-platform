@@ -44,10 +44,6 @@ message VideoThumbnail {
     string height = 3;
 }
 
-message VideoUpload {
-    string filename = 1;
-    int32 size = 2;
-}
 
 // ----------------------------
 // EVENTS
@@ -63,7 +59,6 @@ message VideoCreatedEvent {
 
 message CreateVideoRequest {
     VideoDetails video = 1;
-    VideoUpload upload = 2;
 }
 
 message CreateVideoResponse {

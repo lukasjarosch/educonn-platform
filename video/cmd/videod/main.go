@@ -10,9 +10,17 @@ import (
 	"github.com/prometheus/common/log"
 	"time"
 	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
+	"github.com/micro/go-micro/server"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
+
+	transcodeCompletedChannel := make(chan *educonn_transcode.TranscodingCompletedEvent)
+	transcodeCompletedSubscriber := broker.NewTranscodeCompletedSubscriber(transcodeCompletedChannel)
+	transcodeFailedChannel := make(chan *educonn_transcode.TranscodingFailedEvent)
+	transcodeFailedSubscriber := broker.NewTranscodeFailedSubscriber(transcodeFailedChannel)
 
 	// setup micro service
 	svc := micro.NewService(
@@ -33,7 +41,6 @@ func main() {
 	}
 	micro.Broker(rabbitBroker)
 
-
 	// Setup S3
 	bucket, err := amazon.NewS3Bucket(config.AwsS3VideoBucket, config.AwsRegion, config.AwsAccessKey, config.AwsSecretKey)
 	if err != nil {
@@ -42,7 +49,22 @@ func main() {
 	}
 	log.Infof("[S3] attached to bucket: %s", bucket.Bucket)
 
+	// Create publishers
 	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
+
+	// Create subscribers
+	err = micro.RegisterSubscriber(
+		broker.TranscodeCompletedTopic,
+		svc.Server(),
+		transcodeCompletedSubscriber,
+		server.SubscriberQueue(broker.TranscodeCompletedQueue),
+	)
+	err = micro.RegisterSubscriber(
+		broker.TranscodeFailedTopic,
+		svc.Server(),
+		transcodeFailedSubscriber,
+		server.SubscriberQueue(broker.TranscodeFailedQueue),
+	)
 
 	// Attach handler
 	educonn_video.RegisterVideoHandler(
@@ -50,6 +72,8 @@ func main() {
 		service.NewVideoService(
 			broker.NewEventPublisher(videoCreatedPublisher),
 			bucket,
+			transcodeCompletedChannel,
+			transcodeFailedChannel,
 		),
 	)
 

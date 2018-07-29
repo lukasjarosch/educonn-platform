@@ -1,6 +1,7 @@
 package config
 
 import "os"
+import _ "github.com/joho/godotenv/autoload"
 
 var (
 	AwsAccessKey         = os.Getenv("AWS_ACCESS_KEY")
