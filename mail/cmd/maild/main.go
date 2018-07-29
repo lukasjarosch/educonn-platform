@@ -14,6 +14,7 @@ import (
 	"github.com/lukasjarosch/educonn-master-thesis/mail/proto"
 	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
 	"github.com/micro/go-micro/server"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
