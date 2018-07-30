@@ -14,6 +14,7 @@ import (
 	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
 	"github.com/micro/go-micro/server"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/mongodb"
 )
 
 func main() {
@@ -40,6 +41,12 @@ func main() {
 		log.Fatalf("Broker Connect error: %v", err)
 	}
 	micro.Broker(rabbitBroker)
+
+	// setup mongodb
+	transcodeRepository,err := mongodb.NewTranscodeRepository(config.DbHost, config.DbPort, config.DbUser, config.DbPass, config.DbName)
+	if err != nil {
+	    log.Fatal("[DB] unable to connect to db: %s", err)
+	}
 
 	// setup SQS
 	elasticTranscoderChan := make(chan *amazon.ElasticTranscoderMessage)
@@ -80,6 +87,7 @@ func main() {
 			videoCreatedChannel,
 			transcodingCompletedPublisher,
 			transcodingFailedPublisher,
+			transcodeRepository,
 		),
 	)
 

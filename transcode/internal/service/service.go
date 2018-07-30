@@ -9,6 +9,8 @@ import (
 	"github.com/prometheus/common/log"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
 	"github.com/micro/go-micro"
+	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/mongodb"
+	"time"
 )
 
 type transcodeService struct {
@@ -18,12 +20,17 @@ type transcodeService struct {
 	videoCreatedChan chan *educonn_video.VideoCreatedEvent
 	transcodingCompletedPublisher micro.Publisher
 	transcodingFailedPublisher micro.Publisher
+	transcodeRepository *mongodb.TranscodeRepository
 }
 
 func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
 	sqsContext context.Context,
 	transcoderClient *amazon.ElasticTranscoderClient,
-	videoCreatedChan chan *educonn_video.VideoCreatedEvent, completedPublisher micro.Publisher, failedPublisher micro.Publisher) *transcodeService {
+	videoCreatedChan chan *educonn_video.VideoCreatedEvent,
+	completedPublisher micro.Publisher,
+	failedPublisher micro.Publisher,
+	transcodeRepo *mongodb.TranscodeRepository) *transcodeService {
+
 	svc := &transcodeService{
 		sqsConsumer:      sqsConsumer,
 		sqsContext:       sqsContext,
@@ -31,6 +38,7 @@ func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
 		videoCreatedChan: videoCreatedChan,
 		transcodingCompletedPublisher:completedPublisher,
 		transcodingFailedPublisher: failedPublisher,
+		transcodeRepository:transcodeRepo,
 	}
 
 	log.Infof("[SUB] consuming '%s' from '%s'", broker.VideoCreatedTopic, broker.VideoCreatedQueue)
@@ -63,8 +71,26 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 	status := &educonn_transcode.TranscodeStatus{
 		Completed: false,
 		Error:     false,
-		Started:   false,
+		Started:   true,
 	}
+
+	transcodeJob, err := t.transcodeRepository.CreateTranscodingJob(&mongodb.TranscodingJob{
+		Status: mongodb.Status{
+			Completed:false,
+			Error:false,
+			Started:true,
+		},
+		JobId: *res.Job.Id,
+		PipelineId: *res.Job.PipelineId,
+		InputKey: request.Job.InputKey,
+		OutputKeyPrefix: *res.Job.OutputKeyPrefix,
+		OutputKey: *res.Job.Output.Key,
+		StartedAt: time.Now(),
+	})
+	if err != nil {
+	    log.Warn(err)
+	}
+	log.Infof("[DB] created TranscodingJob '%s'", transcodeJob.ID)
 
 	if jobStatus == "Submitted" {
 		status.Started = true
