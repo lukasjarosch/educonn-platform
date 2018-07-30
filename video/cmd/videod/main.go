@@ -13,6 +13,7 @@ import (
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/mongodb"
 )
 
 func main() {
@@ -49,6 +50,13 @@ func main() {
 	}
 	log.Infof("[S3] attached to bucket: %s", bucket.Bucket)
 
+	// Create repository
+	videoRepository, err := mongodb.NewVideoRepository(config.DbHost, config.DbPort, config.DbUser, config.DbPass, config.DbName)
+	if err != nil {
+	    log.Fatalf("[DB] unable to connect to database: %s", err)
+	}
+	log.Infof("[DB] connected to %s:%s/%s", config.DbHost, config.DbPort, config.DbName)
+
 	// Create publishers
 	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
 
@@ -74,6 +82,7 @@ func main() {
 			bucket,
 			transcodeCompletedChannel,
 			transcodeFailedChannel,
+			videoRepository,
 		),
 	)
 

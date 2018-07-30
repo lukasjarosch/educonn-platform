@@ -13,7 +13,6 @@ It has these top-level messages:
 	VideoStatus
 	VideoStatistics
 	VideoThumbnail
-	VideoUpload
 	VideoCreatedEvent
 	CreateVideoRequest
 	CreateVideoResponse
