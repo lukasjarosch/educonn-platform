@@ -14,6 +14,7 @@ before_install:
   - export PATH=$PATH:$HOME/protobuf/bin
 
 script:
+  - dep ensure -v
   - make proto
   - make all
 
