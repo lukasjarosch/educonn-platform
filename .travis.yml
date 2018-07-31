@@ -6,8 +6,6 @@ services:
 go:
   - "1.10"
 
-before_install:
-
 jobs:
   include:
     - stage: build and push
