@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/lukasjarosch/educonn-master-thesis/mail/internal/platform/mail"
-	"github.com/lukasjarosch/educonn-master-thesis/mail/proto"
-	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
+	"github.com/lukasjarosch/educonn-platform/mail/proto"
+	"github.com/lukasjarosch/educonn-platform/user/proto"
 	log "github.com/sirupsen/logrus"
 )
 

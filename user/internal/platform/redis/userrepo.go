@@ -3,7 +3,7 @@ package redis
 import (
 	"fmt"
 	"github.com/garyburd/redigo/redis"
-	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
+	"github.com/lukasjarosch/educonn-platform/user/proto"
 )
 
 type UserRepository struct {

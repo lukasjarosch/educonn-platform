@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"fmt"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

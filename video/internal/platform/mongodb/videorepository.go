@@ -2,8 +2,8 @@ package mongodb
 
 import (
 	"fmt"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

@@ -3,7 +3,7 @@ package broker
 
 import (
 	"github.com/micro/go-micro"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
+	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"context"
 	"github.com/prometheus/common/log"
 )

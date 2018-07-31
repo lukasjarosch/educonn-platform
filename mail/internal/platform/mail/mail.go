@@ -2,8 +2,8 @@ package mail
 
 import (
 	"fmt"
-	"github.com/lukasjarosch/educonn-master-thesis/mail/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"gopkg.in/gomail.v2"
 	"strconv"
 )

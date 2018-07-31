@@ -1,13 +1,13 @@
 package service
 
 import (
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
 	"github.com/micro/go-micro"
 	"github.com/prometheus/common/log"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
+	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"context"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/mongodb"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
 	"time"
 	"github.com/pkg/errors"
 	"fmt"

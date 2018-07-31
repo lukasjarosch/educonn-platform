@@ -7,12 +7,12 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 
-	"github.com/lukasjarosch/educonn-master-thesis/mail/internal/platform/broker"
-	"github.com/lukasjarosch/educonn-master-thesis/mail/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/mail/internal/platform/mail"
-	"github.com/lukasjarosch/educonn-master-thesis/mail/internal/service"
-	"github.com/lukasjarosch/educonn-master-thesis/mail/proto"
-	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/service"
+	"github.com/lukasjarosch/educonn-platform/mail/proto"
+	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
 )

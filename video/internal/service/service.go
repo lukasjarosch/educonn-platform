@@ -3,14 +3,14 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/errors"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/mongodb"
-	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/lukasjarosch/educonn-platform/transcode/proto"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
+	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/prometheus/common/log"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/broker"
 )
 
 type videoService struct {

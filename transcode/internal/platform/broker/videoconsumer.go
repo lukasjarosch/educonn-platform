@@ -1,7 +1,7 @@
 package broker
 
 import (
-	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"context"
 	"github.com/prometheus/common/log"
 )

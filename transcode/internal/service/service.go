@@ -2,14 +2,14 @@ package service
 
 import (
 	"context"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
-	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/transcode/proto"
+	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/prometheus/common/log"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
 	"github.com/micro/go-micro"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/mongodb"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
 	"time"
 	"gopkg.in/mgo.v2/bson"
 )

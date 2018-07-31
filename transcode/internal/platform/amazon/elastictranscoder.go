@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elastictranscoder"
 	"github.com/go-xweb/uuid"
 	"fmt"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
 )
 
 type ElasticTranscoderClient struct {

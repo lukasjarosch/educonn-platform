@@ -1,19 +1,19 @@
 package main
 
 import (
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/broker"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/service"
-	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/video/internal/service"
+	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/prometheus/common/log"
 	"time"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/lukasjarosch/educonn-master-thesis/video/internal/platform/mongodb"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
 )
 
 func main() {

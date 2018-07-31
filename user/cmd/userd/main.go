@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/lukasjarosch/educonn-master-thesis/user/internal/platform/broker"
-	"github.com/lukasjarosch/educonn-master-thesis/user/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/user/internal/service"
-	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
+	"github.com/lukasjarosch/educonn-platform/user/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/user/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/user/internal/service"
+	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"

@@ -4,17 +4,17 @@ import (
 	"context"
 	"time"
 
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/config"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/service"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/proto"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/service"
+	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/prometheus/common/log"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-master-thesis/video/proto"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-platform/video/proto"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
 	"github.com/micro/go-micro/server"
-	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/mongodb"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
 )
 
 func main() {

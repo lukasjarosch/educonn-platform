@@ -2,7 +2,7 @@ package broker
 
 import (
 	"context"
-	"github.com/lukasjarosch/educonn-master-thesis/user/proto"
+	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro/metadata"
 	log "github.com/sirupsen/logrus"
 )
