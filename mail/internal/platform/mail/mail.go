@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/user/proto"
-	"gopkg.in/gomail.v2"
 	"strconv"
+	gomail "github.com/go-mail/mail"
 )
 
 type SmtpMail struct {
