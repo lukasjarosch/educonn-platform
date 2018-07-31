@@ -13,13 +13,38 @@ before_install:
   - go get -u github.com/micro/protoc-gen-micro
   - export PATH=$PATH:$HOME/protobuf/bin
 
-script:
-  - dep ensure -v
-  - make proto
-  - make all
+jobs:
+  include:
+    - stage: ensure dependencies
+      script:
+        - dep ensure -v
 
-after_success:
-  - make docker
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME"
-  - make docker-push-dev
+    - stage: compile protobuf
+      script:
+        - make proto
+
+    - stage: build user
+      script:
+        - make user
+
+    - stage: build mail
+      script:
+        - make mail
+
+    - stage: build video
+      script:
+        - make video
+
+    - stage: build transcode
+      script:
+        - make transcode
+
+    - stage: build docker dev images
+      script:
+        - make docker
+
+    - stage: push docker images
+      script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME"
+        - make docker-push-dev
 
