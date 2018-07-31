@@ -8,7 +8,7 @@ import (
 type TranscodingJob struct {
 	ID              bson.ObjectId `bson:"_id" json:"id"`
 	JobId           string        `bson:"job_id" json:"job_id"`
-	VideoId         string        `bson:"video_id" json:"video_id"`
+	VideoId         bson.ObjectId `bson:"video_id" json:"video_id"`
 	PipelineId      string        `bson:"pipeline_id" json:"pipeline_id"`
 	InputKey        string        `bson:"input_key" json:"input_key"`
 	OutputKey       string        `bson:"output_key" json:"output_key"`

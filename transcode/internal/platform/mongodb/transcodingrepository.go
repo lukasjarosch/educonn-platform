@@ -36,3 +36,27 @@ func (t *TranscodeRepository) CreateTranscodingJob(job *TranscodingJob) (*Transc
 	return job, err
 }
 
+// FindByJobId tries to find a job by JobID
+func (t *TranscodeRepository) FindByJobId(id string) (*TranscodingJob, error) {
+	session := t.session.Clone()
+	defer session.Close()
+	var job TranscodingJob
+	err := session.DB(config.DbName).C(config.TranscodingJobCollection).Find(bson.M{"job_id": id}).One(&job)
+	if err != nil {
+		return nil, err
+	}
+	return &job, err
+}
+
+// UpdateJob by it's id
+func (t *TranscodeRepository) UpdateJob(job *TranscodingJob) (*TranscodingJob, error) {
+	session := t.session.Clone()
+	defer session.Close()
+
+	err := session.DB(config.DbName).C(config.TranscodingJobCollection).UpdateId(job.ID, job)
+
+	if err != nil {
+		return nil, err
+	}
+	return job, err
+}

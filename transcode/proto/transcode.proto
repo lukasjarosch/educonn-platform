@@ -30,9 +30,11 @@ message TranscodeStatus {
 // ----------------------------
 message TranscodingCompletedEvent {
     TranscodeDetails transcode = 1;
+    string videoId = 2;
 }
 message TranscodingFailedEvent {
     TranscodeDetails transcode = 1;
+    string videoId = 2;
 }
 
 // ----------------------------
@@ -40,6 +42,7 @@ message TranscodingFailedEvent {
 // ----------------------------
 message CreateJobRequest {
     TranscodeDetails job = 1;
+    string videoId = 2;
 }
 
 message CreateJobResponse {

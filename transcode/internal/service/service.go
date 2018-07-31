@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/lukasjarosch/educonn-master-thesis/transcode/internal/platform/mongodb"
 	"time"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type transcodeService struct {
@@ -80,12 +81,14 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 			Error:false,
 			Started:true,
 		},
+		VideoId: bson.ObjectIdHex(request.VideoId),
 		JobId: *res.Job.Id,
 		PipelineId: *res.Job.PipelineId,
 		InputKey: request.Job.InputKey,
 		OutputKeyPrefix: *res.Job.OutputKeyPrefix,
 		OutputKey: *res.Job.Output.Key,
 		StartedAt: time.Now(),
+		EndedAt: time.Time{},
 	})
 	if err != nil {
 	    log.Warn(err)
@@ -107,7 +110,7 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 }
 
 func (t *transcodeService) awaitSQSEvent() {
-	handler := NewTranscodeHandler(t.transcodingCompletedPublisher, t.transcodingFailedPublisher)
+	handler := NewTranscodeHandler(t.transcodingCompletedPublisher, t.transcodingFailedPublisher, t.transcodeRepository)
 	for msg := range t.sqsConsumer.ElasticTranscoderChannel {
 		// COMPLETED
 		if msg.State == amazon.TranscodeStatusCompleted {
@@ -145,6 +148,7 @@ func (t *transcodeService) awaitVideoCreatedEvent() {
 				PipelineId: config.AwsTranscodePipelineId,
 				InputKey: videoCreated.Video.Storage.RawKey,
 			},
+			VideoId: videoCreated.Video.Id,
 		}
 		err := t.CreateJob(context.Background(), req, &educonn_transcode.CreateJobResponse{})
 		if err != nil {
