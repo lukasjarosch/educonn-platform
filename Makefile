@@ -26,6 +26,10 @@ user-docker:
 	@echo Building USER docker image ...
 	@cd user && docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev .
 
+user-docker-push-dev:
+	@echo Pushing educonn-user:dev image ...
+	docker push derwaldemar/educonn-user:dev
+
 mail: clean
 	@echo Building MAIL service...
 	@cd mail/cmd/maild && CGO_ENABLED=0 go build ${LDFLAGS_MAIL} -a -installsuffix cgo -o maild main.go
@@ -37,6 +41,10 @@ mail-run:
 mail-docker:
 	@echo Building MAIL docker image ...
 	@cd mail && docker build -t derwaldemar/educonn-mail:${VERSION} -t derwaldemar/educonn-mail:dev .
+
+mail-docker-push-dev:
+	@echo Pushing educonn-mail:dev image ...
+	docker push derwaldemar/educonn-mail:dev
 
 video: clean
 	@echo Building VIDEO service...
@@ -50,6 +58,10 @@ video-docker:
 	@echo Building VIDEO docker image ...
 	@cd video && docker build -t derwaldemar/educonn-video:${VERSION} -t derwaldemar/educonn-video:dev .
 
+video-docker-push-dev:
+	@echo Pushing educonn-mail:dev image ...
+	docker push derwaldemar/educonn-mail:dev
+
 transcode: clean
 	@echo Building TRANSCODE service...
 	@cd transcode/cmd/transcoded && CGO_ENABLED=0 go build ${LDFLAGS_TRANSCODE} -a -installsuffix cgo -o transcoded main.go
@@ -62,10 +74,17 @@ transcode-docker:
 	@echo Building TRANSCODE docker image ...
 	@cd transcode && docker build -t derwaldemar/educonn-transcode:${VERSION} -t derwaldemar/educonn-transcode:dev .
 
+transcode-docker-push-dev:
+	@echo Pushing educonn-transcode:dev image ...
+	docker push derwaldemar/educonn-transcode:dev
 
 all: user mail video transcode
 docker: user-docker mail-docker video-docker transcode-docker
 	@echo "Building all docker images"
+
+docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev transcode-docker-push-dev
+	@echo "Pushing all docker images to DockerHub"
+
 proto: user-proto mail-proto video-proto transcode-proto
 	@echo "All protobufs regenerated"
 

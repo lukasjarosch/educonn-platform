@@ -20,4 +20,6 @@ script:
 
 after_success:
   - make docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME"
+  - make docker-push-dev
 
