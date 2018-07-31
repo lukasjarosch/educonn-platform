@@ -7,16 +7,14 @@ type Video struct {
 	Title       string        `bson:"title" json:"title"`
 	Description string        `bson:"description" json:"description"`
 	Tags        []string      `bson:"tags" json:"tags"`
-	Status      Status        `bson:"status" json:"status"`
 	Statistics  Statistics    `bson:"statistics" json:"statistics"`
 	Storage     Storage       `bson:"storage" json:"storage"`
+	Transcode   Transcode     `bson:"transcode" json:"transcode"`
 }
 
-type Status struct {
-	Completed     bool     `bson:"completed" json:"completed"`
-	Warning       bool     `bson:"warning" json:"warning"`
-	Error         bool     `bson:"error" json:"error"`
-	ErrorMessages []string `bson:"error_messages" json:"error_messages"`
+type Transcode struct {
+	Completed bool     `bson:"completed" json:"completed"`
+	Errors    []string `bson:"errors" json:"errors"`
 }
 
 type Statistics struct {

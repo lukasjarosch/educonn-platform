@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"net/http"
+	"time"
 )
 
 type S3Bucket struct {
@@ -72,4 +73,18 @@ func (b *S3Bucket) Upload(filePath string, buffer []byte, size int64) (*s3.PutOb
 	}
 
 	return output, nil
+}
+
+func (b *S3Bucket) GetSignedResourceURL(fileKey string) (string, error) {
+	params := &s3.GetObjectInput{
+		Bucket: aws.String(b.Bucket),
+		Key: aws.String(fileKey),
+	}
+
+	req, _ := b.session.GetObjectRequest(params)
+	url, err := req.Presign(15 * time.Minute)	 // TODO: move to config
+	if err != nil {
+		return "", err
+	}
+	return url, nil
 }
