@@ -10,7 +10,7 @@ before_install:
 
 jobs:
   include:
-    - stage: build
+    - stage: build and push
       script:
         - bash bin/install-protobuf.sh
         - go get -u github.com/golang/dep/cmd/dep
@@ -20,9 +20,6 @@ jobs:
         - dep ensure -v
         - make proto
         - make all
-
-    - stage: docker
-      script:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME"
         - make docker
         - make docker-push-dev
