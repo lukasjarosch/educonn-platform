@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package educonn.api.user;
+
+import "user/proto/user.proto";
+
+service UserApi {
+    rpc Create(CreateRequest) returns (CreateResponse) {};
+}
+
+message CreateRequest {
+    educonn.user.UserDetails user = 1;
+}
+
+message CreateResponse {
+    educonn.user.UserDetails user = 1;
+}
