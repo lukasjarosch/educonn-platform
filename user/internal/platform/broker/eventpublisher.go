@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -25,18 +25,24 @@ func NewEventPublisher(userCreatedPublisher micro.Publisher) *EventPublisher {
 
 func (p *EventPublisher) PublishUserCreated(event *educonn_user.UserCreatedEvent) (err error) {
 	if err = p.userCreatedPublisher.Publish(context.Background(), event); err != nil {
-		log.Warnf("[pub] Unable to publish to %s: %+v", UserCreatedTopic, err)
+		log.Warn().
+			Str("topic", UserCreatedTopic).
+			Interface("event", event).
+			Msg("unable to publish event")
 		return nil
 	}
-	log.Infof("[pub] published '%s' for user '%s'", UserCreatedTopic, event.User.Id)
+	log.Info().
+		Str("topic", UserCreatedTopic).
+		Interface("event", event).
+		Msg("published event")
 	return nil
 }
 
 func (p *EventPublisher) PublishUserDeleted(event *educonn_user.UserDeletedEvent) (err error) {
 	if err = p.userCreatedPublisher.Publish(context.Background(), event); err != nil {
-		log.Warnf("[pub] Unable to publish to %s: %+v", UserDeletedTopic, err)
+		log.Warn().Str("topic", UserDeletedTopic).Interface("event", event).Msg("unable to publish event")
 		return nil
 	}
-	log.Infof("[pub] published to '%s' '%s'", UserDeletedTopic, event.User.Id)
+	log.Info().Str("topic", UserDeletedTopic).Interface("event", event).Msg("published event")
 	return nil
 }

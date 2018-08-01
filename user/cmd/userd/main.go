@@ -7,10 +7,12 @@ import (
 	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
+	"github.com/rs/zerolog/log"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
-	log "github.com/sirupsen/logrus"
 	_ "github.com/joho/godotenv/autoload"
 	"time"
+	"os"
+	"github.com/rs/zerolog"
 )
 
 func main() {
@@ -29,12 +31,16 @@ func main() {
 	// setup rabbitmq
 	rabbitBroker := svc.Server().Options().Broker
 	if err := rabbitBroker.Init(rabbitmq.Exchange("educonn")); err != nil {
-		log.Fatalf("Broker Init error: %v", err)
+		log.Print("Broker Init error: %v", err)
 	}
 	if err := rabbitBroker.Connect(); err != nil {
-		log.Fatalf("Broker Connect error: %v", err)
+		log.Print("Broker Connect error: %v", err)
 	}
 	micro.Broker(rabbitBroker)
+
+	if os.Getenv("DEV_ENV") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
 	userCreatedPublisher := micro.NewPublisher(broker.UserCreatedTopic, svc.Client())
 	userDeletedPublisher := micro.NewPublisher(broker.UserDeletedTopic, svc.Client())
