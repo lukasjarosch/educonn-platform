@@ -16,6 +16,11 @@ import (
 )
 
 func main() {
+
+	if os.Getenv("DEV_ENV") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
 	// TODO: mysqlrepo
 	repo := false
 
@@ -37,10 +42,6 @@ func main() {
 		log.Print("Broker Connect error: %v", err)
 	}
 	micro.Broker(rabbitBroker)
-
-	if os.Getenv("DEV_ENV") != "" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
 
 	userCreatedPublisher := micro.NewPublisher(broker.UserCreatedTopic, svc.Client())
 	userDeletedPublisher := micro.NewPublisher(broker.UserDeletedTopic, svc.Client())
