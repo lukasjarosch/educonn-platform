@@ -6,6 +6,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
 )
 
 type VideoRepository struct {
@@ -58,6 +59,22 @@ func (v *VideoRepository) UpdateVideo(video *Video) error {
 		return err
 	}
 	return nil
+}
+
+func (v *VideoRepository) FindById(id string) (*Video, error) {
+	session := v.session.Clone()
+	defer session.Close()
+
+	if !bson.IsObjectIdHex(id) {
+		return nil, errors.InvalidVideoId
+	}
+
+	var video = &Video{}
+	err := session.DB(config.DbName).C(config.VideoCollectionName).FindId(bson.ObjectIdHex(id)).One(video)
+	if err != nil {
+		return nil, err
+	}
+	return video, nil
 }
 
 func (v *VideoRepository) FindByRawStorageKey(key string) (*Video, error) {

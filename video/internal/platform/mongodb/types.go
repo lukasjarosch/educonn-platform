@@ -1,6 +1,8 @@
 package mongodb
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"gopkg.in/mgo.v2/bson"
+)
 
 type Video struct {
 	ID          bson.ObjectId `bson:"_id" json:"id"`

@@ -8,9 +8,9 @@ import (
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
-	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/rs/zerolog/log"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/video/proto"
 )
 
 type videoService struct {
@@ -82,6 +82,50 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	})
 
 	res.Video = req.Video
+
+	return nil
+}
+
+func (v *videoService) GetById(ctx context.Context, req *educonn_video.GetVideoRequest, res *educonn_video.GetVideoResponse) error {
+	if req.Id == "" {
+		return errors.MissingVideoId
+	}
+
+	video, err := v.videoRepository.FindById(req.Id)
+	if err != nil {
+	    log.Info().Str("video", req.Id).Msg("unable to find video")
+	    return errors.VideoNotFound
+	}
+
+	errorCount := len(video.Transcode.Errors)
+	trError := false
+
+	if errorCount >= 1 {
+		trError = true
+	} else {
+		trError = false
+	}
+	res.SignedUrl, _ = v.s3Bucket.GetSignedResourceURL(video.Storage.OutputKey)
+	res.Video = &educonn_video.VideoDetails{
+		Id: video.ID.Hex(),
+		Title: video.Title,
+		Description: video.Description,
+		Tags: video.Tags,
+		Storage: &educonn_video.VideoStorage{
+			RawKey: video.Storage.RawKey,
+			TranscodedKey: video.Storage.OutputKey,
+		},
+		Statistics: &educonn_video.VideoStatistics{
+			DislikeCound: video.Statistics.DislikeCount,
+			LikeCount: video.Statistics.LikeCount,
+			ViewCount: video.Statistics.ViewCount,
+		},
+		Status: &educonn_video.VideoStatus{
+			Completed: video.Transcode.Completed,
+			Error: trError,
+			ErrorMessages: video.Transcode.Errors,
+		},
+	}
 
 	return nil
 }

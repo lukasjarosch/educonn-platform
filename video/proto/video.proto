@@ -2,8 +2,11 @@ syntax = "proto3";
 
 package educonn.video;
 
+import "google/protobuf/wrappers.proto";
+
 service Video {
    rpc Create(CreateVideoRequest) returns (CreateVideoResponse) {}
+   rpc GetById(GetVideoRequest) returns (GetVideoResponse) {}
 }
 
 // ----------------------------
@@ -22,6 +25,7 @@ message VideoDetails {
 
 message VideoStorage {
     string rawKey = 1;
+    string transcodedKey = 2;
 }
 
 message VideoStatus {
@@ -64,6 +68,15 @@ message CreateVideoRequest {
 message CreateVideoResponse {
     VideoDetails video = 1;
     repeated Error errors = 2;
+}
+
+message GetVideoRequest {
+    string id = 1;
+}
+
+message GetVideoResponse {
+    VideoDetails video = 1;
+    string signedUrl = 2;
 }
 
 // ----------------------------

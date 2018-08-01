@@ -16,6 +16,8 @@ It has these top-level messages:
 	VideoCreatedEvent
 	CreateVideoRequest
 	CreateVideoResponse
+	GetVideoRequest
+	GetVideoResponse
 	Error
 */
 package educonn_video
@@ -50,6 +52,7 @@ var _ server.Option
 
 type VideoClient interface {
 	Create(ctx context.Context, in *CreateVideoRequest, opts ...client.CallOption) (*CreateVideoResponse, error)
+	GetById(ctx context.Context, in *GetVideoRequest, opts ...client.CallOption) (*GetVideoResponse, error)
 }
 
 type videoClient struct {
@@ -80,10 +83,21 @@ func (c *videoClient) Create(ctx context.Context, in *CreateVideoRequest, opts .
 	return out, nil
 }
 
+func (c *videoClient) GetById(ctx context.Context, in *GetVideoRequest, opts ...client.CallOption) (*GetVideoResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "Video.GetById", in)
+	out := new(GetVideoResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Video service
 
 type VideoHandler interface {
 	Create(context.Context, *CreateVideoRequest, *CreateVideoResponse) error
+	GetById(context.Context, *GetVideoRequest, *GetVideoResponse) error
 }
 
 func RegisterVideoHandler(s server.Server, hdlr VideoHandler, opts ...server.HandlerOption) {
@@ -96,4 +110,8 @@ type Video struct {
 
 func (h *Video) Create(ctx context.Context, in *CreateVideoRequest, out *CreateVideoResponse) error {
 	return h.VideoHandler.Create(ctx, in, out)
+}
+
+func (h *Video) GetById(ctx context.Context, in *GetVideoRequest, out *GetVideoResponse) error {
+	return h.VideoHandler.GetById(ctx, in, out)
 }
