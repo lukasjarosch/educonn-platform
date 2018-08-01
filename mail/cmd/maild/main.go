@@ -1,7 +1,7 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"time"
 
 	"github.com/micro/go-micro"
@@ -15,9 +15,16 @@ import (
 	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
+	"fmt"
+	"os"
+	"github.com/rs/zerolog"
 )
 
 func main() {
+
+	if os.Getenv("DEV_ENV") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
 	// setup the consumer
 	userCreatedChannel := make(chan *educonn_user.UserCreatedEvent)
@@ -37,10 +44,10 @@ func main() {
 	// setup rabbitmq
 	rabbitBroker := svc.Server().Options().Broker
 	if err := rabbitBroker.Init(rabbitmq.Exchange(config.ExchangeName)); err != nil {
-		log.Fatalf("Broker Init error: %v", err)
+		log.Fatal().Interface("error", err).Msg("broker init error")
 	}
 	if err := rabbitBroker.Connect(); err != nil {
-		log.Fatalf("Broker Connect error: %v", err)
+		log.Fatal().Interface("error", err).Msg("broker connect error")
 	}
 	micro.Broker(rabbitBroker)
 
@@ -52,7 +59,7 @@ func main() {
 		config.SmtpPassword,
 	)
 	if err != nil {
-		log.Fatalf("Unable to setup STMP mailer: %v", err)
+		log.Fatal().Interface("error", err).Msg("unable to setup SmtpMail")
 	}
 
 	// UserCreatedSubscriber
@@ -65,7 +72,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Infof("Subscribed %s", broker.UserCreatedTopic)
+	log.Info().Msg(fmt.Sprintf("subscribed to %s", broker.UserCreatedTopic))
 
 	// UserDeletedSubscriber
 	err = micro.RegisterSubscriber(
@@ -77,7 +84,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Infof("Subscribed %s", broker.UserDeletedTopic)
+	log.Info().Msg(fmt.Sprintf("subscribed to %s", broker.UserDeletedTopic))
 
 	// service handler
 	educonn_mail.RegisterEmailHandler(

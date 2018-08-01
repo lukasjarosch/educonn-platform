@@ -5,7 +5,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
 	"github.com/lukasjarosch/educonn-platform/mail/proto"
 	"github.com/lukasjarosch/educonn-platform/user/proto"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 type mailService struct {
@@ -36,10 +36,10 @@ func (m *mailService) awaitUserCreatedEvent() {
 	for userCreated := range m.userCreatedChan {
 		err := m.mail.SendUserCreated(userCreated.User)
 		if err != nil {
-			log.Infof("Unable to send email: %v", err)
+			log.Warn().Interface("error", err).Str("recipient", userCreated.User.Email).Msg("unable to send mail")
 			continue
 		}
-		log.Infof("Sent welcome email to %s", userCreated.User.Email)
+		log.Info().Str("recipient", userCreated.User.Email).Msg("sent welcome email")
 	}
 }
 
@@ -47,9 +47,9 @@ func (m *mailService) awaitUserDeletedEvent() {
 	for userDeleted := range m.userDeletedChan {
 		err := m.mail.SendUserDeleted(userDeleted.User)
 		if err != nil {
-			log.Infof("Unable to send email: %v", err)
+			log.Warn().Interface("error", err).Str("recipient", userDeleted.User.Email).Msg("unable to send mail")
 			continue
 		}
-		log.Infof("Sent goodbye email to: %v", userDeleted.User)
+		log.Info().Str("recipient", userDeleted.User.Email).Msg("sent farewell email")
 	}
 }

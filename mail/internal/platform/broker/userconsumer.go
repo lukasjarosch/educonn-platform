@@ -3,8 +3,7 @@ package broker
 import (
 	"context"
 	"github.com/lukasjarosch/educonn-platform/user/proto"
-	"github.com/micro/go-micro/metadata"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -27,7 +26,7 @@ func NewUserCreatedSubscriber(userCreatedChannel chan *educonn_user.UserCreatedE
 func (s *UserCreatedSubscriber) Process(ctx context.Context, event *educonn_user.UserCreatedEvent) error {
 	s.userCreatedChan <- event
 	event.User.Password = "" // unset the password or we would log the plaintext password
-	log.Infof("[sub] received event '%s' for user '%s'", UserCreatedTopic, event.User.Id)
+	log.Info().Str("topic", UserCreatedTopic).Str("user", event.User.Id).Msg("received UserCreatedEvent")
 	return nil
 }
 
@@ -44,10 +43,8 @@ func NewUserDeletedSubscriber(userDeletedChannel chan *educonn_user.UserDeletedE
 }
 
 func (s *UserDeletedSubscriber) Process(ctx context.Context, event *educonn_user.UserDeletedEvent) error {
-	md, _ := metadata.FromContext(ctx)
-	log.Infof("%+v", md)
 	s.userDeletedChan <- event
 	event.User.Password = "" // unset the password or we would log the plaintext password
-	log.Infof("[sub] received event '%s' for user '%s' ", UserDeletedTopic, event.User.Id)
+	log.Info().Str("topic", UserDeletedTopic).Str("user", event.User.Id).Msg("received UserDeletedEvent")
 	return nil
 }
