@@ -9,15 +9,20 @@ import (
 	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
-	"github.com/prometheus/common/log"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
 	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
 	"github.com/micro/go-micro/server"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
+	"os"
+	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 )
 
 func main() {
+	if os.Getenv("DEV_ENV") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
 	// setup consumer
 	videoCreatedChannel := make(chan *educonn_video.VideoCreatedEvent)
@@ -35,35 +40,35 @@ func main() {
 	// setup rabbitmq
 	rabbitBroker := svc.Server().Options().Broker
 	if err := rabbitBroker.Init(rabbitmq.Exchange("educonn")); err != nil {
-		log.Fatalf("Broker Init error: %v", err)
+		log.Print("Broker Init error: %v", err)
 	}
 	if err := rabbitBroker.Connect(); err != nil {
-		log.Fatalf("Broker Connect error: %v", err)
+		log.Print("Broker Connect error: %v", err)
 	}
 	micro.Broker(rabbitBroker)
 
 	// setup mongodb
 	transcodeRepository,err := mongodb.NewTranscodeRepository(config.DbHost, config.DbPort, config.DbUser, config.DbPass, config.DbName)
 	if err != nil {
-	    log.Fatal("[DB] unable to connect to db: %s", err)
+	    log.Fatal().Interface("error", err).Msg("unable to connect to database")
 	}
 
 	// setup SQS
 	elasticTranscoderChan := make(chan *amazon.ElasticTranscoderMessage)
 	sqsConsumer, err := amazon.NewSQSTranscodeEventConsumer(elasticTranscoderChan, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Interface("error", err).Str("queue", config.AwsSqsVideoQueueName).Msg("unable to connect to SQS")
 	}
 	sqsContext, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	log.Infof("[SQS] attached to queue '%s'", config.AwsSqsVideoQueueName)
+	log.Info().Str("queue", config.AwsSqsVideoQueueName).Msg("attached to SQS queue")
 
 	// setup Elastic Transcoder
 	transcoder, err := amazon.NewElasticTranscoderClient(config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion)
 	if err != nil {
-		log.Infof("Unable to create ElasticTranscoder client: %v", err)
+		log.Fatal().Interface("error", err).Msg("unable to create ElasticTranscoderClient")
 	}
-	log.Infof("[ElasticTranscoder] attached")
+	log.Info().Msg("attached ElasticTranscoder")
 
 	// register video.events.created subscriber
 	err = micro.RegisterSubscriber(

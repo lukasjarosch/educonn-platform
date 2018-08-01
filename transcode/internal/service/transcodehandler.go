@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
 	"github.com/micro/go-micro"
-	"github.com/prometheus/common/log"
+	"github.com/rs/zerolog/log"
 	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"context"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
@@ -29,12 +29,17 @@ func NewTranscodeHandler(completedPublisher micro.Publisher, failedPublisher mic
 }
 
 func (t *transcodeHandler) OnCompleted(message *amazon.ElasticTranscoderMessage) error {
-	log.Infof("[ElasticTranscoder] COMPLETED job '%s' on pipeline '%s': %s", message.JobId, message.PipelineId, message.Outputs[0].Key)
+	log.Info().
+		Str("job", message.JobId).
+		Str("pipeline", message.PipelineId).
+		Str("file_key", message.Outputs[0].Key).
+		Msg("ElasticTranscoder job completed")
 
 	// Update transcoding job
 	job, err := t.transcodeRepository.FindByJobId(message.JobId)
 	if err != nil {
-	    log.Warnf("[DB] received completed event for UNKNOWN JOB '%s': %s", message.JobId, err)
+		err = errors.New("ElasticTranscoder job completed but the job is unknown and was not started by me")
+		log.Warn().Str("job", message.JobId).Interface("error", err).Msg(err.Error())
 	    return err
 	}
 	job.Status.Started = false
@@ -45,7 +50,6 @@ func (t *transcodeHandler) OnCompleted(message *amazon.ElasticTranscoderMessage)
 	    err = errors.New(fmt.Sprintf("[DB] unable to update job '%s': %s",job.ID.Hex(), err))
 	    return err
 	}
-	log.Infof("[DB] updated job '%s'", job.ID.Hex())
 
 	// Prepare event
 	evt := &educonn_transcode.TranscodingCompletedEvent{
@@ -64,27 +68,31 @@ func (t *transcodeHandler) OnCompleted(message *amazon.ElasticTranscoderMessage)
 
 	// Publish
 	t.completedPublisher.Publish(context.Background(), evt)
-	log.Infof("[PUB] pubbed '%s'", broker.VideoTranscodingCompleted)
+	log.Info().Str("topic", broker.VideoTranscodingCompleted).Interface("event", evt)
 
 	return nil
 }
 
 func (t *transcodeHandler) OnWarning(message *amazon.ElasticTranscoderMessage) error {
-	log.Warn(message.MessageDetails)
+	log.Warn().Msg(message.MessageDetails)
 	return nil
 }
 
 func (t *transcodeHandler) OnError(message *amazon.ElasticTranscoderMessage) error {
-	log.Infof("[ElasticTranscoder] FAILED job '%s' on pipeline '%s': %s", message.JobId, message.PipelineId, message.Outputs[0].Key)
+	log.Info().
+		Str("job", message.JobId).
+		Str("pipeline", message.PipelineId).
+		Str("file_key", message.Outputs[0].Key).
+		Msg("ElasticTranscoder job failed")
 
 	job, err := t.transcodeRepository.FindByJobId(message.JobId)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("[DB] received error event for UNKNOWN JOB '%s': %s", message.JobId, err))
+		err = errors.New("ElasticTranscoder job completed but the job is unknown and was not started by me")
+		log.Warn().Str("job", message.JobId).Interface("error", err).Msg(err.Error())
 		return err
 	}
 
 	// TODO: save to DB
-	log.Infof("[DB] updated job '%s'", job.ID.Hex())
 
 	evt := &educonn_transcode.TranscodingFailedEvent{
 		Transcode: &educonn_transcode.TranscodeDetails{
@@ -102,6 +110,6 @@ func (t *transcodeHandler) OnError(message *amazon.ElasticTranscoderMessage) err
 	}
 
 	t.failedPublisher.Publish(context.Background(), evt)
-	log.Infof("[PUB] pubbed '%s'", broker.VideoTranscodingFailed)
+	log.Info().Str("topic", broker.VideoTranscodingFailed).Interface("event", evt)
 	return nil
 }

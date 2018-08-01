@@ -5,9 +5,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/elastictranscoder"
-	"github.com/go-xweb/uuid"
 	"fmt"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
+	"github.com/rs/xid"
 )
 
 type ElasticTranscoderClient struct {
@@ -38,8 +38,8 @@ func (e *ElasticTranscoderClient) CreateJob(inputKey string) (*elastictranscoder
 	outputKeyPrefix := config.AwsTranscodeOutputPrefix
 
 	// new unique filename
-	uuid := uuid.NewUUID().String()
-	filename := fmt.Sprintf("%s.mp4", uuid)
+	id := xid.New()
+	filename := fmt.Sprintf("%s.mp4", id.String())
 
 	// create job
 	resp, err := e.svc.CreateJob(&elastictranscoder.CreateJobInput{

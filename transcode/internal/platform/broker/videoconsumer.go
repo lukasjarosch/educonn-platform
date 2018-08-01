@@ -3,7 +3,6 @@ package broker
 import (
 	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"context"
-	"github.com/prometheus/common/log"
 )
 
 const (
@@ -23,6 +22,5 @@ func NewVideoCreatedSubscriber(videoCreatedChan chan *educonn_video.VideoCreated
 
 func (v *VideoCreatedSubscriber) Process(ctx context.Context, event *educonn_video.VideoCreatedEvent) error {
 	v.videoCreatedChan <- event
-	log.Infof("[sub] received event '%s'", VideoCreatedTopic)
 	return nil
 }

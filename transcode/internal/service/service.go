@@ -6,7 +6,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/lukasjarosch/educonn-platform/video/proto"
-	"github.com/prometheus/common/log"
+	"github.com/rs/zerolog/log"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
 	"github.com/micro/go-micro"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
@@ -42,10 +42,10 @@ func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
 		transcodeRepository:transcodeRepo,
 	}
 
-	log.Infof("[SUB] consuming '%s' from '%s'", broker.VideoCreatedTopic, broker.VideoCreatedQueue)
+	log.Info().Str("topic", broker.VideoCreatedTopic).Str("queue", broker.VideoCreatedQueue).Msg("start consuming VideoCreatedEvents")
 	go svc.awaitVideoCreatedEvent()
 
-	log.Infof("[SQS] start consuming from: %s", config.AwsSqsVideoQueueName)
+	log.Info().Str("queue", config.AwsSqsVideoQueueName).Msg("start consuming from SQS queue")
 	go svc.sqsConsumer.Consume()
 	go svc.awaitSQSEvent()
 
@@ -56,7 +56,7 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 
 	res, err := t.transcoderClient.CreateJob(request.Job.InputKey)
 	if err != nil {
-		log.Warnf("transcoding failed: %v", err)
+		log.Warn().Interface("error", err).Msg("unable to create new transcoding job")
 		return err
 	}
 
@@ -91,9 +91,8 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 		EndedAt: time.Time{},
 	})
 	if err != nil {
-	    log.Warn(err)
+		log.Warn().Interface("error", err).Msg("failed to create transcoding job in database")
 	}
-	log.Infof("[DB] created TranscodingJob '%s'", transcodeJob.ID)
 
 	if jobStatus == "Submitted" {
 		status.Started = true
@@ -104,7 +103,7 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 
 	response.Job.Status = status
 
-	log.Infof("[ElasticTranscoder] CREATED job '%s' on pipeline '%s'", response.Job.JobId, response.Job.PipelineId)
+	log.Info().Str("pipeline", response.Job.PipelineId).Str("job", transcodeJob.JobId).Msg("created new ElasticTranscoder job")
 
 	return nil
 }
@@ -116,7 +115,7 @@ func (t *transcodeService) awaitSQSEvent() {
 		if msg.State == amazon.TranscodeStatusCompleted {
 			err := handler.OnCompleted(msg)
 			if err != nil {
-				log.Info(err)
+				log.Warn().Interface("error", err).Msg("SQS handler failed in OnCompleted")
 				continue
 			}
 		}
@@ -125,7 +124,7 @@ func (t *transcodeService) awaitSQSEvent() {
 		if msg.State == amazon.TranscodeStatusWarning {
 			err := handler.OnWarning(msg)
 			if err != nil {
-				log.Info(err)
+				log.Warn().Interface("error", err).Msg("SQS handler failed in OnWarning")
 				continue
 			}
 		}
@@ -134,7 +133,7 @@ func (t *transcodeService) awaitSQSEvent() {
 		if msg.State == amazon.TranscodeStatusError {
 			err := handler.OnError(msg)
 			if err != nil {
-				log.Info(err)
+				log.Warn().Interface("error", err).Msg("SQS handler failed in OnError")
 				continue
 			}
 		}
@@ -152,7 +151,7 @@ func (t *transcodeService) awaitVideoCreatedEvent() {
 		}
 		err := t.CreateJob(context.Background(), req, &educonn_transcode.CreateJobResponse{})
 		if err != nil {
-		    log.Error(err)
+			log.Warn().Interface("error", err).Msg("unable to call CreateJob")
 		}
 	}
 }
