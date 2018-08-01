@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/micro/go-micro"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -21,9 +21,9 @@ func NewEventPublisher(videoCreatedPublisher micro.Publisher) *EventPublisher {
 
 func (p *EventPublisher) PublishVideoCreated(event *educonn_video.VideoCreatedEvent) (err error) {
 	if err = p.videoCreatedPublisher.Publish(context.Background(), event); err != nil {
-		log.Warnf("[PUB] failed pub to %s: %+v", VideoCreatedTopic, err)
+		log.Warn().Str("topic", VideoCreatedTopic).Interface("error", err).Str("event", "VideoCreatedEvent").Msg("unable to publish event")
 		return nil
 	}
-	log.Infof("[PUB] published to %s: %v", VideoCreatedTopic, event)
+	log.Info().Str("topic", VideoCreatedTopic).Interface("event", event).Msg("published event")
 	return nil
 }

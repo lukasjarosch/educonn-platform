@@ -3,7 +3,7 @@ package broker
 import (
 	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"context"
-	"github.com/prometheus/common/log"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -23,7 +23,7 @@ func NewTranscodeCompletedSubscriber(transcodeCompletedChan chan *educonn_transc
 
 func (t *TranscodeCompletedSubscriber) Process(ctx context.Context, event *educonn_transcode.TranscodingCompletedEvent) error {
 	t.transcodeCompletedChan <- event
-	log.Infof("[SUB] received '%s' event for transcode-job-id '%s'", TranscodeCompletedTopic, event.Transcode.JobId)
+	log.Info().Str("topic", TranscodeCompletedTopic).Str("job", event.Transcode.JobId).Msg("received TranscodingCompletedEvent")
 	return nil
 }
 
@@ -39,6 +39,6 @@ func NewTranscodeFailedSubscriber(transcodeFailedChan chan *educonn_transcode.Tr
 
 func (t *TranscodeFailedSubscriber) Process(ctx context.Context, event *educonn_transcode.TranscodingFailedEvent) error {
 	t.transcodeFailedChan<- event
-	log.Infof("[SUB] received '%s' event for transcode-job-id '%s'", TranscodeFailedTopic, event.Transcode.JobId)
+	log.Info().Str("topic", TranscodeFailedTopic).Str("job", event.Transcode.JobId).Msg("received TranscodingCompletedEvent")
 	return nil
 }

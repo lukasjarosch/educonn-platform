@@ -9,7 +9,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
 	"github.com/lukasjarosch/educonn-platform/video/proto"
-	"github.com/prometheus/common/log"
+	"github.com/rs/zerolog/log"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/broker"
 )
 
@@ -49,7 +49,7 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	// Check if raw file does already exist
 	existingVideo, _ := v.videoRepository.FindByRawStorageKey(req.Video.Storage.RawKey)
 	if existingVideo != nil {
-		log.Warnf("[DB] video with raw key %s already exists", existingVideo.Storage.RawKey)
+		log.Warn().Str("file_key", existingVideo.Storage.RawKey).Msg("a source video with that key already exists")
 		return errors.RawVideoAlreadyExists
 	}
 
@@ -57,22 +57,22 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	fileKey := req.Video.Storage.RawKey
 	err := v.s3Bucket.CheckFileExists(fileKey, config.AwsS3VideoBucket)
 	if err != nil {
-		log.Infof("[S3] key '%s' does not exist in bucket", fileKey)
+		log.Warn().Str("key", fileKey).Msg("key does not exist in bucket")
 		res.Errors = append(res.Errors, &educonn_video.Error{
 			Description: errors.RawVideoFileS3NotFound.Error(),
 			Code:        404,
 		})
 		return err
 	}
-	log.Infof("[S3] key '%s' exists in bucket", fileKey)
+	log.Info().Str("key", fileKey).Str("bucket", config.AwsS3VideoBucket).Msg("key found in bucket")
 
 	// Insert video into DB
 	video, err := v.videoRepository.CreateVideo(mongodb.UnmarshalProtobuf(req.Video))
 	if err != nil {
-		log.Warnf("[DB] error creating video: %s", err)
+		log.Warn().Interface("error", err).Msg("unable to create video in database")
 		return err
 	}
-	log.Infof("[DB] created video '%s'", video.ID.Hex())
+	log.Info().Str("video_id", video.ID.Hex()).Msg("created video")
 	req.Video.Id = video.ID.Hex()
 
 	// Publish event
@@ -88,12 +88,17 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 
 func (v *videoService) awaitTranscodeCompletedEvent() {
 	for transcoded := range v.transcodeCompletedChan {
-		log.Infof("Transcoding job '%s' for video '%s' completed", transcoded.Transcode.JobId, transcoded.VideoId)
+		log.Info().Str("job", transcoded.Transcode.JobId).Str("video", transcoded.VideoId).Msg("transcoding job completed")
 
 		// TODO: change to FindById
 		video, err := v.videoRepository.FindByRawStorageKey(transcoded.Transcode.InputKey)
 		if err != nil {
-			log.Warnf("[DB] received '%s' from job '%s'for non-existing video-input key '%s': %s", broker.TranscodeCompletedTopic, transcoded.Transcode.JobId, transcoded.Transcode.InputKey, err)
+			log.Warn().
+				Str("topic", broker.TranscodeCompletedTopic).
+				Str("job", transcoded.Transcode.JobId).
+				Str("input_key", transcoded.Transcode.InputKey).
+				Interface("error", err).
+				Msg("received job from non-existing video-input key")
 			continue
 		}
 
@@ -103,21 +108,26 @@ func (v *videoService) awaitTranscodeCompletedEvent() {
 
 		err = v.videoRepository.UpdateVideo(video)
 		if err != nil {
-		    log.Warn(err)
+		    log.Warn().Interface("error", err).Msg("unable to update video")
 		    continue
 		}
-		log.Infof("[DB] updated video '%s' and set to completed", video.ID.Hex())
+		log.Info().Str("video", video.ID.Hex()).Msg("video transcoding completed, updated successfully")
 	}
 }
 
 func (v *videoService) awaitTranscodeFailedEvent() {
 	for transcoded := range v.transcodeFailedChan {
-		log.Infof("Job '%s' for video '%s' failed", transcoded.Transcode.JobId, transcoded.VideoId)
+		log.Info().Str("job", transcoded.Transcode.JobId).Str("video", transcoded.VideoId).Msg("transcoding job failed")
 
 		// TODO: change to FindById
 		video, err := v.videoRepository.FindByRawStorageKey(transcoded.Transcode.InputKey)
 		if err != nil {
-			log.Warnf("[DB] received '%s' from job '%s' for non-existing video-input key '%s': %s", broker.TranscodeFailedTopic, transcoded.Transcode.JobId, transcoded.Transcode.InputKey, err)
+			log.Warn().
+				Str("topic", broker.TranscodeFailedTopic).
+				Str("job", transcoded.Transcode.JobId).
+				Str("input_key", transcoded.Transcode.InputKey).
+				Interface("error", err).
+				Msg("received job from non-existing video-input key")
 			continue
 		}
 
@@ -129,9 +139,9 @@ func (v *videoService) awaitTranscodeFailedEvent() {
 		// update video
 		err = v.videoRepository.UpdateVideo(video)
 		if err != nil {
-			log.Warn(err)
+			log.Warn().Interface("error", err).Msg("unable to update video")
 			continue
 		}
-		log.Infof("[DB] updated video '%s' and set error state", video.ID.Hex())
+		log.Info().Str("video", video.ID.Hex()).Msg("video transcoding failed, updated successfully")
 	}
 }

@@ -7,16 +7,22 @@ import (
 	"github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
-	"github.com/prometheus/common/log"
+	"github.com/rs/zerolog/log"
 	"time"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/amazon"
 	"github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
+	"os"
+	"github.com/rs/zerolog"
 )
 
 func main() {
+
+	if os.Getenv("DEV_ENV") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
 	transcodeCompletedChannel := make(chan *educonn_transcode.TranscodingCompletedEvent)
 	transcodeCompletedSubscriber := broker.NewTranscodeCompletedSubscriber(transcodeCompletedChannel)
@@ -35,27 +41,27 @@ func main() {
 	// setup rabbitmq
 	rabbitBroker := svc.Server().Options().Broker
 	if err := rabbitBroker.Init(rabbitmq.Exchange("educonn")); err != nil {
-		log.Fatalf("Broker Init error: %v", err)
+		log.Fatal().Interface("error", err).Msg("broker init error")
 	}
 	if err := rabbitBroker.Connect(); err != nil {
-		log.Fatalf("Broker Connect error: %v", err)
+		log.Fatal().Interface("error", err).Msg("broker connect error")
 	}
 	micro.Broker(rabbitBroker)
 
 	// Setup S3
 	bucket, err := amazon.NewS3Bucket(config.AwsS3VideoBucket, config.AwsRegion, config.AwsAccessKey, config.AwsSecretKey)
 	if err != nil {
-	    log.Warn(err)
+		log.Warn().Interface("error", err)
 	    return
 	}
-	log.Infof("[S3] attached to bucket: %s", bucket.Bucket)
+	log.Info().Str("bucket", bucket.Bucket).Msg( "attached to S3 bucket")
 
 	// Create repository
 	videoRepository, err := mongodb.NewVideoRepository(config.DbHost, config.DbPort, config.DbUser, config.DbPass, config.DbName)
 	if err != nil {
-	    log.Fatalf("[DB] unable to connect to database: %s", err)
+	    log.Fatal().Interface("error", err).Msg("unable to connect to database")
 	}
-	log.Infof("[DB] connected to %s:%s/%s", config.DbHost, config.DbPort, config.DbName)
+	log.Info().Str("host", config.DbHost).Str("db_name", config.DbName).Msg("connected to database")
 
 	// Create publishers
 	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
