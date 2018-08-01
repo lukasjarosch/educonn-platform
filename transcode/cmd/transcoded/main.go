@@ -6,11 +6,11 @@ import (
 
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/service"
-	"github.com/lukasjarosch/educonn-platform/transcode/proto"
+	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-platform/video/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
 	"github.com/micro/go-micro/server"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	// setup consumer
-	videoCreatedChannel := make(chan *educonn_video.VideoCreatedEvent)
+	videoCreatedChannel := make(chan *pbVideo.VideoCreatedEvent)
 	videoCreatedSubscriber := broker.NewVideoCreatedSubscriber(videoCreatedChannel)
 
 	// setup micro service
@@ -83,7 +83,7 @@ func main() {
 	transcodingFailedPublisher := micro.NewPublisher(broker.VideoTranscodingFailed, svc.Client())
 
 	// register service handler
-	educonn_transcode.RegisterTranscodeHandler(
+	pbTranscode.RegisterTranscodeHandler(
 		svc.Server(),
 		service.NewTranscodeService(
 			sqsConsumer,

@@ -3,7 +3,7 @@ package mail
 import (
 	"fmt"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
-	"github.com/lukasjarosch/educonn-platform/user/proto"
+	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
 	"strconv"
 	gomail "github.com/go-mail/mail"
 )
@@ -27,7 +27,7 @@ func NewSmtpMail(hostname string, port string, username string, password string)
 }
 
 // SendUserCreated sends an UserCreated email aka. the welcome email
-func (m *SmtpMail) SendUserCreated(user *educonn_user.UserDetails) (err error) {
+func (m *SmtpMail) SendUserCreated(user *pbUser.UserDetails) (err error) {
 	from := config.DefaultSenderAddress
 	to := user.Email
 	name := user.FirstName
@@ -41,7 +41,7 @@ func (m *SmtpMail) SendUserCreated(user *educonn_user.UserDetails) (err error) {
 }
 
 // SendUserDeleted sends an UserDeleted email aka. goodbye email
-func (m *SmtpMail) SendUserDeleted(user *educonn_user.UserDetails) (err error) {
+func (m *SmtpMail) SendUserDeleted(user *pbUser.UserDetails) (err error) {
 	from := config.DefaultSenderAddress
 	to := user.Email
 	name := user.FirstName

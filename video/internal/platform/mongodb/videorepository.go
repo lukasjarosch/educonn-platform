@@ -3,7 +3,7 @@ package mongodb
 import (
 	"fmt"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/config"
-	"github.com/lukasjarosch/educonn-platform/video/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
@@ -25,7 +25,7 @@ func NewVideoRepository(host string, port string, user string, pass string, dbNa
 	}, nil
 }
 
-func UnmarshalProtobuf(video *educonn_video.VideoDetails) *Video {
+func UnmarshalProtobuf(video *pbVideo.VideoDetails) *Video {
 	return &Video{
 		Title:       video.Title,
 		Description: video.Description,

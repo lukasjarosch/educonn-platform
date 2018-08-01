@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package educonn.user;
 
+option go_package = "github.com/lukasjarosch/educonn-platform/user/proto";
+
 service User {
     rpc Create (UserDetails) returns (UserResponse) {}
     rpc Get (UserDetails) returns (UserResponse) {}

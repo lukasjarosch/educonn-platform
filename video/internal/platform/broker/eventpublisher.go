@@ -2,7 +2,7 @@ package broker
 
 import (
 	"context"
-	"github.com/lukasjarosch/educonn-platform/video/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/micro/go-micro"
 	"github.com/rs/zerolog/log"
 )
@@ -19,7 +19,7 @@ func NewEventPublisher(videoCreatedPublisher micro.Publisher) *EventPublisher {
 	return &EventPublisher{videoCreatedPublisher: videoCreatedPublisher}
 }
 
-func (p *EventPublisher) PublishVideoCreated(event *educonn_video.VideoCreatedEvent) (err error) {
+func (p *EventPublisher) PublishVideoCreated(event *pbVideo.VideoCreatedEvent) (err error) {
 	if err = p.videoCreatedPublisher.Publish(context.Background(), event); err != nil {
 		log.Warn().Str("topic", VideoCreatedTopic).Interface("error", err).Str("event", "VideoCreatedEvent").Msg("unable to publish event")
 		return nil

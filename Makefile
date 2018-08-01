@@ -2,6 +2,7 @@ MAIN_VERSION:=$(shell git describe --abbrev=0 --tags || echo "0.1")
 VERSION:=${MAIN_VERSION}\-$(shell git log -n 1 --pretty=format:"%h")
 
 LDFLAGS_USER:=-ldflags "-X github.com/lukasjarosch/educonn-platform/user/internal/platform/config.Version=${VERSION}"
+LDFLAGS_USER_API:=-ldflags "-X github.com/lukasjarosch/educonn-platform/api/user/internal/platform/config.Version=${VERSION}"
 LDFLAGS_MAIL:=-ldflags "-X github.com/lukasjarosch/educonn-platform/mail/internal/platform/config.Version=${VERSION}"
 LDFLAGS_VIDEO:=-ldflags "-X github.com/lukasjarosch/educonn-platform/video/internal/platform/config.Version=${VERSION}"
 LDFLAGS_TRANSCODE:=-ldflags "-X github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config.Version=${VERSION}"
@@ -14,9 +15,28 @@ test:
 clean:
 	@rm -rf ./coverage.out ./coverage-all.out ./video/cmd/videod/videod ./course/cmd/coursed/coursed ./mail/cmd/maild/maild ./user/cmd/userd/userd ./transcode/cmd/transcoded/transcoded
 
+# --------- USER API ---------
+user-api: clean
+	@echo Buildung USER API service ...
+	@cd api/user/cmd/user-apid && CGO_ENABLED=0 go build ${LDFLAGS_USER_API} -a -installsuffix cgo -o user-apid main.go
+
+user-api-proto:
+	@echo protoc USER API
+	protoc -I. --go_out=plugins=micro:. --micro_out=. api/user/proto/user_api.proto
+
+user-api-run:
+	@echo Starting the USER API service
+	@cd api/user/cmd/user-apid && go run main.go
+
+# --------- USER ---------
 user: clean
 	@echo Building USER service...
 	@cd user/cmd/userd && CGO_ENABLED=0 go build ${LDFLAGS_USER} -a -installsuffix cgo -o userd main.go
+	protoc -I. --go_out=plugins=micro:. --micro_out=. user/proto/user.proto
+
+user-proto:
+	@echo protoc USER
+	@cd user/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src user.proto
 
 user-run:
 	@echo Starting the USER service
@@ -30,9 +50,14 @@ user-docker-push-dev:
 	@echo Pushing educonn-user:dev image ...
 	docker push derwaldemar/educonn-user:dev
 
+# --------- MAIL ---------
 mail: clean
 	@echo Building MAIL service...
 	@cd mail/cmd/maild && CGO_ENABLED=0 go build ${LDFLAGS_MAIL} -a -installsuffix cgo -o maild main.go
+
+mail-proto:
+	@echo protoc MAIL
+	@cd mail/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src mail.proto
 
 mail-run:
 	@echo Starting the MAIL service
@@ -46,9 +71,14 @@ mail-docker-push-dev:
 	@echo Pushing educonn-mail:dev image ...
 	docker push derwaldemar/educonn-mail:dev
 
+# --------- VIDEO ---------
 video: clean
 	@echo Building VIDEO service...
 	@cd video/cmd/videod && CGO_ENABLED=0 go build ${LDFLAGS_VIDEO} -a -installsuffix cgo -o videod main.go
+
+video-proto:
+	@echo protoc VIDEO
+	@cd video/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src video.proto
 
 video-run:
 	@echo Starting the VIDEO service
@@ -62,9 +92,14 @@ video-docker-push-dev:
 	@echo Pushing educonn-mail:dev image ...
 	docker push derwaldemar/educonn-mail:dev
 
+# --------- TRANSCODE ---------
 transcode: clean
 	@echo Building TRANSCODE service...
 	@cd transcode/cmd/transcoded && CGO_ENABLED=0 go build ${LDFLAGS_TRANSCODE} -a -installsuffix cgo -o transcoded main.go
+
+transcode-proto:
+	@echo protoc TRANSCODE
+	@cd transcode/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src transcode.proto
 
 transcode-run:
 	@echo Starting the TRANSCODE service
@@ -88,18 +123,3 @@ docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev
 proto: user-proto mail-proto video-proto transcode-proto
 	@echo "All protobufs regenerated"
 
-user-proto:
-	@echo protoc USER
-	@cd user/proto && protoc -I. --go_out=plugins=micro:$(GOPATH)/src/github.com/lukasjarosch/educonn-platform/user/proto  --micro_out=. user.proto
-
-mail-proto:
-	@echo protoc MAIL
-	@cd mail/proto && protoc -I. --go_out=plugins=micro:$(GOPATH)/src/github.com/lukasjarosch/educonn-platform/mail/proto  --micro_out=. mail.proto
-
-video-proto:
-	@echo protoc VIDEO
-	@cd video/proto && protoc -I. --go_out=plugins=micro:$(GOPATH)/src/github.com/lukasjarosch/educonn-platform/video/proto --micro_out=. video.proto
-
-transcode-proto:
-	@echo protoc TRANSCODE
-	@cd transcode/proto && protoc -I. --go_out=plugins=micro:$(GOPATH)/src/github.com/lukasjarosch/educonn-platform/transcode/proto --micro_out=. transcode.proto

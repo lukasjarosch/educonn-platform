@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
-	"github.com/lukasjarosch/educonn-platform/transcode/proto"
-	"github.com/lukasjarosch/educonn-platform/video/proto"
+	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/rs/zerolog/log"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
 	"github.com/micro/go-micro"
@@ -18,7 +18,7 @@ type transcodeService struct {
 	sqsConsumer      *amazon.SQSTranscodeEventConsumer
 	sqsContext       context.Context
 	transcoderClient *amazon.ElasticTranscoderClient
-	videoCreatedChan chan *educonn_video.VideoCreatedEvent
+	videoCreatedChan chan *pbVideo.VideoCreatedEvent
 	transcodingCompletedPublisher micro.Publisher
 	transcodingFailedPublisher micro.Publisher
 	transcodeRepository *mongodb.TranscodeRepository
@@ -27,7 +27,7 @@ type transcodeService struct {
 func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
 	sqsContext context.Context,
 	transcoderClient *amazon.ElasticTranscoderClient,
-	videoCreatedChan chan *educonn_video.VideoCreatedEvent,
+	videoCreatedChan chan *pbVideo.VideoCreatedEvent,
 	completedPublisher micro.Publisher,
 	failedPublisher micro.Publisher,
 	transcodeRepo *mongodb.TranscodeRepository) *transcodeService {
@@ -52,7 +52,7 @@ func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
 	return svc
 }
 
-func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_transcode.CreateJobRequest, response *educonn_transcode.CreateJobResponse) error {
+func (t *transcodeService) CreateJob(ctx context.Context, request *pbTranscode.CreateJobRequest, response *pbTranscode.CreateJobResponse) error {
 
 	res, err := t.transcoderClient.CreateJob(request.Job.InputKey)
 	if err != nil {
@@ -60,7 +60,7 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 		return err
 	}
 
-	response.Job = &educonn_transcode.TranscodeDetails{
+	response.Job = &pbTranscode.TranscodeDetails{
 		JobId:           *res.Job.Id,
 		InputKey:        request.Job.InputKey,
 		PipelineId:      *res.Job.PipelineId,
@@ -69,7 +69,7 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *educonn_trans
 	}
 
 	jobStatus := *res.Job.Status
-	status := &educonn_transcode.TranscodeStatus{
+	status := &pbTranscode.TranscodeStatus{
 		Completed: false,
 		Error:     false,
 		Started:   true,
@@ -142,14 +142,14 @@ func (t *transcodeService) awaitSQSEvent() {
 
 func (t *transcodeService) awaitVideoCreatedEvent() {
 	for videoCreated := range t.videoCreatedChan {
-		req := &educonn_transcode.CreateJobRequest{
-			Job: &educonn_transcode.TranscodeDetails{
+		req := &pbTranscode.CreateJobRequest{
+			Job: &pbTranscode.TranscodeDetails{
 				PipelineId: config.AwsTranscodePipelineId,
 				InputKey: videoCreated.Video.Storage.RawKey,
 			},
 			VideoId: videoCreated.Video.Id,
 		}
-		err := t.CreateJob(context.Background(), req, &educonn_transcode.CreateJobResponse{})
+		err := t.CreateJob(context.Background(), req, &pbTranscode.CreateJobResponse{})
 		if err != nil {
 			log.Warn().Interface("error", err).Msg("unable to call CreateJob")
 		}

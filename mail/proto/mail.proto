@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package educonn.mail;
 
+option go_package = "github.com/lukasjarosch/educonn-platform/mail/proto";
+
 service Email {
     rpc Send (EmailRequest) returns (Response);
 }

@@ -2,7 +2,7 @@ package broker
 
 import (
 	"context"
-	"github.com/lukasjarosch/educonn-platform/user/proto"
+	pb "github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro"
 	"github.com/rs/zerolog/log"
 )
@@ -23,7 +23,7 @@ func NewEventPublisher(userCreatedPublisher micro.Publisher) *EventPublisher {
 	return &EventPublisher{userCreatedPublisher: userCreatedPublisher}
 }
 
-func (p *EventPublisher) PublishUserCreated(event *educonn_user.UserCreatedEvent) (err error) {
+func (p *EventPublisher) PublishUserCreated(event *pb.UserCreatedEvent) (err error) {
 	if err = p.userCreatedPublisher.Publish(context.Background(), event); err != nil {
 		log.Warn().
 			Str("topic", UserCreatedTopic).
@@ -38,7 +38,7 @@ func (p *EventPublisher) PublishUserCreated(event *educonn_user.UserCreatedEvent
 	return nil
 }
 
-func (p *EventPublisher) PublishUserDeleted(event *educonn_user.UserDeletedEvent) (err error) {
+func (p *EventPublisher) PublishUserDeleted(event *pb.UserDeletedEvent) (err error) {
 	if err = p.userCreatedPublisher.Publish(context.Background(), event); err != nil {
 		log.Warn().Str("topic", UserDeletedTopic).Interface("event", event).Msg("unable to publish event")
 		return nil

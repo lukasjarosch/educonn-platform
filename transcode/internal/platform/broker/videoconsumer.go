@@ -1,7 +1,7 @@
 package broker
 
 import (
-	"github.com/lukasjarosch/educonn-platform/video/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"context"
 )
 
@@ -11,16 +11,16 @@ const (
 )
 
 type VideoCreatedSubscriber struct {
-	videoCreatedChan chan *educonn_video.VideoCreatedEvent
+	videoCreatedChan chan *pbVideo.VideoCreatedEvent
 }
 
-func NewVideoCreatedSubscriber(videoCreatedChan chan *educonn_video.VideoCreatedEvent) *VideoCreatedSubscriber {
+func NewVideoCreatedSubscriber(videoCreatedChan chan *pbVideo.VideoCreatedEvent) *VideoCreatedSubscriber {
 	return &VideoCreatedSubscriber{
 		videoCreatedChan:videoCreatedChan,
 	}
 }
 
-func (v *VideoCreatedSubscriber) Process(ctx context.Context, event *educonn_video.VideoCreatedEvent) error {
+func (v *VideoCreatedSubscriber) Process(ctx context.Context, event *pbVideo.VideoCreatedEvent) error {
 	v.videoCreatedChan <- event
 	return nil
 }

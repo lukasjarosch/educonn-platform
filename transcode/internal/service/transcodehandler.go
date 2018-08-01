@@ -4,7 +4,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
 	"github.com/micro/go-micro"
 	"github.com/rs/zerolog/log"
-	"github.com/lukasjarosch/educonn-platform/transcode/proto"
+	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"context"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
@@ -52,12 +52,12 @@ func (t *transcodeHandler) OnCompleted(message *amazon.ElasticTranscoderMessage)
 	}
 
 	// Prepare event
-	evt := &educonn_transcode.TranscodingCompletedEvent{
-		Transcode: &educonn_transcode.TranscodeDetails{
+	evt := &pbTranscode.TranscodingCompletedEvent{
+		Transcode: &pbTranscode.TranscodeDetails{
 			JobId: message.JobId,
 			InputKey: message.Input.Key,
 			PipelineId: message.PipelineId,
-			Status: &educonn_transcode.TranscodeStatus{
+			Status: &pbTranscode.TranscodeStatus{
 				Completed: true,
 			},
 			OutputKey:message.Outputs[0].Key,
@@ -94,12 +94,12 @@ func (t *transcodeHandler) OnError(message *amazon.ElasticTranscoderMessage) err
 
 	// TODO: save to DB
 
-	evt := &educonn_transcode.TranscodingFailedEvent{
-		Transcode: &educonn_transcode.TranscodeDetails{
+	evt := &pbTranscode.TranscodingFailedEvent{
+		Transcode: &pbTranscode.TranscodeDetails{
 			JobId: message.JobId,
 			InputKey: message.Input.Key,
 			PipelineId: message.PipelineId,
-			Status: &educonn_transcode.TranscodeStatus{
+			Status: &pbTranscode.TranscodeStatus{
 				Error:true,
 				ErrorMessages: []string{message.MessageDetails},
 			},

@@ -2,7 +2,7 @@ package broker
 
 import (
 	"context"
-	"github.com/lukasjarosch/educonn-platform/user/proto"
+	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/rs/zerolog/log"
 )
 
@@ -14,16 +14,16 @@ const (
 )
 
 type UserCreatedSubscriber struct {
-	userCreatedChan chan *educonn_user.UserCreatedEvent
+	userCreatedChan chan *pbUser.UserCreatedEvent
 }
 
-func NewUserCreatedSubscriber(userCreatedChannel chan *educonn_user.UserCreatedEvent) *UserCreatedSubscriber {
+func NewUserCreatedSubscriber(userCreatedChannel chan *pbUser.UserCreatedEvent) *UserCreatedSubscriber {
 	return &UserCreatedSubscriber{
 		userCreatedChan: userCreatedChannel,
 	}
 }
 
-func (s *UserCreatedSubscriber) Process(ctx context.Context, event *educonn_user.UserCreatedEvent) error {
+func (s *UserCreatedSubscriber) Process(ctx context.Context, event *pbUser.UserCreatedEvent) error {
 	s.userCreatedChan <- event
 	event.User.Password = "" // unset the password or we would log the plaintext password
 	log.Info().Str("topic", UserCreatedTopic).Str("user", event.User.Id).Msg("received UserCreatedEvent")
@@ -33,16 +33,16 @@ func (s *UserCreatedSubscriber) Process(ctx context.Context, event *educonn_user
 // ---------------------------
 
 type UserDeletedSubscriber struct {
-	userDeletedChan chan *educonn_user.UserDeletedEvent
+	userDeletedChan chan *pbUser.UserDeletedEvent
 }
 
-func NewUserDeletedSubscriber(userDeletedChannel chan *educonn_user.UserDeletedEvent) *UserDeletedSubscriber {
+func NewUserDeletedSubscriber(userDeletedChannel chan *pbUser.UserDeletedEvent) *UserDeletedSubscriber {
 	return &UserDeletedSubscriber{
 		userDeletedChan: userDeletedChannel,
 	}
 }
 
-func (s *UserDeletedSubscriber) Process(ctx context.Context, event *educonn_user.UserDeletedEvent) error {
+func (s *UserDeletedSubscriber) Process(ctx context.Context, event *pbUser.UserDeletedEvent) error {
 	s.userDeletedChan <- event
 	event.User.Password = "" // unset the password or we would log the plaintext password
 	log.Info().Str("topic", UserDeletedTopic).Str("user", event.User.Id).Msg("received UserDeletedEvent")

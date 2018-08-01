@@ -3,7 +3,7 @@ package broker
 
 import (
 	"github.com/micro/go-micro"
-	"github.com/lukasjarosch/educonn-platform/transcode/proto"
+	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"context"
 	"github.com/rs/zerolog/log"
 )
@@ -25,7 +25,7 @@ func NewTranscodeEventPublisher(completedPublisher micro.Publisher, failedPublis
 	}
 }
 
-func (t *TranscodeEventPublisher) PublishTranscodingCompleted(event educonn_transcode.TranscodingCompletedEvent) (err error) {
+func (t *TranscodeEventPublisher) PublishTranscodingCompleted(event pbTranscode.TranscodingCompletedEvent) (err error) {
 	if err = t.transcodingCompletedPublisher.Publish(context.Background(), event); err != nil {
 		log.Warn().Str("topic", VideoTranscodingCompleted).Interface("error", err).Interface("event", event).Msg("unable to publish event")
 		return nil
@@ -34,7 +34,7 @@ func (t *TranscodeEventPublisher) PublishTranscodingCompleted(event educonn_tran
 	return nil
 }
 
-func (t *TranscodeEventPublisher) PublishTranscodingFailed(event educonn_transcode.TranscodingFailedEvent) (err error) {
+func (t *TranscodeEventPublisher) PublishTranscodingFailed(event pbTranscode.TranscodingFailedEvent) (err error) {
 	if err = t.transcodingFailedPublisher.Publish(context.Background(), event); err != nil {
 		log.Warn().Str("topic", VideoTranscodingFailed).Interface("error", err).Interface("event", event).Msg("unable to publish event")
 		return nil

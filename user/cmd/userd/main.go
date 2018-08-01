@@ -4,7 +4,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/user/internal/platform/broker"
 	"github.com/lukasjarosch/educonn-platform/user/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/user/internal/service"
-	"github.com/lukasjarosch/educonn-platform/user/proto"
+	pb "github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/rs/zerolog/log"
@@ -46,7 +46,7 @@ func main() {
 	userCreatedPublisher := micro.NewPublisher(broker.UserCreatedTopic, svc.Client())
 	userDeletedPublisher := micro.NewPublisher(broker.UserDeletedTopic, svc.Client())
 
-	educonn_user.RegisterUserHandler(
+	pb.RegisterUserHandler(
 		svc.Server(),
 		service.NewUserService(
 			repo,

@@ -3,22 +3,22 @@ package service
 import (
 	"context"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
-	"github.com/lukasjarosch/educonn-platform/mail/proto"
-	"github.com/lukasjarosch/educonn-platform/user/proto"
+	pbMail "github.com/lukasjarosch/educonn-platform/mail/proto"
+	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/rs/zerolog/log"
 )
 
 type mailService struct {
-	userCreatedChan chan *educonn_user.UserCreatedEvent
-	userDeletedChan chan *educonn_user.UserDeletedEvent
+	userCreatedChan chan *pbUser.UserCreatedEvent
+	userDeletedChan chan *pbUser.UserDeletedEvent
 	mail            *mail.SmtpMail
 }
 
 type mailRepository interface {
 }
 
-func NewMailService(userCreatedChannel chan *educonn_user.UserCreatedEvent,
-	userDeletedChannel chan *educonn_user.UserDeletedEvent, mail *mail.SmtpMail) educonn_mail.EmailHandler {
+func NewMailService(userCreatedChannel chan *pbUser.UserCreatedEvent,
+	userDeletedChannel chan *pbUser.UserDeletedEvent, mail *mail.SmtpMail) pbMail.EmailHandler {
 
 	svc := &mailService{userCreatedChan: userCreatedChannel, userDeletedChan: userDeletedChannel, mail: mail}
 	go svc.awaitUserCreatedEvent()
@@ -26,7 +26,7 @@ func NewMailService(userCreatedChannel chan *educonn_user.UserCreatedEvent,
 	return svc
 }
 
-func (m *mailService) Send(ctx context.Context, request *educonn_mail.EmailRequest, response *educonn_mail.Response) error {
+func (m *mailService) Send(ctx context.Context, request *pbMail.EmailRequest, response *pbMail.Response) error {
 	return nil
 }
 

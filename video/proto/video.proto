@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package educonn.video;
 
-import "google/protobuf/wrappers.proto";
+option go_package = "github.com/lukasjarosch/educonn-platform/video/proto";
 
 service Video {
    rpc Create(CreateVideoRequest) returns (CreateVideoResponse) {}

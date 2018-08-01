@@ -4,13 +4,13 @@ import (
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/broker"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/video/internal/service"
-	"github.com/lukasjarosch/educonn-platform/video/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	"github.com/rs/zerolog/log"
 	"time"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-platform/transcode/proto"
+	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
@@ -24,9 +24,9 @@ func main() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	transcodeCompletedChannel := make(chan *educonn_transcode.TranscodingCompletedEvent)
+	transcodeCompletedChannel := make(chan *pbTranscode.TranscodingCompletedEvent)
 	transcodeCompletedSubscriber := broker.NewTranscodeCompletedSubscriber(transcodeCompletedChannel)
-	transcodeFailedChannel := make(chan *educonn_transcode.TranscodingFailedEvent)
+	transcodeFailedChannel := make(chan *pbTranscode.TranscodingFailedEvent)
 	transcodeFailedSubscriber := broker.NewTranscodeFailedSubscriber(transcodeFailedChannel)
 
 	// setup micro service
@@ -81,7 +81,7 @@ func main() {
 	)
 
 	// Attach handler
-	educonn_video.RegisterVideoHandler(
+	pbVideo.RegisterVideoHandler(
 		svc.Server(),
 		service.NewVideoService(
 			broker.NewEventPublisher(videoCreatedPublisher),

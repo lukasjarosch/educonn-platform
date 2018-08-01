@@ -3,33 +3,33 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/lukasjarosch/educonn-platform/transcode/proto"
+	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/amazon"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
 	"github.com/rs/zerolog/log"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/broker"
-	"github.com/lukasjarosch/educonn-platform/video/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 )
 
 type videoService struct {
 	videoCreatedPublisher  videoCreatedPublisher
 	s3Bucket               *amazon.S3Bucket
-	transcodeCompletedChan chan *educonn_transcode.TranscodingCompletedEvent
-	transcodeFailedChan    chan *educonn_transcode.TranscodingFailedEvent
+	transcodeCompletedChan chan *pbTranscode.TranscodingCompletedEvent
+	transcodeFailedChan    chan *pbTranscode.TranscodingFailedEvent
 	videoRepository        *mongodb.VideoRepository
 }
 
 type videoCreatedPublisher interface {
-	PublishVideoCreated(event *educonn_video.VideoCreatedEvent) (err error)
+	PublishVideoCreated(event *pbVideo.VideoCreatedEvent) (err error)
 }
 
 func NewVideoService(vidCreatedPub videoCreatedPublisher,
 	bucket *amazon.S3Bucket,
-	transcodeCompletedChan chan *educonn_transcode.TranscodingCompletedEvent,
-	transcodeFailedChan chan *educonn_transcode.TranscodingFailedEvent,
-	videoRepo *mongodb.VideoRepository) educonn_video.VideoHandler {
+	transcodeCompletedChan chan *pbTranscode.TranscodingCompletedEvent,
+	transcodeFailedChan chan *pbTranscode.TranscodingFailedEvent,
+	videoRepo *mongodb.VideoRepository) pbVideo.VideoHandler {
 	svc := &videoService{
 		videoCreatedPublisher:  vidCreatedPub,
 		s3Bucket:               bucket,
@@ -44,7 +44,7 @@ func NewVideoService(vidCreatedPub videoCreatedPublisher,
 	return svc
 }
 
-func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVideoRequest, res *educonn_video.CreateVideoResponse) error {
+func (v *videoService) Create(ctx context.Context, req *pbVideo.CreateVideoRequest, res *pbVideo.CreateVideoResponse) error {
 
 	// Check if raw file does already exist
 	existingVideo, _ := v.videoRepository.FindByRawStorageKey(req.Video.Storage.RawKey)
@@ -58,7 +58,7 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	err := v.s3Bucket.CheckFileExists(fileKey, config.AwsS3VideoBucket)
 	if err != nil {
 		log.Warn().Str("key", fileKey).Msg("key does not exist in bucket")
-		res.Errors = append(res.Errors, &educonn_video.Error{
+		res.Errors = append(res.Errors, &pbVideo.Error{
 			Description: errors.RawVideoFileS3NotFound.Error(),
 			Code:        404,
 		})
@@ -76,7 +76,7 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	req.Video.Id = video.ID.Hex()
 
 	// Publish event
-	v.videoCreatedPublisher.PublishVideoCreated(&educonn_video.VideoCreatedEvent{
+	v.videoCreatedPublisher.PublishVideoCreated(&pbVideo.VideoCreatedEvent{
 		Video:  req.Video,
 		UserId: "TODO",
 	})
@@ -86,7 +86,7 @@ func (v *videoService) Create(ctx context.Context, req *educonn_video.CreateVide
 	return nil
 }
 
-func (v *videoService) GetById(ctx context.Context, req *educonn_video.GetVideoRequest, res *educonn_video.GetVideoResponse) error {
+func (v *videoService) GetById(ctx context.Context, req *pbVideo.GetVideoRequest, res *pbVideo.GetVideoResponse) error {
 	if req.Id == "" {
 		return errors.MissingVideoId
 	}
@@ -106,21 +106,21 @@ func (v *videoService) GetById(ctx context.Context, req *educonn_video.GetVideoR
 		trError = false
 	}
 	res.SignedUrl, _ = v.s3Bucket.GetSignedResourceURL(video.Storage.OutputKey)
-	res.Video = &educonn_video.VideoDetails{
+	res.Video = &pbVideo.VideoDetails{
 		Id: video.ID.Hex(),
 		Title: video.Title,
 		Description: video.Description,
 		Tags: video.Tags,
-		Storage: &educonn_video.VideoStorage{
+		Storage: &pbVideo.VideoStorage{
 			RawKey: video.Storage.RawKey,
 			TranscodedKey: video.Storage.OutputKey,
 		},
-		Statistics: &educonn_video.VideoStatistics{
+		Statistics: &pbVideo.VideoStatistics{
 			DislikeCound: video.Statistics.DislikeCount,
 			LikeCount: video.Statistics.LikeCount,
 			ViewCount: video.Statistics.ViewCount,
 		},
-		Status: &educonn_video.VideoStatus{
+		Status: &pbVideo.VideoStatus{
 			Completed: video.Transcode.Completed,
 			Error: trError,
 			ErrorMessages: video.Transcode.Errors,

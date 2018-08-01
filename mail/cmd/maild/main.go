@@ -11,8 +11,8 @@ import (
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/service"
-	"github.com/lukasjarosch/educonn-platform/mail/proto"
-	"github.com/lukasjarosch/educonn-platform/user/proto"
+	pbMail "github.com/lukasjarosch/educonn-platform/mail/proto"
+	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
 	"fmt"
@@ -27,8 +27,8 @@ func main() {
 	}
 
 	// setup the consumer
-	userCreatedChannel := make(chan *educonn_user.UserCreatedEvent)
-	userDeletedChannel := make(chan *educonn_user.UserDeletedEvent)
+	userCreatedChannel := make(chan *pbUser.UserCreatedEvent)
+	userDeletedChannel := make(chan *pbUser.UserDeletedEvent)
 	userCreatedSubscriber := broker.NewUserCreatedSubscriber(userCreatedChannel)
 	userDeletedSubscriber := broker.NewUserDeletedSubscriber(userDeletedChannel)
 
@@ -87,7 +87,7 @@ func main() {
 	log.Info().Msg(fmt.Sprintf("subscribed to %s", broker.UserDeletedTopic))
 
 	// service handler
-	educonn_mail.RegisterEmailHandler(
+	pbMail.RegisterEmailHandler(
 		svc.Server(),
 		service.NewMailService(
 			userCreatedChannel,
