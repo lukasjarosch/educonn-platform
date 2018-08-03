@@ -31,7 +31,7 @@ func (p *EventPublisher) PublishUserCreated(event *pb.UserCreatedEvent) (err err
 			Msg("unable to publish event")
 		return nil
 	}
-	log.Info().
+	log.Debug().
 		Str("topic", UserCreatedTopic).
 		Interface("event", event).
 		Msg("published event")
@@ -43,6 +43,6 @@ func (p *EventPublisher) PublishUserDeleted(event *pb.UserDeletedEvent) (err err
 		log.Warn().Str("topic", UserDeletedTopic).Interface("event", event).Msg("unable to publish event")
 		return nil
 	}
-	log.Info().Str("topic", UserDeletedTopic).Interface("event", event).Msg("published event")
+	log.Debug().Str("topic", UserDeletedTopic).Interface("event", event).Msg("published event")
 	return nil
 }

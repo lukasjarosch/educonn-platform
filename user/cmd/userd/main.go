@@ -52,6 +52,11 @@ func main() {
 	    	Msg("unable to connect to database")
 	}
 
+	// Setup auth token service
+	tokenService, err := service.NewTokenService(config.PublicKeyPath, config.PrivateKeyPath)
+	if err != nil {
+	    log.Fatal().Interface("error", err).Msg("unable to create TokenService")
+	}
 
 	userCreatedPublisher := micro.NewPublisher(broker.UserCreatedTopic, svc.Client())
 	userDeletedPublisher := micro.NewPublisher(broker.UserDeletedTopic, svc.Client())
@@ -62,6 +67,7 @@ func main() {
 			repo,
 			broker.NewEventPublisher(userCreatedPublisher),
 			broker.NewEventPublisher(userDeletedPublisher),
+			tokenService,
 		),
 	)
 

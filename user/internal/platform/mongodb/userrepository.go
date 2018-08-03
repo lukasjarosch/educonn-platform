@@ -56,6 +56,7 @@ func (u *UserRepository) FindByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
+// FindById searches  for an user by ID
 func (u *UserRepository) FindById (id string) (*User, error) {
 	session := u.session.Clone()
 	defer session.Close()
@@ -67,4 +68,34 @@ func (u *UserRepository) FindById (id string) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+// GetAll returns all users
+func (u *UserRepository) GetAll() ([]*User, error) {
+	session := u.session.Clone()
+	defer session.Close()
+
+	var users []*User
+	err := session.DB(config.DbName).C(config.UserCollection).Find(bson.M{}).All(&users)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (u *UserRepository) DeleteUser(id string) error {
+	session := u.session.Clone()
+	defer session.Close()
+
+	if !bson.IsObjectIdHex(id) {
+		return errors.MalformedUserId
+	}
+
+	err := session.DB(config.DbName).C(config.UserCollection).RemoveId(bson.ObjectIdHex(id))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -37,6 +37,8 @@ docker-compose.local.yml
 .env
 .env-docker
 .DS_Store
+.rsa
+.rsa.pub
 
 #IDE files
 *.iml

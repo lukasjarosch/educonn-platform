@@ -12,4 +12,10 @@ const (
 	UserNotFound = Error("No user found")
 	MissingIdOrEmail = Error("Missing user_id or email")
 	MalformedUserId = Error("The user_id is malformed")
+	MissingUserId = Error("The request does not contain the user ID")
+	MissingEmail = Error("The request is missing an email field")
+	MissingPassword = Error("The request is missing the password field")
+
+	PrivateKeyFileNotFound = Error("The private key could not be found, check the path")
+	PublicKeyFileNotFound = Error("The public key could not be found, check the path")
 )
