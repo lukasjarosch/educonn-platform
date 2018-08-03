@@ -5,5 +5,5 @@ package config
 var Version = "(undefined)"
 
 // ServiceName is the discovery identity for this service.
-const ServiceName = "educonn.api.user"
+const ServiceName = "educonn.api.v1.user"
 

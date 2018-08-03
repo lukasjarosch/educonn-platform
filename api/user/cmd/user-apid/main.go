@@ -18,7 +18,7 @@ func main() {
 	}
 
 	service := micro.NewService(
-		micro.Name("educonn.api.user"),
+		micro.Name(config.ServiceName),
 		micro.WrapHandler(middleware.TraceHandlerWrapper),
 	)
 	service.Init()
@@ -28,7 +28,7 @@ func main() {
 	    log.Fatal().Interface("error", err).Msg("unable to create JwtTokenHandler")
 	}
 
-	user := proto.NewUserClient("educonn.user", service.Client())
+	user := proto.NewUserClient("educonn.srv.user", service.Client())
 
 	micro.RegisterHandler(service.Server(), api.NewUserApi(user, jwtService))
 

@@ -13,45 +13,50 @@ import (
 	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
 )
 
-type UserApi struct {
+type User struct {
 	client pbUser.UserClient
 	jwtService *jwt_handler.JwtTokenHandler
 }
 
-func NewUserApi(userClient pbUser.UserClient, jwtService *jwt_handler.JwtTokenHandler) *UserApi {
-	return &UserApi{client: userClient, jwtService:jwtService}
+func NewUserApi(userClient pbUser.UserClient, jwtService *jwt_handler.JwtTokenHandler) *User {
+	return &User{client: userClient, jwtService:jwtService}
 }
 
-func (u *UserApi) Create(ctx context.Context, req *pb.CreateRequest, res *pb.CreateResponse) error {
+func (u *User) Create(ctx context.Context, req *pb.CreateRequest, res *pb.CreateResponse) error {
+
+	log.Debug().Interface("u", req.User)
+
+	if req.User == nil {
+		return merr.BadRequest(config.ServiceName, "%s", "Request contains no data")
+	}
 
 	// validate request
-	firstName, lastName := req.User.FirstName, req.User.LastName
-	if firstName == "" || lastName == "" {
-		return merr.BadRequest("educonn.api.user.create", "%s", "Please specify your first and last name")
+	if req.User.FirstName == "" || req.User.LastName == "" {
+		return merr.BadRequest(config.ServiceName, "%s", "Please specify your first and last name")
 	}
 
 	// validate email
 	email := req.User.Email
 	if email == "" {
-		return merr.BadRequest("educonn.api.user.create", "%s", "Please specify an email address")
+		return merr.BadRequest(config.ServiceName, "%s", "Please specify an email address")
 	}
 	e, err := mail.ParseAddress(req.User.Email)
 	if err != nil {
 		log.Debug().Msg(err.Error())
-		return merr.BadRequest("educonn.api.user.create", "%s", "Please provide a valid email address")
+		return merr.BadRequest(config.ServiceName, "%s", "Please provide a valid email address")
 	}
 	req.User.Email = e.Address // override the user input with parsed email
 
 	// validate password
 	pass := req.User.Password
 	if pass == "" {
-		return merr.BadRequest("educonn.api.user.create", "%s", "Please specify a password")
+		return merr.BadRequest(config.ServiceName, "%s", "Please specify a password")
 	}
 
 	user, err := u.client.Create(ctx, req.User)
 	if err != nil {
 		log.Warn().Interface("error", err).Msg("unable to create user")
-		return merr.InternalServerError("educonn.api.user.create", "%s: %s", "Unable to create user", err.Error())
+		return merr.InternalServerError(config.ServiceName, "%s: %s", "Unable to create user", err.Error())
 	}
 
 	res.User = user.User
@@ -59,7 +64,7 @@ func (u *UserApi) Create(ctx context.Context, req *pb.CreateRequest, res *pb.Cre
 	return nil
 }
 
-func (u *UserApi) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb.DeleteResponse) error {
+func (u *User) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb.DeleteResponse) error {
 
 	md, _ := metadata.FromContext(ctx)
 
