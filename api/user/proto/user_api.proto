@@ -3,11 +3,15 @@ syntax = "proto3";
 package educonn.api.user;
 
 import "user/proto/user.proto";
+import "video/proto/video.proto";
 
 service UserApi {
     rpc Create(CreateRequest) returns (CreateResponse) {};
     rpc Delete(DeleteRequest) returns (DeleteResponse) {};
     rpc Login(LoginRequest) returns (LoginResponse) {};
+
+    // Videos returns all videos of the user
+    rpc Videos(VideoRequest) returns (VideoResponse) {};
 }
 
 message CreateRequest {
@@ -32,4 +36,10 @@ message LoginRequest {
 
 message LoginResponse {
     string token = 2;
+}
+
+message VideoRequest {}
+
+message VideoResponse {
+    repeated educonn.video.VideoDetails videos = 1;
 }

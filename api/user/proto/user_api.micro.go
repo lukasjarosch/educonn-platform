@@ -14,6 +14,8 @@ It has these top-level messages:
 	DeleteResponse
 	LoginRequest
 	LoginResponse
+	VideoRequest
+	VideoResponse
 */
 package educonn_api_user
 
@@ -21,6 +23,7 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import _ "github.com/lukasjarosch/educonn-platform/user/proto"
+import _ "github.com/lukasjarosch/educonn-platform/video/proto"
 
 import (
 	client "github.com/micro/go-micro/client"
@@ -50,6 +53,8 @@ type UserApiClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*CreateResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*LoginResponse, error)
+	// Videos returns all videos of the user
+	Videos(ctx context.Context, in *VideoRequest, opts ...client.CallOption) (*VideoResponse, error)
 }
 
 type userApiClient struct {
@@ -100,12 +105,24 @@ func (c *userApiClient) Login(ctx context.Context, in *LoginRequest, opts ...cli
 	return out, nil
 }
 
+func (c *userApiClient) Videos(ctx context.Context, in *VideoRequest, opts ...client.CallOption) (*VideoResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "UserApi.Videos", in)
+	out := new(VideoResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for UserApi service
 
 type UserApiHandler interface {
 	Create(context.Context, *CreateRequest, *CreateResponse) error
 	Delete(context.Context, *DeleteRequest, *DeleteResponse) error
 	Login(context.Context, *LoginRequest, *LoginResponse) error
+	// Videos returns all videos of the user
+	Videos(context.Context, *VideoRequest, *VideoResponse) error
 }
 
 func RegisterUserApiHandler(s server.Server, hdlr UserApiHandler, opts ...server.HandlerOption) {
@@ -126,4 +143,8 @@ func (h *UserApi) Delete(ctx context.Context, in *DeleteRequest, out *DeleteResp
 
 func (h *UserApi) Login(ctx context.Context, in *LoginRequest, out *LoginResponse) error {
 	return h.UserApiHandler.Login(ctx, in, out)
+}
+
+func (h *UserApi) Videos(ctx context.Context, in *VideoRequest, out *VideoResponse) error {
+	return h.UserApiHandler.Videos(ctx, in, out)
 }

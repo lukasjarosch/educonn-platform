@@ -4,6 +4,7 @@ import (
 	"context"
 	pb "github.com/lukasjarosch/educonn-platform/api/user/proto"
 	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	merr "github.com/micro/go-micro/errors"
 	"github.com/rs/zerolog/log"
 	"net/mail"
@@ -14,12 +15,13 @@ import (
 )
 
 type User struct {
-	client pbUser.UserClient
+	userClient pbUser.UserClient
+	videoClient pbVideo.VideoClient
 	jwtService *jwt_handler.JwtTokenHandler
 }
 
-func NewUserApi(userClient pbUser.UserClient, jwtService *jwt_handler.JwtTokenHandler) *User {
-	return &User{client: userClient, jwtService:jwtService}
+func NewUserApi(userClient pbUser.UserClient, videoClient pbVideo.VideoClient, jwtService *jwt_handler.JwtTokenHandler) *User {
+	return &User{userClient: userClient, videoClient: videoClient, jwtService:jwtService}
 }
 
 func (u *User) Create(ctx context.Context, req *pb.CreateRequest, res *pb.CreateResponse) error {
@@ -52,7 +54,7 @@ func (u *User) Create(ctx context.Context, req *pb.CreateRequest, res *pb.Create
 		return merr.BadRequest(config.ServiceName, "%s", "Please specify a password")
 	}
 
-	user, err := u.client.Create(ctx, req.User)
+	user, err := u.userClient.Create(ctx, req.User)
 	if err != nil {
 		log.Warn().Interface("error", err).Msg("unable to create user")
 		return merr.InternalServerError(config.ServiceName, "%s: %s", "Unable to create user", err.Error())
@@ -83,7 +85,7 @@ func (u *User) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb.Delete
 
 
 	// delete user
-	_, err = u.client.Delete(ctx, &pbUser.DeleteRequest{
+	_, err = u.userClient.Delete(ctx, &pbUser.DeleteRequest{
 		User: &pbUser.UserDetails{
 			Id: req.UserId,
 		},
@@ -112,13 +114,46 @@ func (u *User) Login(ctx context.Context, req *pb.LoginRequest, res *pb.LoginRes
 	}
 
 	// login
-	response, err := u.client.Auth(ctx, user)
+	response, err := u.userClient.Auth(ctx, user)
 	if err != nil {
-	    log.Debug().Str("email", req.Email).Msgf("user login failed: %s", err.Error())
+	    log.Debug().Interface("error", err).Str("email", req.Email).Msgf("user login failed")
 	    return err
 	}
 
 	res.Token = response.Token
+
+	return nil
+}
+
+func (u *User) Videos(ctx context.Context, req *pb.VideoRequest, res *pb.VideoResponse) error {
+	md, _ := metadata.FromContext(ctx)
+
+	// check for token
+	token, err := u.jwtService.GetBearerToken(md)
+	if err != nil {
+		log.Error().Interface("err", err).Msg("asdf")
+		return merr.Unauthorized(config.ServiceName, "%s", err.Error())
+	}
+
+	// validate jwt
+	claims, err := u.jwtService.Decode(token)
+	if err != nil {
+		log.Error().Interface("error", err).Msg(errors.InvalidJWTToken.Error())
+		return merr.Unauthorized(config.ServiceName, "%s", errors.InvalidJWTToken)
+	}
+
+	userRequest := &pbVideo.GetByUserIdRequest{
+		UserId: claims.User.Id,
+	}
+
+	// fetch videos
+	videos, err := u.videoClient.GetByUserId(ctx, userRequest)
+	if err != nil {
+		log.Debug().Interface("error", err).Str("user", claims.User.Id).Msg("unable to fetch videos for user")
+	    return err
+	}
+
+	res.Videos = videos.Videos
 
 	return nil
 }

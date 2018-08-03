@@ -5,11 +5,12 @@ import (
 	"os"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog"
-	api "github.com/lukasjarosch/educonn-platform/api/user/internal/service"
-	"github.com/lukasjarosch/educonn-platform/user/proto"
 	"github.com/lukasjarosch/educonn-platform/api/user/internal/middleware"
 	"github.com/lukasjarosch/educonn-platform/api/user/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
+	api "github.com/lukasjarosch/educonn-platform/api/user/internal/service"
+	pbUser"github.com/lukasjarosch/educonn-platform/user/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 )
 
 func main() {
@@ -28,9 +29,10 @@ func main() {
 	    log.Fatal().Interface("error", err).Msg("unable to create JwtTokenHandler")
 	}
 
-	user := proto.NewUserClient("educonn.srv.user", service.Client())
+	user := pbUser.NewUserClient("educonn.srv.user", service.Client())
+	video := pbVideo.NewVideoClient("educonn.srv.video", service.Client())
 
-	micro.RegisterHandler(service.Server(), api.NewUserApi(user, jwtService))
+	micro.RegisterHandler(service.Server(), api.NewUserApi(user, video, jwtService))
 
 	if err := service.Run(); err != nil {
 		panic(err)
