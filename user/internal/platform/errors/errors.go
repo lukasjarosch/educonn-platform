@@ -18,4 +18,6 @@ const (
 
 	PrivateKeyFileNotFound = Error("The private key could not be found, check the path")
 	PublicKeyFileNotFound = Error("The public key could not be found, check the path")
+
+	JwtDecodingFailed = Error("The JWT token could not be decoded. Token is invalid and/or malformed")
 )

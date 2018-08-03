@@ -202,6 +202,16 @@ func (s *userService) Auth(ctx context.Context, req *pb.UserDetails, res *pb.Tok
 	return nil
 }
 
+// ValidateToken decodes and validates the token with the public key
 func (s *userService) ValidateToken(ctx context.Context, req *pb.Token, res *pb.Token) error {
+	res.Valid = false
+
+	_, err := s.tokenService.Decode(req.Token)
+	if err != nil {
+		log.Info().Interface("error", err).Msg(errors.JwtDecodingFailed.Error())
+	    return errors.JwtDecodingFailed
+	}
+
+	res.Valid = true
 	return nil
 }

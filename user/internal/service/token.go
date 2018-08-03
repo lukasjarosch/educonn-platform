@@ -8,6 +8,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/user/internal/platform/errors"
 	"github.com/lukasjarosch/educonn-platform/user/internal/platform/config"
 	"strconv"
+	"time"
 )
 
 type CustomClaims struct {
@@ -52,8 +53,9 @@ func NewTokenService(publicKeyPath string, privateKeyPath string) (*TokenService
 	}, nil
 }
 
+// Encode ecreates a new JWT token using the customclaims
 func (t *TokenService) Encode(user *pb.UserDetails) (token string, err error) {
-	expires, err := strconv.ParseInt(config.JwtExpireSeconds, 10, 64)
+	expires, err := strconv.Atoi(config.JwtExpireSeconds)
 	if err != nil {
 	    return "", err
 	}
@@ -61,7 +63,7 @@ func (t *TokenService) Encode(user *pb.UserDetails) (token string, err error) {
 	claims := CustomClaims{
 		user,
 		jwt.StandardClaims{
-			ExpiresAt: expires,
+			ExpiresAt: time.Now().Add(time.Second * time.Duration(expires)).Unix(),
 			Issuer: config.ServiceName,
 		},
 	}
@@ -74,4 +76,19 @@ func (t *TokenService) Encode(user *pb.UserDetails) (token string, err error) {
 	    return "", err
 	}
 	return token, nil
+}
+
+func (t *TokenService) Decode(tokenString string) (*CustomClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return t.verifyKey, nil
+	})
+	if err != nil {
+	    return nil, err
+	}
+
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, err
 }
