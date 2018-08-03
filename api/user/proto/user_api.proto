@@ -6,6 +6,7 @@ import "user/proto/user.proto";
 
 service UserApi {
     rpc Create(CreateRequest) returns (CreateResponse) {};
+    rpc Delete(DeleteRequest) returns (DeleteResponse) {};
 }
 
 message CreateRequest {
@@ -14,4 +15,11 @@ message CreateRequest {
 
 message CreateResponse {
     educonn.user.UserDetails user = 1;
+}
+
+message DeleteRequest {
+    string userId = 1;
+}
+
+message DeleteResponse {
 }

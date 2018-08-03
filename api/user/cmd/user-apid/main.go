@@ -2,16 +2,37 @@ package main
 
 import (
 	"github.com/micro/go-micro"
-	service2 "github.com/lukasjarosch/educonn-platform/api/user/internal/service"
+	"os"
+	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
+	api "github.com/lukasjarosch/educonn-platform/api/user/internal/service"
+	"github.com/lukasjarosch/educonn-platform/user/proto"
+	"github.com/lukasjarosch/educonn-platform/api/user/internal/middleware"
+	"github.com/lukasjarosch/educonn-platform/api/user/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
 )
 
 func main() {
+	if os.Getenv("DEV_ENV") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
 	service := micro.NewService(
 		micro.Name("educonn.api.user"),
+		micro.WrapHandler(middleware.TraceHandlerWrapper),
 	)
 	service.Init()
 
-	micro.RegisterHandler(service.Server(), service2.NewUserApiService())
+	jwtService, err := jwt_handler.NewJwtTokenHandler(config.PublicKeyPath, "")
+	if err != nil {
+	    log.Fatal().Interface("error", err).Msg("unable to create JwtTokenHandler")
+	}
 
-	service.Run()
+	user := proto.NewUserClient("educonn.user", service.Client())
+
+	micro.RegisterHandler(service.Server(), api.NewUserApi(user, jwtService))
+
+	if err := service.Run(); err != nil {
+		panic(err)
+	}
 }

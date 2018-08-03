@@ -10,6 +10,8 @@ It is generated from these files:
 It has these top-level messages:
 	CreateRequest
 	CreateResponse
+	DeleteRequest
+	DeleteResponse
 */
 package educonn_api_user
 
@@ -44,6 +46,7 @@ var _ server.Option
 
 type UserApiClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*CreateResponse, error)
+	Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error)
 }
 
 type userApiClient struct {
@@ -74,10 +77,21 @@ func (c *userApiClient) Create(ctx context.Context, in *CreateRequest, opts ...c
 	return out, nil
 }
 
+func (c *userApiClient) Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "UserApi.Delete", in)
+	out := new(DeleteResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for UserApi service
 
 type UserApiHandler interface {
 	Create(context.Context, *CreateRequest, *CreateResponse) error
+	Delete(context.Context, *DeleteRequest, *DeleteResponse) error
 }
 
 func RegisterUserApiHandler(s server.Server, hdlr UserApiHandler, opts ...server.HandlerOption) {
@@ -90,4 +104,8 @@ type UserApi struct {
 
 func (h *UserApi) Create(ctx context.Context, in *CreateRequest, out *CreateResponse) error {
 	return h.UserApiHandler.Create(ctx, in, out)
+}
+
+func (h *UserApi) Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error {
+	return h.UserApiHandler.Delete(ctx, in, out)
 }
