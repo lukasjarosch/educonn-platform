@@ -2,12 +2,20 @@ version: "3.4"
 
 services:
 
+  # Consul dev container
   consul:
     image: consul
     ports:
       - 8500:8500
 
-  ## API
+  # MongoDB dev container
+  mongodb:
+    image: mongo:latest
+    command: mongod
+    ports:
+      - 27017:27017
+
+  # micro api gateway
   micro:
     command: --registry_address=consul:8500 api --handler=rpc --namespace=educonn.api
     image: microhq/micro:latest
@@ -19,8 +27,8 @@ services:
       TZ: Europe/Berlin
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul:8500
-      MICRO_NAMESPACE: educonn.api
 
+  # [educonn] user service
   user:
     image: derwaldemar/educonn-user:dev
     depends_on:
@@ -38,6 +46,7 @@ services:
       - ./educonn_auth.rsa:/app/auth.rsa
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
 
+  # [educonn] user api service
   user-api:
     image: derwaldemar/educonn-user-api:dev
     depends_on:
@@ -51,6 +60,7 @@ services:
       - ./api/user/cmd/user-apid/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
 
+  # [educonn] mail service
   mail:
     image: derwaldemar/educonn-mail:dev
     depends_on:
@@ -67,6 +77,7 @@ services:
       - ./mail/cmd/maild/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
 
+  # [educonn] video service
   video:
     image: derwaldemar/educonn-video:dev
     depends_on:
@@ -83,6 +94,7 @@ services:
       - ./video/cmd/videod/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
 
+  # [educonn] transcode service
   transcode:
     image: derwaldemar/educonn-transcode:dev
     depends_on:
@@ -101,9 +113,3 @@ services:
     volumes:
       - ./transcode/cmd/transcoded/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
-
-  mongodb:
-    image: mongo:latest
-    command: mongod
-    ports:
-      - 27017:27017
