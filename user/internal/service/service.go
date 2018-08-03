@@ -11,11 +11,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
+	"github.com/micro/go-micro/metadata"
+	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
 )
 
 type userService struct {
 	repo                      *mongodb.UserRepository
-	tokenService              *TokenService
+	tokenService              *jwt_handler.JwtTokenHandler
 	userCreatedEventPublisher userCreatedEventPublisher
 	userDeletedEventPublisher userDeletedEventPublisher
 }
@@ -29,12 +31,12 @@ type userDeletedEventPublisher interface {
 }
 
 // NewUserService creates a new userService
-func NewUserService(repo *mongodb.UserRepository, createdPublisher userCreatedEventPublisher, deletedPublisher userDeletedEventPublisher, tokenService *TokenService) pb.UserHandler {
+func NewUserService(repo *mongodb.UserRepository, createdPublisher userCreatedEventPublisher, deletedPublisher userDeletedEventPublisher, tokenService *jwt_handler.JwtTokenHandler) pb.UserHandler {
 	return &userService{
 		repo: repo,
 		userCreatedEventPublisher: createdPublisher,
 		userDeletedEventPublisher: deletedPublisher,
-		tokenService:tokenService,
+		tokenService:              tokenService,
 	}
 }
 
@@ -143,10 +145,29 @@ func (s *userService) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb
 		return merr.BadRequest(config.ServiceName, "%s", errors.MissingUserId)
 	}
 
-	err := s.repo.DeleteUser(req.User.GetId())
+	md, _ := metadata.FromContext(ctx)
+	token, err := s.tokenService.GetBearerToken(md)
+	if err != nil {
+	    return merr.Unauthorized(config.ServiceName, "%s", jwt_handler.Unauthorized)
+	}
+	claims, _ := s.tokenService.Decode(token)
+
+	// TODO: check user permissions
+
+	// Currently only the user can delete itself
+	if claims.User.Id != req.User.Id {
+		return merr.Unauthorized(config.ServiceName, "%s", jwt_handler.Unauthorized)
+	}
+
+	user, _ := s.repo.FindById(req.User.Id)
+
+	err = s.repo.DeleteUser(req.User.GetId())
 	if err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "not found") {
 			return merr.NotFound(config.ServiceName, "%s", errors.UserNotFound)
+		}
+		if err.Error() == errors.MalformedUserId.Error() {
+			return merr.BadRequest(config.ServiceName, "%s", err.Error())
 		}
 		return merr.InternalServerError(config.ServiceName, "%s", err)
 	}
@@ -154,7 +175,13 @@ func (s *userService) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb
 	log.Info().Str("user_id", req.User.Id).Msg("deleted user from database")
 
 	s.userDeletedEventPublisher.PublishUserDeleted(&pb.UserDeletedEvent{
-		User: req.User,
+		User: &pb.UserDetails{
+			Id:        user.ID.Hex(),
+			Email:     user.Email,
+			LastName:  user.LastName,
+			FirstName: user.FirstName,
+			Password:  user.Password,
+		},
 	})
 	return nil
 }
@@ -181,20 +208,20 @@ func (s *userService) Auth(ctx context.Context, req *pb.UserDetails, res *pb.Tok
 
 	// compare password hashes
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.GetPassword())); err != nil {
-		log.Warn().Interface("error", err)
-		return err
+		log.Warn().Interface("error", errors.InvalidCredentials)
+		return merr.Unauthorized(config.ServiceName, "%s", errors.InvalidCredentials)
 	}
 
 	// create a new token
 	token, err := s.tokenService.Encode(&pb.UserDetails{
-		Id: user.ID.Hex(),
+		Id:        user.ID.Hex(),
 		FirstName: user.FirstName,
-		LastName: user.LastName,
-		Email: user.Email,
+		LastName:  user.LastName,
+		Email:     user.Email,
 	})
 	if err != nil {
-	    log.Error().Interface("error", err).Msg("ParseInt was unable to parse the JWT_EXPIRE_SECONDS to Int64")
-	    return merr.InternalServerError(config.ServiceName, "%s", "unable to create token")
+		log.Error().Interface("error", err).Msg("ParseInt was unable to parse the JWT_EXPIRE_SECONDS to Int64")
+		return merr.InternalServerError(config.ServiceName, "%s", "unable to create token")
 	}
 
 	res.Token = token
@@ -202,14 +229,14 @@ func (s *userService) Auth(ctx context.Context, req *pb.UserDetails, res *pb.Tok
 	return nil
 }
 
-// ValidateToken decodes and validates the token with the public key
+// Decode decodes and validates the token with the public key
 func (s *userService) ValidateToken(ctx context.Context, req *pb.Token, res *pb.Token) error {
 	res.Valid = false
 
 	_, err := s.tokenService.Decode(req.Token)
 	if err != nil {
 		log.Info().Interface("error", err).Msg(errors.JwtDecodingFailed.Error())
-	    return errors.JwtDecodingFailed
+		return errors.JwtDecodingFailed
 	}
 
 	res.Valid = true

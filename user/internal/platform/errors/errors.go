@@ -15,6 +15,7 @@ const (
 	MissingUserId = Error("The request does not contain the user ID")
 	MissingEmail = Error("The request is missing an email field")
 	MissingPassword = Error("The request is missing the password field")
+	InvalidCredentials = Error("The email and/or the password do not match or are incorrect")
 
 	PrivateKeyFileNotFound = Error("The private key could not be found, check the path")
 	PublicKeyFileNotFound = Error("The public key could not be found, check the path")

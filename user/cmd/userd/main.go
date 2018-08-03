@@ -14,6 +14,7 @@ import (
 	"os"
 	"github.com/rs/zerolog"
 	"github.com/lukasjarosch/educonn-platform/user/internal/platform/mongodb"
+	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
 )
 
 func main() {
@@ -53,7 +54,7 @@ func main() {
 	}
 
 	// Setup auth token service
-	tokenService, err := service.NewTokenService(config.PublicKeyPath, config.PrivateKeyPath)
+	tokenService, err := jwt_handler.NewJwtTokenHandler(config.PublicKeyPath, config.PrivateKeyPath)
 	if err != nil {
 	    log.Fatal().Interface("error", err).Msg("unable to create TokenService")
 	}
