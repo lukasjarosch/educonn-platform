@@ -1,0 +1,109 @@
+version: "3.4"
+
+services:
+
+  consul:
+    image: consul
+    ports:
+      - 8500:8500
+
+  ## API
+  micro:
+    command: --registry_address=consul:8500 api --handler=rpc --namespace=educonn.api
+    image: microhq/micro:latest
+    ports:
+      - 8080:8080
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+      MICRO_NAMESPACE: educonn.api
+
+  user:
+    image: derwaldemar/educonn-user:dev
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+      PRIVATE_KEY_PATH: /app/auth.rsa
+      PUBLIC_KEY_PATH: /app/auth.rsa.pub
+      JWT_EXPIRE_SECONDS: 15000
+    volumes:
+      - ./user/cmd/userd/.env-docker:/app/.env
+      - ./educonn_auth.rsa:/app/auth.rsa
+      - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+
+  user-api:
+    image: derwaldemar/educonn-user-api:dev
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+    volumes:
+      - ./api/user/cmd/user-apid/.env-docker:/app/.env
+      - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+
+  mail:
+    image: derwaldemar/educonn-mail:dev
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+      SMTP_HOST: smtp.mailtrap.io
+      SMTP_PORT: 2525
+      AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+    volumes:
+      - ./mail/cmd/maild/.env-docker:/app/.env
+      - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+
+  video:
+    image: derwaldemar/educonn-video:dev
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+      AWS_REGION: eu-west-1
+      AWS_S3_VIDEO_BUCKET: videos.educonn.de
+      AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+    volumes:
+      - ./video/cmd/videod/.env-docker:/app/.env
+      - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+
+  transcode:
+    image: derwaldemar/educonn-transcode:dev
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+      AWS_REGION: eu-west-1
+      AWS_TRANSCODE_PRESET: 1351620000001-100070
+      AWS_TRANSCODE_PIPELINE: 1532629797407-jfd8uk
+      AWS_TRANSCODE_OUTPUT_PREFIX: transcoded/
+      AWS_VIDEO_QUEUE: educonn-videos
+      AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+    volumes:
+      - ./transcode/cmd/transcoded/.env-docker:/app/.env
+      - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+
+  mongodb:
+    image: mongo:latest
+    command: mongod
+    ports:
+      - 27017:27017
