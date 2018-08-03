@@ -7,6 +7,8 @@ func (e Error) Error() string {
 }
 
 const (
-	InvalidJWTToken = Error("Invalid JWT token")
+	InvalidJWTToken = Error("invalid JWT token")
+	EmailMissing = Error("email missing")
+	PasswordMissing = Error("password missing")
 )
 

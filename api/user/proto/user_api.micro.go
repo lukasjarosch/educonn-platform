@@ -12,6 +12,8 @@ It has these top-level messages:
 	CreateResponse
 	DeleteRequest
 	DeleteResponse
+	LoginRequest
+	LoginResponse
 */
 package educonn_api_user
 
@@ -47,6 +49,7 @@ var _ server.Option
 type UserApiClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*CreateResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error)
+	Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*LoginResponse, error)
 }
 
 type userApiClient struct {
@@ -87,11 +90,22 @@ func (c *userApiClient) Delete(ctx context.Context, in *DeleteRequest, opts ...c
 	return out, nil
 }
 
+func (c *userApiClient) Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*LoginResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "UserApi.Login", in)
+	out := new(LoginResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for UserApi service
 
 type UserApiHandler interface {
 	Create(context.Context, *CreateRequest, *CreateResponse) error
 	Delete(context.Context, *DeleteRequest, *DeleteResponse) error
+	Login(context.Context, *LoginRequest, *LoginResponse) error
 }
 
 func RegisterUserApiHandler(s server.Server, hdlr UserApiHandler, opts ...server.HandlerOption) {
@@ -108,4 +122,8 @@ func (h *UserApi) Create(ctx context.Context, in *CreateRequest, out *CreateResp
 
 func (h *UserApi) Delete(ctx context.Context, in *DeleteRequest, out *DeleteResponse) error {
 	return h.UserApiHandler.Delete(ctx, in, out)
+}
+
+func (h *UserApi) Login(ctx context.Context, in *LoginRequest, out *LoginResponse) error {
+	return h.UserApiHandler.Login(ctx, in, out)
 }

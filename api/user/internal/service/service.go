@@ -24,7 +24,6 @@ func NewUserApi(userClient pbUser.UserClient, jwtService *jwt_handler.JwtTokenHa
 
 func (u *User) Create(ctx context.Context, req *pb.CreateRequest, res *pb.CreateResponse) error {
 
-	log.Debug().Interface("u", req.User)
 
 	if req.User == nil {
 		return merr.BadRequest(config.ServiceName, "%s", "Request contains no data")
@@ -93,6 +92,33 @@ func (u *User) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb.Delete
 		return err
 	}
 	log.Debug().Str("user", req.UserId).Msg("deleted user from database")
+
+	return nil
+}
+
+func (u *User) Login(ctx context.Context, req *pb.LoginRequest, res *pb.LoginResponse) error {
+
+	if req.Email == "" {
+		return merr.BadRequest(config.ServiceName, "%s", errors.EmailMissing.Error())
+	}
+
+	if req.Password == "" {
+		return merr.BadRequest(config.ServiceName, "%s", errors.PasswordMissing.Error())
+	}
+
+	user := &pbUser.UserDetails{
+		Email: req.Email,
+		Password: req.Password,
+	}
+
+	// login
+	response, err := u.client.Auth(ctx, user)
+	if err != nil {
+	    log.Debug().Str("email", req.Email).Msgf("user login failed: %s", err.Error())
+	    return err
+	}
+
+	res.Token = response.Token
 
 	return nil
 }
