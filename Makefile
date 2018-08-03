@@ -15,6 +15,12 @@ test:
 clean:
 	@rm -rf ./coverage.out ./coverage-all.out ./video/cmd/videod/videod ./course/cmd/coursed/coursed ./mail/cmd/maild/maild ./user/cmd/userd/userd ./transcode/cmd/transcoded/transcoded
 
+
+all: user mail video transcode user-api
+docker: user-docker mail-docker video-docker transcode-docker user-api-docker
+docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev transcode-docker-push-dev
+proto: user-proto mail-proto video-proto transcode-proto user-api-proto
+
 # --------- USER API ---------
 user-api: clean
 	@echo Buildung USER API service ...
@@ -22,7 +28,11 @@ user-api: clean
 
 user-api-proto:
 	@echo protoc USER API
-	protoc -I. --go_out=plugins=micro:. --micro_out=. api/user/proto/user_api.proto
+	@protoc -I. --go_out=plugins=micro:. --micro_out=. api/user/proto/user_api.proto
+
+user-api-docker:
+	@echo Building USER API docker image ...
+	@cd api/user && docker build -t derwaldemar/educonn-user-api:${VERSION} -t derwaldemar/educonn-user-api:dev .
 
 user-api-run:
 	@echo Starting the USER API service
@@ -32,7 +42,6 @@ user-api-run:
 user: clean
 	@echo Building USER service...
 	@cd user/cmd/userd && CGO_ENABLED=0 go build ${LDFLAGS_USER} -a -installsuffix cgo -o userd main.go
-	protoc -I. --go_out=plugins=micro:. --micro_out=. user/proto/user.proto
 
 user-proto:
 	@echo protoc USER
@@ -112,14 +121,4 @@ transcode-docker:
 transcode-docker-push-dev:
 	@echo Pushing educonn-transcode:dev image ...
 	docker push derwaldemar/educonn-transcode:dev
-
-all: user mail video transcode
-docker: user-docker mail-docker video-docker transcode-docker
-	@echo "Building all docker images"
-
-docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev transcode-docker-push-dev
-	@echo "Pushing all docker images to DockerHub"
-
-proto: user-proto mail-proto video-proto transcode-proto
-	@echo "All protobufs regenerated"
 

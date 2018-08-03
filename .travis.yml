@@ -1,3 +1,5 @@
+sudo: false
+
 language: go
 
 services:
@@ -6,9 +8,9 @@ services:
 go:
   - "1.10"
 
-jobs:
-  include:
-    - stage: build and push
+# Skip install step, no deps via 'go get'. Dependencies must be vendored
+install: true
+
       script:
         - bash bin/install-protobuf.sh
         - go get -u github.com/golang/dep/cmd/dep
@@ -20,5 +22,4 @@ jobs:
         - make all
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME"
         - make docker
-        - make docker-push-dev
 
