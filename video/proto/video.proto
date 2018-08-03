@@ -7,6 +7,7 @@ option go_package = "github.com/lukasjarosch/educonn-platform/video/proto";
 service Video {
    rpc Create(CreateVideoRequest) returns (CreateVideoResponse) {}
    rpc GetById(GetVideoRequest) returns (GetVideoResponse) {}
+   rpc GetByUserId(GetByUserIdRequest) returns (GetByUserIdResponse) {}
 }
 
 // ----------------------------
@@ -77,6 +78,14 @@ message GetVideoRequest {
 message GetVideoResponse {
     VideoDetails video = 1;
     string signedUrl = 2;
+}
+
+message GetByUserIdRequest {
+    string userId = 1;
+}
+
+message GetByUserIdResponse {
+    repeated VideoDetails videos = 1;
 }
 
 // ----------------------------

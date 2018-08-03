@@ -18,6 +18,8 @@ It has these top-level messages:
 	CreateVideoResponse
 	GetVideoRequest
 	GetVideoResponse
+	GetByUserIdRequest
+	GetByUserIdResponse
 	Error
 */
 package proto
@@ -53,6 +55,7 @@ var _ server.Option
 type VideoClient interface {
 	Create(ctx context.Context, in *CreateVideoRequest, opts ...client.CallOption) (*CreateVideoResponse, error)
 	GetById(ctx context.Context, in *GetVideoRequest, opts ...client.CallOption) (*GetVideoResponse, error)
+	GetByUserId(ctx context.Context, in *GetByUserIdRequest, opts ...client.CallOption) (*GetByUserIdResponse, error)
 }
 
 type videoClient struct {
@@ -93,11 +96,22 @@ func (c *videoClient) GetById(ctx context.Context, in *GetVideoRequest, opts ...
 	return out, nil
 }
 
+func (c *videoClient) GetByUserId(ctx context.Context, in *GetByUserIdRequest, opts ...client.CallOption) (*GetByUserIdResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "Video.GetByUserId", in)
+	out := new(GetByUserIdResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Video service
 
 type VideoHandler interface {
 	Create(context.Context, *CreateVideoRequest, *CreateVideoResponse) error
 	GetById(context.Context, *GetVideoRequest, *GetVideoResponse) error
+	GetByUserId(context.Context, *GetByUserIdRequest, *GetByUserIdResponse) error
 }
 
 func RegisterVideoHandler(s server.Server, hdlr VideoHandler, opts ...server.HandlerOption) {
@@ -114,4 +128,8 @@ func (h *Video) Create(ctx context.Context, in *CreateVideoRequest, out *CreateV
 
 func (h *Video) GetById(ctx context.Context, in *GetVideoRequest, out *GetVideoResponse) error {
 	return h.VideoHandler.GetById(ctx, in, out)
+}
+
+func (h *Video) GetByUserId(ctx context.Context, in *GetByUserIdRequest, out *GetByUserIdResponse) error {
+	return h.VideoHandler.GetByUserId(ctx, in, out)
 }

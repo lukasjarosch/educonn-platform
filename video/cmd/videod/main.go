@@ -16,6 +16,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
 	"os"
 	"github.com/rs/zerolog"
+	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
 )
 
 func main() {
@@ -66,6 +67,9 @@ func main() {
 	// Create publishers
 	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
 
+	// JWT handler (without private key, we only want to validate)
+	jwtHandler, err := jwt_handler.NewJwtTokenHandler(config.AuthPublicKeyPath, "")
+
 	// Create subscribers
 	err = micro.RegisterSubscriber(
 		broker.TranscodeCompletedTopic,
@@ -89,6 +93,7 @@ func main() {
 			transcodeCompletedChannel,
 			transcodeFailedChannel,
 			videoRepository,
+			jwtHandler,
 		),
 	)
 
