@@ -27,6 +27,8 @@ func NewMailService(userCreatedChannel chan *pbUser.UserCreatedEvent,
 }
 
 func (m *mailService) Send(ctx context.Context, request *pbMail.EmailRequest, response *pbMail.Response) error {
+	log.Info().Msg("rpc call Email.Send is not yet implemented")
+
 	return nil
 }
 
