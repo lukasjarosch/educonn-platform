@@ -32,6 +32,9 @@ vendor/
 videod
 maild
 userd
+transcoded
+video-apid
+user-apid
 
 .env
 .env-docker
