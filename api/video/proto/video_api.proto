@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package educonn.api.user;
+
+import "video/proto/video.proto";
+
+service VideoApi {
+    rpc Create(CreateRequest) returns (CreateResponse) {};
+    rpc Delete(DeleteRequest) returns (DeleteResponse) {};
+    rpc Get(GetRequest) returns (GetResponse) {};
+}
+
+message CreateRequest {
+    educonn.video.VideoDetails video = 1;
+}
+
+message CreateResponse {
+    educonn.video.VideoDetails video = 1;
+}
+
+message DeleteRequest {
+    string videoId = 1;
+}
+
+message DeleteResponse {
+}
+
+message GetRequest{
+    string videoId = 1;
+}
+
+message GetResponse{
+    educonn.video.VideoDetails video = 1;
+    string signedURL = 2;
+}
