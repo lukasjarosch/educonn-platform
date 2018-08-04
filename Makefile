@@ -5,6 +5,7 @@ LDFLAGS_USER:=-ldflags "-X github.com/lukasjarosch/educonn-platform/user/interna
 LDFLAGS_USER_API:=-ldflags "-X github.com/lukasjarosch/educonn-platform/api/user/internal/platform/config.Version=${VERSION}"
 LDFLAGS_MAIL:=-ldflags "-X github.com/lukasjarosch/educonn-platform/mail/internal/platform/config.Version=${VERSION}"
 LDFLAGS_VIDEO:=-ldflags "-X github.com/lukasjarosch/educonn-platform/video/internal/platform/config.Version=${VERSION}"
+LDFLAGS_VIDEO_API:=-ldflags "-X github.com/lukasjarosch/educonn-platform/api/video/internal/platform/config.Version=${VERSION}"
 LDFLAGS_TRANSCODE:=-ldflags "-X github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config.Version=${VERSION}"
 
 default: run
@@ -13,13 +14,32 @@ test:
 	@go test -v ./..
 
 clean:
-	@rm -rf ./coverage.out ./coverage-all.out ./video/cmd/videod/videod ./course/cmd/coursed/coursed ./mail/cmd/maild/maild ./user/cmd/userd/userd ./transcode/cmd/transcoded/transcoded
+	rm -rf ./coverage.out ./coverage-all.out ./video/cmd/videod/videod ./course/cmd/coursed/coursed \
+		./mail/cmd/maild/maild ./user/cmd/userd/userd ./transcode/cmd/transcoded/transcoded \
+		./api/user/cmd/user-apid/user-apid ./api/video/cmd/video-apid/video-apid
 
 
-all: user mail video transcode user-api
-docker: user-docker mail-docker video-docker transcode-docker user-api-docker
+dev: user mail video transcode user-api video-api
+docker: user-docker mail-docker video-docker transcode-docker user-api-docker video-api-docker
 docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev transcode-docker-push-dev
-proto: user-proto mail-proto video-proto transcode-proto user-api-proto
+proto: user-proto mail-proto video-proto transcode-proto user-api-proto video-api-proto
+
+# --------- VIDEO API ---------
+video-api: clean
+	@echo Buildung VIDEO API service ...
+	@cd api/video/cmd/video-apid && CGO_ENABLED=0 go build ${LDFLAGS_VIDEO_API} -a -installsuffix cgo -o video-apid main.go
+
+video-api-proto:
+	@echo protoc VIDEO API
+	@protoc -I. --go_out=plugins=micro:. --micro_out=. api/video/proto/video_api.proto
+
+video-api-docker:
+	@echo Building VIDEO API docker image ...
+	@cd api/video && docker build -t derwaldemar/educonn-video-api:${VERSION} -t derwaldemar/educonn-video-api:dev .
+
+video-api-run:
+	@echo Starting the VIDEO API service
+	@cd api/video/cmd/video-apid && go run main.go
 
 # --------- USER API ---------
 user-api: clean
