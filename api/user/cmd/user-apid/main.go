@@ -8,9 +8,9 @@ import (
 	"github.com/lukasjarosch/educonn-platform/api/user/internal/middleware"
 	"github.com/lukasjarosch/educonn-platform/api/user/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
-	api "github.com/lukasjarosch/educonn-platform/api/user/internal/service"
 	pbUser"github.com/lukasjarosch/educonn-platform/user/proto"
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
+	api "github.com/lukasjarosch/educonn-platform/api/user/internal/service"
 )
 
 func main() {
