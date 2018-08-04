@@ -11,13 +11,13 @@ import (
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
-	"github.com/rs/zerolog/log"
-	"github.com/micro/go-micro/metadata"
 	merr "github.com/micro/go-micro/errors"
+	"github.com/micro/go-micro/metadata"
+	"github.com/rs/zerolog/log"
 )
 
 type videoService struct {
-	videoCreatedPublisher  videoCreatedPublisher
+	videoPublisher         videoPublisher
 	s3Bucket               *amazon.S3Bucket
 	transcodeCompletedChan chan *pbTranscode.TranscodingCompletedEvent
 	transcodeFailedChan    chan *pbTranscode.TranscodingFailedEvent
@@ -25,18 +25,19 @@ type videoService struct {
 	jwtHandler             *jwt_handler.JwtTokenHandler
 }
 
-type videoCreatedPublisher interface {
+type videoPublisher interface {
 	PublishVideoCreated(event *pbVideo.VideoCreatedEvent) (err error)
+	PublishVideoProcessed(event *pbVideo.VideoProcessedEvent) (err error)
 }
 
-func NewVideoService(vidCreatedPub videoCreatedPublisher,
+func NewVideoService(vidCreatedPub videoPublisher,
 	bucket *amazon.S3Bucket,
 	transcodeCompletedChan chan *pbTranscode.TranscodingCompletedEvent,
 	transcodeFailedChan chan *pbTranscode.TranscodingFailedEvent,
 	videoRepo *mongodb.VideoRepository,
 	jwtHandler *jwt_handler.JwtTokenHandler) pbVideo.VideoHandler {
 	svc := &videoService{
-		videoCreatedPublisher:  vidCreatedPub,
+		videoPublisher:         vidCreatedPub,
 		s3Bucket:               bucket,
 		transcodeCompletedChan: transcodeCompletedChan,
 		transcodeFailedChan:    transcodeFailedChan,
@@ -57,13 +58,13 @@ func (v *videoService) Create(ctx context.Context, req *pbVideo.CreateVideoReque
 	md, _ := metadata.FromContext(ctx)
 	token, err := v.jwtHandler.GetBearerToken(md)
 	if err != nil {
-	    return merr.Unauthorized(config.ServiceName, "%s", err.Error())
+		return merr.Unauthorized(config.ServiceName, "%s", err.Error())
 	}
 	// Decode jwt and extract user
 	claims, err := v.jwtHandler.Decode(token)
 	if err != nil {
 		log.Debug().Interface("error", err).Msg("unable to decode jwt token")
-	   	return merr.Unauthorized(config.ServiceName, "%s", err.Error())
+		return merr.Unauthorized(config.ServiceName, "%s", err.Error())
 	}
 	user := claims.User
 
@@ -85,12 +86,11 @@ func (v *videoService) Create(ctx context.Context, req *pbVideo.CreateVideoReque
 			Description: errors.RawVideoFileS3NotFound.Error(),
 			Code:        404,
 		})
-		return err
+		return merr.NotFound(config.ServiceName, "%s", errors.RawVideoFileS3NotFound)
 	}
 	log.Info().Str("key", fileKey).Str("bucket", config.AwsS3VideoBucket).Msg("key found in bucket")
 
 	// Insert video into DB
-	log.Debug().Msg(user.Id)
 	video, err := v.videoRepository.CreateVideo(mongodb.UnmarshalProtobuf(req.Video, user.Id))
 	if err != nil {
 		log.Warn().Interface("error", err).Msg("unable to create video in database")
@@ -100,7 +100,7 @@ func (v *videoService) Create(ctx context.Context, req *pbVideo.CreateVideoReque
 	req.Video.Id = video.ID.Hex()
 
 	// Publish event
-	v.videoCreatedPublisher.PublishVideoCreated(&pbVideo.VideoCreatedEvent{
+	v.videoPublisher.PublishVideoCreated(&pbVideo.VideoCreatedEvent{
 		Video:  req.Video,
 		UserId: user.Id,
 	})
@@ -130,7 +130,10 @@ func (v *videoService) GetById(ctx context.Context, req *pbVideo.GetVideoRequest
 	} else {
 		trError = false
 	}
-	res.SignedUrl, _ = v.s3Bucket.GetSignedResourceURL(video.Storage.OutputKey)
+	res.SignedUrl, err = v.s3Bucket.GetSignedResourceURL(video.Storage.OutputKey)
+	if err != nil {
+		log.Warn().Err(err).Str("video", req.Id).Msg("unable to fetch signed url for video")
+	}
 	res.Video = &pbVideo.VideoDetails{
 		Id:          video.ID.Hex(),
 		Title:       video.Title,
@@ -164,15 +167,15 @@ func (v *videoService) GetByUserId(ctx context.Context, req *pbVideo.GetByUserId
 
 	videos, err := v.videoRepository.FindByUserId(req.UserId)
 	if err != nil {
-	    return err
+		return err
 	}
 
 	for _, video := range videos {
 		res.Videos = append(res.Videos, &pbVideo.VideoDetails{
-			Id: video.ID.Hex(),
-			Title: video.Title,
+			Id:          video.ID.Hex(),
+			Title:       video.Title,
 			Description: video.Description,
-			Tags: video.Tags,
+			Tags:        video.Tags,
 			Statistics: &pbVideo.VideoStatistics{
 				DislikeCound: video.Statistics.DislikeCount,
 				LikeCount:    video.Statistics.LikeCount,
@@ -211,7 +214,34 @@ func (v *videoService) awaitTranscodeCompletedEvent() {
 			log.Warn().Interface("error", err).Msg("unable to update video")
 			continue
 		}
-		log.Info().Str("video", video.ID.Hex()).Msg("video transcoding completed, updated successfully")
+
+		// publish: video.events.transcoded
+		processedEvent := &pbVideo.VideoProcessedEvent{
+			Video: &pbVideo.VideoDetails{
+				Id:          video.ID.Hex(),
+				Title:       video.Title,
+				Description: video.Description,
+				Tags:        video.Tags,
+				Storage: &pbVideo.VideoStorage{
+					RawKey:        video.Storage.RawKey,
+					TranscodedKey: video.Storage.OutputKey,
+				},
+				Statistics: &pbVideo.VideoStatistics{
+					DislikeCound: video.Statistics.DislikeCount,
+					LikeCount:    video.Statistics.LikeCount,
+					ViewCount:    video.Statistics.ViewCount,
+				},
+				Status: &pbVideo.VideoStatus{
+					Completed: video.Transcode.Completed,
+				},
+			},
+			UserId: video.UserID.Hex(),
+		}
+
+		err = v.videoPublisher.PublishVideoProcessed(processedEvent)
+		if err != nil {
+		    log.Warn().Err(err).Msgf("unable to publish '%s'", broker.VideoProcessedTopic)
+		}
 	}
 }
 

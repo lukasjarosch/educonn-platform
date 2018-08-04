@@ -14,6 +14,7 @@ It has these top-level messages:
 	VideoStatistics
 	VideoThumbnail
 	VideoCreatedEvent
+	VideoProcessedEvent
 	CreateVideoRequest
 	CreateVideoResponse
 	GetVideoRequest

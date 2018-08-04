@@ -58,6 +58,11 @@ message VideoCreatedEvent {
     string userId = 2;
 }
 
+message VideoProcessedEvent {
+    VideoDetails video = 1;
+    string userId = 2;
+}
+
 // ----------------------------
 // REQUESTS AND RESPONSES
 // ----------------------------

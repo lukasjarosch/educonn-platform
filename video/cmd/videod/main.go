@@ -66,9 +66,13 @@ func main() {
 
 	// Create publishers
 	videoCreatedPublisher := micro.NewPublisher(broker.VideoCreatedTopic, svc.Client())
+	videoProcessedPublisher := micro.NewPublisher(broker.VideoProcessedTopic, svc.Client())
 
 	// JWT handler (without private key, we only want to validate)
 	jwtHandler, err := jwt_handler.NewJwtTokenHandler(config.AuthPublicKeyPath, "")
+	if err != nil {
+	    log.Fatal().Err(err).Msg("unable to create new JwtTokenHandler")
+	}
 
 	// Create subscribers
 	err = micro.RegisterSubscriber(
@@ -77,18 +81,24 @@ func main() {
 		transcodeCompletedSubscriber,
 		server.SubscriberQueue(broker.TranscodeCompletedQueue),
 	)
+	if err != nil {
+	    log.Fatal().Err(err)
+	}
 	err = micro.RegisterSubscriber(
 		broker.TranscodeFailedTopic,
 		svc.Server(),
 		transcodeFailedSubscriber,
 		server.SubscriberQueue(broker.TranscodeFailedQueue),
 	)
+	if err != nil {
+		log.Fatal().Err(err)
+	}
 
 	// Attach handler
 	pbVideo.RegisterVideoHandler(
 		svc.Server(),
 		service.NewVideoService(
-			broker.NewEventPublisher(videoCreatedPublisher),
+			broker.NewEventPublisher(videoCreatedPublisher, videoProcessedPublisher),
 			bucket,
 			transcodeCompletedChannel,
 			transcodeFailedChannel,
