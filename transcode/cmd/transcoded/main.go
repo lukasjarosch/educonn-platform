@@ -47,6 +47,7 @@ func main() {
 	}
 	micro.Broker(rabbitBroker)
 
+
 	// setup mongodb
 	transcodeRepository,err := mongodb.NewTranscodeRepository(config.DbHost, config.DbPort, config.DbUser, config.DbPass, config.DbName)
 	if err != nil {

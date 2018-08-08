@@ -24,3 +24,4 @@ func (v *VideoCreatedSubscriber) Process(ctx context.Context, event *pbVideo.Vid
 	v.videoCreatedChan <- event
 	return nil
 }
+
