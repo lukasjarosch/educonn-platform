@@ -5,24 +5,33 @@ import (
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
 	pbMail "github.com/lukasjarosch/educonn-platform/mail/proto"
 	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/rs/zerolog/log"
 )
 
 type mailService struct {
-	userCreatedChan chan *pbUser.UserCreatedEvent
-	userDeletedChan chan *pbUser.UserDeletedEvent
-	mail            *mail.SmtpMail
-}
-
-type mailRepository interface {
+	userCreatedChan    chan *pbUser.UserCreatedEvent
+	userDeletedChan    chan *pbUser.UserDeletedEvent
+	videoProcessedChan chan *pbVideo.VideoProcessedEvent
+	mail               *mail.SmtpMail
+	userClient         pbUser.UserClient
 }
 
 func NewMailService(userCreatedChannel chan *pbUser.UserCreatedEvent,
-	userDeletedChannel chan *pbUser.UserDeletedEvent, mail *mail.SmtpMail) pbMail.EmailHandler {
+	userDeletedChannel chan *pbUser.UserDeletedEvent,
+	videoProcessedChannel chan *pbVideo.VideoProcessedEvent,
+	mail *mail.SmtpMail, userClient pbUser.UserClient) pbMail.EmailHandler {
 
-	svc := &mailService{userCreatedChan: userCreatedChannel, userDeletedChan: userDeletedChannel, mail: mail}
+	svc := &mailService{
+		userCreatedChan:    userCreatedChannel,
+		userDeletedChan:    userDeletedChannel,
+		videoProcessedChan: videoProcessedChannel,
+		mail:               mail,
+		userClient:         userClient,
+	}
 	go svc.awaitUserCreatedEvent()
 	go svc.awaitUserDeletedEvent()
+	go svc.awaitVideoProcessedEvent()
 	return svc
 }
 
@@ -53,5 +62,22 @@ func (m *mailService) awaitUserDeletedEvent() {
 			continue
 		}
 		log.Info().Str("recipient", userDeleted.User.Email).Msg("sent farewell email")
+	}
+}
+
+func (m *mailService) awaitVideoProcessedEvent() {
+	for videoProcessed := range m.videoProcessedChan {
+		user, err := m.userClient.Get(context.Background(), &pbUser.UserDetails{Id: videoProcessed.UserId})
+		if err != nil {
+			log.Warn().Err(err).Str("user", videoProcessed.UserId).Msg("unable to fetch user")
+			continue
+		}
+
+		err = m.mail.SendVideoProcessed(videoProcessed.Video, user.User)
+		if err != nil {
+			log.Warn().Err(err).Str("recipient", user.User.Email).Msg("unable to send mail")
+			continue
+		}
+		log.Info().Str("recipient", user.User.Email).Msg("sent video-processed notification")
 	}
 }

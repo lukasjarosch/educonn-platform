@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
 	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"strconv"
 	gomail "github.com/go-mail/mail"
 )
@@ -51,6 +52,10 @@ func (m *SmtpMail) SendUserDeleted(user *pbUser.UserDetails) (err error) {
 	if err = m.send(from, to, subject, body); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (m *SmtpMail) SendVideoProcessed(video *pbVideo.VideoDetails, user *pbUser.UserDetails) (err error) {
 	return nil
 }
 

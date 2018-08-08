@@ -13,6 +13,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/mail/internal/service"
 	pbMail "github.com/lukasjarosch/educonn-platform/mail/proto"
 	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
+	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
 	"fmt"
@@ -28,9 +29,11 @@ func main() {
 
 	// setup the consumer
 	userCreatedChannel := make(chan *pbUser.UserCreatedEvent)
-	userDeletedChannel := make(chan *pbUser.UserDeletedEvent)
 	userCreatedSubscriber := broker.NewUserCreatedSubscriber(userCreatedChannel)
+	userDeletedChannel := make(chan *pbUser.UserDeletedEvent)
 	userDeletedSubscriber := broker.NewUserDeletedSubscriber(userDeletedChannel)
+	videoProcessedChannel := make(chan *pbVideo.VideoProcessedEvent)
+	videoProcessedSubscriber := broker.NewVideoProcessedSubscriber(videoProcessedChannel)
 
 	// setup micro service
 	svc := micro.NewService(
@@ -86,13 +89,30 @@ func main() {
 	}
 	log.Info().Msg(fmt.Sprintf("subscribed to %s", broker.UserDeletedTopic))
 
+	// VideoProcessedSubscriber
+	err = micro.RegisterSubscriber(
+		broker.VideoProcessedTopic,
+		svc.Server(),
+		videoProcessedSubscriber,
+		server.SubscriberQueue(broker.VideoProcessedQueue),
+	)
+	if err != nil {
+		panic(err)
+	}
+	log.Info().Msg(fmt.Sprintf("subscribed to %s", broker.VideoProcessedTopic))
+
+	// UserClient
+	userClient := pbUser.NewUserClient("educonn.srv.user", svc.Client())
+
 	// service handler
 	pbMail.RegisterEmailHandler(
 		svc.Server(),
 		service.NewMailService(
 			userCreatedChannel,
 			userDeletedChannel,
+			videoProcessedChannel,
 			mailer,
+			userClient,
 		))
 
 	// fire

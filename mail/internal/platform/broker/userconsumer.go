@@ -11,6 +11,8 @@ const (
 	UserCreatedQueue = "user-created-queue"
 	UserDeletedTopic = "user.events.deleted"
 	UserDeletedQueue = "user-deleted-queue"
+	VideoProcessedTopic = "video.events.processed"
+	VideoProcessedQueue = "video-processed-queue"
 )
 
 type UserCreatedSubscriber struct {
