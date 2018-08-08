@@ -2,11 +2,18 @@ package service
 
 import (
 	"context"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
 	pbMail "github.com/lukasjarosch/educonn-platform/mail/proto"
 	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/rs/zerolog/log"
+)
+
+const (
+	userCreatedTemplate    = "user-created.html"
+	userDeletedTemplate    = "user-deleted.html"
+	videoProcessedTemplate = "video-processed.html"
 )
 
 type mailService struct {
@@ -15,12 +22,15 @@ type mailService struct {
 	videoProcessedChan chan *pbVideo.VideoProcessedEvent
 	mail               *mail.SmtpMail
 	userClient         pbUser.UserClient
+	videoClient        pbVideo.VideoClient
 }
 
 func NewMailService(userCreatedChannel chan *pbUser.UserCreatedEvent,
 	userDeletedChannel chan *pbUser.UserDeletedEvent,
 	videoProcessedChannel chan *pbVideo.VideoProcessedEvent,
-	mail *mail.SmtpMail, userClient pbUser.UserClient) pbMail.EmailHandler {
+	mail *mail.SmtpMail,
+	userClient pbUser.UserClient,
+	videoClient pbVideo.VideoClient) pbMail.EmailHandler {
 
 	svc := &mailService{
 		userCreatedChan:    userCreatedChannel,
@@ -28,6 +38,7 @@ func NewMailService(userCreatedChannel chan *pbUser.UserCreatedEvent,
 		videoProcessedChan: videoProcessedChannel,
 		mail:               mail,
 		userClient:         userClient,
+		videoClient:        videoClient,
 	}
 	go svc.awaitUserCreatedEvent()
 	go svc.awaitUserDeletedEvent()
@@ -45,39 +56,102 @@ func (m *mailService) Send(ctx context.Context, request *pbMail.EmailRequest, re
 // The method is running as go routine, called by NewMailService and handles the sending of the emails
 func (m *mailService) awaitUserCreatedEvent() {
 	for userCreated := range m.userCreatedChan {
-		err := m.mail.SendUserCreated(userCreated.User)
+
+		templateData := struct {
+			Name string
+			URL  string
+		}{
+			Name: userCreated.User.FirstName,
+			URL:  "https://educonn.de/user/validate_email?token=asdfasdfkl23klön234ölkn",
+		}
+
+		// parse template
+		mailRequest := mail.NewRequest(userCreated.User.Email, "notify@educonn.de", "Welcome to EduConn!", "awesome")
+		err := mailRequest.ParseTemplate(config.TemplatePath+"/"+userCreatedTemplate, templateData)
 		if err != nil {
-			log.Warn().Interface("error", err).Str("recipient", userCreated.User.Email).Msg("unable to send mail")
+			log.Info().Err(err).Msg("ParseTemplate failed")
+		}
+
+		// send mail
+		_, err = m.mail.SendEmail(mailRequest)
+		if err != nil {
+			log.Warn().Err(err).Msg("unable to send email")
 			continue
 		}
-		log.Info().Str("recipient", userCreated.User.Email).Msg("sent welcome email")
+
+		log.Info().Str("user", userCreated.User.Id).Msg("sent welcome email")
 	}
 }
 
 func (m *mailService) awaitUserDeletedEvent() {
 	for userDeleted := range m.userDeletedChan {
-		err := m.mail.SendUserDeleted(userDeleted.User)
+		templateData := struct {
+			Name string
+			URL  string
+		}{
+			Name: userDeleted.User.FirstName,
+			URL:  "https://educonn.de/user/validate_email?token=asdfasdfkl23klön234ölkn",
+		}
+
+		// parse template
+		mailRequest := mail.NewRequest(userDeleted.User.Email, "notify@educonn.de", "Farewell,"+userDeleted.User.FirstName, "sorry to see you leave")
+		err := mailRequest.ParseTemplate(config.TemplatePath+"/"+userDeletedTemplate, templateData)
 		if err != nil {
-			log.Warn().Interface("error", err).Str("recipient", userDeleted.User.Email).Msg("unable to send mail")
+			log.Info().Err(err).Msg("ParseTemplate failed")
+		}
+
+		// send mail
+		_, err = m.mail.SendEmail(mailRequest)
+		if err != nil {
+			log.Warn().Err(err).Msg("unable to send email")
 			continue
 		}
-		log.Info().Str("recipient", userDeleted.User.Email).Msg("sent farewell email")
+
+		log.Info().Str("user", userDeleted.User.Id).Msg("sent farewell email")
 	}
 }
 
 func (m *mailService) awaitVideoProcessedEvent() {
 	for videoProcessed := range m.videoProcessedChan {
+
+		// fetch user
 		user, err := m.userClient.Get(context.Background(), &pbUser.UserDetails{Id: videoProcessed.UserId})
 		if err != nil {
 			log.Warn().Err(err).Str("user", videoProcessed.UserId).Msg("unable to fetch user")
 			continue
 		}
 
-		err = m.mail.SendVideoProcessed(videoProcessed.Video, user.User)
+		// fetch video url
+		video, err := m.videoClient.GetById(context.Background(), &pbVideo.GetVideoRequest{Id:videoProcessed.Video.Id})
 		if err != nil {
-			log.Warn().Err(err).Str("recipient", user.User.Email).Msg("unable to send mail")
+			log.Warn().Err(err).Str("video", videoProcessed.Video.Id).Msg("unable to fetch video")
 			continue
 		}
-		log.Info().Str("recipient", user.User.Email).Msg("sent video-processed notification")
+
+		templateData := struct {
+			Name       string
+			URL        string
+			VideoTitle string
+		}{
+			Name:       user.User.FirstName,
+			URL:		video.SignedUrl,
+			VideoTitle: videoProcessed.Video.Title,
+		}
+
+		// parse template
+		mailRequest := mail.NewRequest(user.User.Email, "notify@educonn.de", "Your video is ready to watch", "video ready")
+		err = mailRequest.ParseTemplate(config.TemplatePath+"/"+videoProcessedTemplate, templateData)
+		if err != nil {
+			log.Info().Err(err).Msg("ParseTemplate failed")
+		}
+
+		// send mail
+		_, err = m.mail.SendEmail(mailRequest)
+		if err != nil {
+			log.Warn().Err(err).Msg("unable to send email")
+			continue
+		}
+
+		log.Debug().Str("user", user.User.Id).Msg("user notified that the video is processed")
 	}
 }

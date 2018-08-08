@@ -101,8 +101,9 @@ func main() {
 	}
 	log.Info().Msg(fmt.Sprintf("subscribed to %s", broker.VideoProcessedTopic))
 
-	// UserClient
+	// rpc clients
 	userClient := pbUser.NewUserClient("educonn.srv.user", svc.Client())
+	videoClient := pbVideo.NewVideoClient("educonn.srv.video", svc.Client())
 
 	// service handler
 	pbMail.RegisterEmailHandler(
@@ -113,6 +114,7 @@ func main() {
 			videoProcessedChannel,
 			mailer,
 			userClient,
+			videoClient,
 		))
 
 	// fire

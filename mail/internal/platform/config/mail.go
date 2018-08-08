@@ -13,6 +13,7 @@ var (
 )
 
 var (
+	TemplatePath = os.Getenv("MAIL_TEMPLATE_PATH")
 	UserCreatedSubject = "Welcome to EduConn %s"
 	UserDeletedSubject = "We're sorry to see you go %s"
 )

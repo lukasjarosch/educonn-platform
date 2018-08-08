@@ -1,20 +1,49 @@
 package mail
 
 import (
-	"fmt"
-	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
-	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
-	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
+	"bytes"
 	"strconv"
+
+	"net/smtp"
+
+	"github.com/alecthomas/template"
 	gomail "github.com/go-mail/mail"
 )
+
+//MailRequest struct
+type MailRequest struct {
+	from    string
+	to      string
+	subject string
+	body    string
+}
+
+func NewRequest(to string, from string, subject, body string) *MailRequest {
+	return &MailRequest{
+		to:      to,
+		from:    from,
+		subject: subject,
+		body:    body,
+	}
+}
+func (r *MailRequest) ParseTemplate(templateFileName string, data interface{}) error {
+	t, err := template.ParseFiles(templateFileName)
+	if err != nil {
+		return err
+	}
+	buf := new(bytes.Buffer)
+	if err = t.Execute(buf, data); err != nil {
+		return err
+	}
+	r.body = buf.String()
+	return nil
+}
 
 type SmtpMail struct {
 	dialer   *gomail.Dialer
 	hostname string
 	port     int
-	username string
-	password string
+	auth     smtp.Auth
 }
 
 // New creates a new mail sender
@@ -27,49 +56,18 @@ func NewSmtpMail(hostname string, port string, username string, password string)
 	return &SmtpMail{dialer: dialer}, nil
 }
 
-// SendUserCreated sends an UserCreated email aka. the welcome email
-func (m *SmtpMail) SendUserCreated(user *pbUser.UserDetails) (err error) {
-	from := config.DefaultSenderAddress
-	to := user.Email
-	name := user.FirstName
-	subject := fmt.Sprintf(config.UserCreatedSubject, name)
-	body := "Ohai" // TODO: proper mail text
-
-	if err = m.send(from, to, subject, body); err != nil {
-		return err
-	}
-	return nil
-}
-
-// SendUserDeleted sends an UserDeleted email aka. goodbye email
-func (m *SmtpMail) SendUserDeleted(user *pbUser.UserDetails) (err error) {
-	from := config.DefaultSenderAddress
-	to := user.Email
-	name := user.FirstName
-	subject := fmt.Sprintf(config.UserDeletedSubject, name)
-	body := "Goodbye" // TODO: proper mail text
-
-	if err = m.send(from, to, subject, body); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *SmtpMail) SendVideoProcessed(video *pbVideo.VideoDetails, user *pbUser.UserDetails) (err error) {
-	return nil
-}
-
-// send actually sends out the email
-func (m *SmtpMail) send(from string, to string, subject string, body string) (err error) {
+func (m *SmtpMail) SendEmail(request *MailRequest) (bool, error) {
 	mail := gomail.NewMessage()
 
-	mail.SetHeader("From", from)
-	mail.SetHeader("To", to)
-	mail.SetHeader("Subject", subject)
-	mail.SetBody("text/html", body)
+	mail.SetHeader("From", request.from)
+	mail.SetHeader("To", request.to)
+	mail.SetHeader("Subject", request.subject)
+	mail.SetHeader("")
+	mail.SetBody("text/html", request.body)
 
 	if err := m.dialer.DialAndSend(mail); err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return true, nil
 }
+
