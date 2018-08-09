@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package educonn.lesson_video;
+
+
+service VideoLesson {
+    rpc Create(CreateRequest) returns (CreateResponse) {}
+}
+
+message LessonDetails {
+    string id = 1;
+    string creatorId = 2;
+    string name = 3;
+    string description = 4;
+}
+
+message CreateRequest {
+    LessonDetails lesson = 1;
+}
+
+message CreateResponse {
+    LessonDetails lesson = 1;
+}

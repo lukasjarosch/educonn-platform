@@ -152,8 +152,6 @@ func (v *videoService) GetById(ctx context.Context, req *pbVideo.GetVideoRequest
 			TranscodedKey: video.Storage.OutputKey,
 		},
 		Statistics: &pbVideo.VideoStatistics{
-			DislikeCound: video.Statistics.DislikeCount,
-			LikeCount:    video.Statistics.LikeCount,
 			ViewCount:    video.Statistics.ViewCount,
 		},
 		Status: &pbVideo.VideoStatus{
@@ -185,8 +183,6 @@ func (v *videoService) GetByUserId(ctx context.Context, req *pbVideo.GetByUserId
 			Description: video.Description,
 			Tags:        video.Tags,
 			Statistics: &pbVideo.VideoStatistics{
-				DislikeCound: video.Statistics.DislikeCount,
-				LikeCount:    video.Statistics.LikeCount,
 				ViewCount:    video.Statistics.ViewCount,
 			},
 		})
@@ -235,8 +231,6 @@ func (v *videoService) awaitTranscodeCompletedEvent() {
 					TranscodedKey: video.Storage.OutputKey,
 				},
 				Statistics: &pbVideo.VideoStatistics{
-					DislikeCound: video.Statistics.DislikeCount,
-					LikeCount:    video.Statistics.LikeCount,
 					ViewCount:    video.Statistics.ViewCount,
 				},
 				Status: &pbVideo.VideoStatus{

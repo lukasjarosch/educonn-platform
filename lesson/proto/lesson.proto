@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package educonn.lesson;
+
+import "lesson-video/proto/lesson-video.proto";
+
+service Lesson {
+    rpc CreateVideoLesson(CreateVideoLessonRequest) returns (CreateVideoLessonResponse) {}
+}
+
+enum Type {
+    VIDEO = 0;
+    TEXT = 1;
+}
+
+message LessonDetails {
+    oneof details {
+        educonn.lesson_video.LessonDetails video = 1;
+    }
+}
+
+message CreateVideoLessonRequest {
+    educonn.lesson_video.CreateRequest lesson = 1;
+}
+
+message CreateVideoLessonResponse {
+    educonn.lesson_video.CreateResponse lesson = 1;
+}

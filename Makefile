@@ -24,6 +24,21 @@ docker: user-docker mail-docker video-docker transcode-docker user-api-docker vi
 docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev transcode-docker-push-dev
 proto: user-proto mail-proto video-proto transcode-proto user-api-proto video-api-proto
 
+# --------- LESSON ---------
+lesson-proto: lesson-video-proto
+	@echo protoc LESSON
+	@protoc -I. --go_out=plugins=micro:. --micro_out=. lesson/proto/lesson.proto
+
+# --------- VIDEO LESSON ---------
+lesson-video-run:
+	@echo Starting the VIDEO LESSON service
+	@cd lesson-video/cmd/lesson-videod && go run main.go
+
+lesson-video-proto:
+	@echo protoc VIDEO LESSON
+	@protoc -I. --go_out=plugins=micro:. --micro_out=. lesson-video/proto/lesson-video.proto
+	@cd lesson-video/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src lesson-video.proto
+
 # --------- VIDEO API ---------
 video-api: clean
 	@echo Buildung VIDEO API service ...
