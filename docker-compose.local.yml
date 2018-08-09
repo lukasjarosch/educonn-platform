@@ -73,10 +73,11 @@ services:
       SMTP_HOST: smtp.mailtrap.io
       SMTP_PORT: 2525
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
-      MAIL_TEMPLATE_PATH: asdfa
+      MAIL_TEMPLATE_PATH: /app/templates
     volumes:
       - ./mail/cmd/maild/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+      - ./mail/templates:/app/templates
 
   # [educonn] video service
   video:
