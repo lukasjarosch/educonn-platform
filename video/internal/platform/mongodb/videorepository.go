@@ -109,3 +109,22 @@ func (v *VideoRepository) FindByUserId(userId string) ([]*Video, error) {
 	}
 	return videos, nil
 }
+
+func (v *VideoRepository) IncrementViews(videoId bson.ObjectId) error {
+	session := v.session.Clone()
+	defer session.Close()
+
+	video, err := v.FindById(videoId.Hex())
+	if err != nil {
+	    return err
+	}
+
+	video.Statistics.ViewCount = video.Statistics.ViewCount + 1
+
+	err = v.UpdateVideo(video)
+	if err != nil {
+	    return err
+	}
+
+	return nil	
+}

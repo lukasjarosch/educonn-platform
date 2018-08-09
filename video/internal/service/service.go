@@ -110,7 +110,7 @@ func (v *videoService) Create(ctx context.Context, req *pbVideo.CreateVideoReque
 	return nil
 }
 
-// GetById fetches a video by it's ID
+// GetById fetches a video by it's ID. This method does increment the view counter of the video.
 func (v *videoService) GetById(ctx context.Context, req *pbVideo.GetVideoRequest, res *pbVideo.GetVideoResponse) error {
 	if req.Id == "" {
 		return errors.MissingVideoId
@@ -134,6 +134,14 @@ func (v *videoService) GetById(ctx context.Context, req *pbVideo.GetVideoRequest
 	if err != nil {
 		log.Warn().Err(err).Str("video", req.Id).Msg("unable to fetch signed url for video")
 	}
+
+	// count the view
+	err = v.videoRepository.IncrementViews(video.ID)
+	if err != nil {
+	    log.Warn().Err(err).Str("video", video.ID.Hex()).Msg("unable to increment view counter")
+	}
+	// TODO: publish video.events.view
+
 	res.Video = &pbVideo.VideoDetails{
 		Id:          video.ID.Hex(),
 		Title:       video.Title,
