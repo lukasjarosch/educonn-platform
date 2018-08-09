@@ -9,6 +9,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	api "github.com/lukasjarosch/educonn-platform/api/video/internal/service"
+	"time"
 )
 
 func main() {
@@ -20,6 +21,9 @@ func main() {
 	// Init service
 	service := micro.NewService(
 		micro.Name(config.ServiceName),
+		micro.Version(config.Version),
+		micro.RegisterTTL(time.Second*30),
+		micro.RegisterInterval(time.Second*10),
 	)
 	service.Init()
 
