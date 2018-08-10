@@ -6,7 +6,6 @@ package educonn_lesson
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import proto1 "lesson-video/proto"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -39,298 +38,469 @@ func (x Type) String() string {
 	return proto.EnumName(Type_name, int32(x))
 }
 func (Type) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_lesson_4e9f42ca6494bd38, []int{0}
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{0}
 }
 
-type LessonDetails struct {
-	Meta *LessonMeta `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	// Types that are valid to be assigned to Details:
-	//	*LessonDetails_Video
-	Details              isLessonDetails_Details `protobuf_oneof:"details"`
-	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
-	XXX_unrecognized     []byte                  `json:"-"`
-	XXX_sizecache        int32                   `json:"-"`
+// ----------------------------
+// LESSON
+// ----------------------------
+type Lesson struct {
+	Base                 *LessonBase       `protobuf:"bytes,1,opt,name=base,proto3" json:"base,omitempty"`
+	Stats                *LessonStatistics `protobuf:"bytes,2,opt,name=stats,proto3" json:"stats,omitempty"`
+	Video                *VideoLesson      `protobuf:"bytes,3,opt,name=video,proto3" json:"video,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *LessonDetails) Reset()         { *m = LessonDetails{} }
-func (m *LessonDetails) String() string { return proto.CompactTextString(m) }
-func (*LessonDetails) ProtoMessage()    {}
-func (*LessonDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lesson_4e9f42ca6494bd38, []int{0}
+func (m *Lesson) Reset()         { *m = Lesson{} }
+func (m *Lesson) String() string { return proto.CompactTextString(m) }
+func (*Lesson) ProtoMessage()    {}
+func (*Lesson) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{0}
 }
-func (m *LessonDetails) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_LessonDetails.Unmarshal(m, b)
+func (m *Lesson) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Lesson.Unmarshal(m, b)
 }
-func (m *LessonDetails) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_LessonDetails.Marshal(b, m, deterministic)
+func (m *Lesson) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Lesson.Marshal(b, m, deterministic)
 }
-func (dst *LessonDetails) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LessonDetails.Merge(dst, src)
+func (dst *Lesson) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Lesson.Merge(dst, src)
 }
-func (m *LessonDetails) XXX_Size() int {
-	return xxx_messageInfo_LessonDetails.Size(m)
+func (m *Lesson) XXX_Size() int {
+	return xxx_messageInfo_Lesson.Size(m)
 }
-func (m *LessonDetails) XXX_DiscardUnknown() {
-	xxx_messageInfo_LessonDetails.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_LessonDetails proto.InternalMessageInfo
-
-type isLessonDetails_Details interface {
-	isLessonDetails_Details()
+func (m *Lesson) XXX_DiscardUnknown() {
+	xxx_messageInfo_Lesson.DiscardUnknown(m)
 }
 
-type LessonDetails_Video struct {
-	Video *proto1.VideoLessonDetails `protobuf:"bytes,2,opt,name=video,proto3,oneof"`
-}
+var xxx_messageInfo_Lesson proto.InternalMessageInfo
 
-func (*LessonDetails_Video) isLessonDetails_Details() {}
-
-func (m *LessonDetails) GetDetails() isLessonDetails_Details {
+func (m *Lesson) GetBase() *LessonBase {
 	if m != nil {
-		return m.Details
+		return m.Base
 	}
 	return nil
 }
 
-func (m *LessonDetails) GetMeta() *LessonMeta {
+func (m *Lesson) GetStats() *LessonStatistics {
 	if m != nil {
-		return m.Meta
+		return m.Stats
 	}
 	return nil
 }
 
-func (m *LessonDetails) GetVideo() *proto1.VideoLessonDetails {
-	if x, ok := m.GetDetails().(*LessonDetails_Video); ok {
-		return x.Video
+func (m *Lesson) GetVideo() *VideoLesson {
+	if m != nil {
+		return m.Video
 	}
 	return nil
 }
 
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*LessonDetails) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _LessonDetails_OneofMarshaler, _LessonDetails_OneofUnmarshaler, _LessonDetails_OneofSizer, []interface{}{
-		(*LessonDetails_Video)(nil),
-	}
-}
-
-func _LessonDetails_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*LessonDetails)
-	// details
-	switch x := m.Details.(type) {
-	case *LessonDetails_Video:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		if err := b.EncodeMessage(x.Video); err != nil {
-			return err
-		}
-	case nil:
-	default:
-		return fmt.Errorf("LessonDetails.Details has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _LessonDetails_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*LessonDetails)
-	switch tag {
-	case 2: // details.video
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		msg := new(proto1.VideoLessonDetails)
-		err := b.DecodeMessage(msg)
-		m.Details = &LessonDetails_Video{msg}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _LessonDetails_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*LessonDetails)
-	// details
-	switch x := m.Details.(type) {
-	case *LessonDetails_Video:
-		s := proto.Size(x.Video)
-		n += 1 // tag and wire
-		n += proto.SizeVarint(uint64(s))
-		n += s
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
-}
-
-type LessonMeta struct {
+type LessonBase struct {
 	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	CreatorId            string   `protobuf:"bytes,2,opt,name=creatorId,proto3" json:"creatorId,omitempty"`
-	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Description          string   `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	Type                 Type     `protobuf:"varint,5,opt,name=type,proto3,enum=educonn.lesson.Type" json:"type,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description          string   `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Type                 Type     `protobuf:"varint,4,opt,name=type,proto3,enum=educonn.lesson.Type" json:"type,omitempty"`
+	UserId               string   `protobuf:"bytes,5,opt,name=userId,proto3" json:"userId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *LessonMeta) Reset()         { *m = LessonMeta{} }
-func (m *LessonMeta) String() string { return proto.CompactTextString(m) }
-func (*LessonMeta) ProtoMessage()    {}
-func (*LessonMeta) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lesson_4e9f42ca6494bd38, []int{1}
+func (m *LessonBase) Reset()         { *m = LessonBase{} }
+func (m *LessonBase) String() string { return proto.CompactTextString(m) }
+func (*LessonBase) ProtoMessage()    {}
+func (*LessonBase) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{1}
 }
-func (m *LessonMeta) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_LessonMeta.Unmarshal(m, b)
+func (m *LessonBase) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LessonBase.Unmarshal(m, b)
 }
-func (m *LessonMeta) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_LessonMeta.Marshal(b, m, deterministic)
+func (m *LessonBase) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LessonBase.Marshal(b, m, deterministic)
 }
-func (dst *LessonMeta) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_LessonMeta.Merge(dst, src)
+func (dst *LessonBase) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LessonBase.Merge(dst, src)
 }
-func (m *LessonMeta) XXX_Size() int {
-	return xxx_messageInfo_LessonMeta.Size(m)
+func (m *LessonBase) XXX_Size() int {
+	return xxx_messageInfo_LessonBase.Size(m)
 }
-func (m *LessonMeta) XXX_DiscardUnknown() {
-	xxx_messageInfo_LessonMeta.DiscardUnknown(m)
+func (m *LessonBase) XXX_DiscardUnknown() {
+	xxx_messageInfo_LessonBase.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_LessonMeta proto.InternalMessageInfo
+var xxx_messageInfo_LessonBase proto.InternalMessageInfo
 
-func (m *LessonMeta) GetId() string {
+func (m *LessonBase) GetId() string {
 	if m != nil {
 		return m.Id
 	}
 	return ""
 }
 
-func (m *LessonMeta) GetCreatorId() string {
-	if m != nil {
-		return m.CreatorId
-	}
-	return ""
-}
-
-func (m *LessonMeta) GetName() string {
+func (m *LessonBase) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *LessonMeta) GetDescription() string {
+func (m *LessonBase) GetDescription() string {
 	if m != nil {
 		return m.Description
 	}
 	return ""
 }
 
-func (m *LessonMeta) GetType() Type {
+func (m *LessonBase) GetType() Type {
 	if m != nil {
 		return m.Type
 	}
 	return Type_VIDEO
 }
 
-type CreateRequest struct {
-	Lesson               *LessonDetails `protobuf:"bytes,1,opt,name=lesson,proto3" json:"lesson,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
+func (m *LessonBase) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
 }
 
-func (m *CreateRequest) Reset()         { *m = CreateRequest{} }
-func (m *CreateRequest) String() string { return proto.CompactTextString(m) }
-func (*CreateRequest) ProtoMessage()    {}
-func (*CreateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lesson_4e9f42ca6494bd38, []int{2}
-}
-func (m *CreateRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CreateRequest.Unmarshal(m, b)
-}
-func (m *CreateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CreateRequest.Marshal(b, m, deterministic)
-}
-func (dst *CreateRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateRequest.Merge(dst, src)
-}
-func (m *CreateRequest) XXX_Size() int {
-	return xxx_messageInfo_CreateRequest.Size(m)
-}
-func (m *CreateRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateRequest.DiscardUnknown(m)
+type LessonStatistics struct {
+	Likes                int64    `protobuf:"varint,1,opt,name=likes,proto3" json:"likes,omitempty"`
+	Dislikes             int64    `protobuf:"varint,2,opt,name=dislikes,proto3" json:"dislikes,omitempty"`
+	Views                int64    `protobuf:"varint,3,opt,name=views,proto3" json:"views,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-var xxx_messageInfo_CreateRequest proto.InternalMessageInfo
+func (m *LessonStatistics) Reset()         { *m = LessonStatistics{} }
+func (m *LessonStatistics) String() string { return proto.CompactTextString(m) }
+func (*LessonStatistics) ProtoMessage()    {}
+func (*LessonStatistics) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{2}
+}
+func (m *LessonStatistics) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LessonStatistics.Unmarshal(m, b)
+}
+func (m *LessonStatistics) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LessonStatistics.Marshal(b, m, deterministic)
+}
+func (dst *LessonStatistics) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LessonStatistics.Merge(dst, src)
+}
+func (m *LessonStatistics) XXX_Size() int {
+	return xxx_messageInfo_LessonStatistics.Size(m)
+}
+func (m *LessonStatistics) XXX_DiscardUnknown() {
+	xxx_messageInfo_LessonStatistics.DiscardUnknown(m)
+}
 
-func (m *CreateRequest) GetLesson() *LessonDetails {
+var xxx_messageInfo_LessonStatistics proto.InternalMessageInfo
+
+func (m *LessonStatistics) GetLikes() int64 {
+	if m != nil {
+		return m.Likes
+	}
+	return 0
+}
+
+func (m *LessonStatistics) GetDislikes() int64 {
+	if m != nil {
+		return m.Dislikes
+	}
+	return 0
+}
+
+func (m *LessonStatistics) GetViews() int64 {
+	if m != nil {
+		return m.Views
+	}
+	return 0
+}
+
+// Requests & Responses
+type CreateLessonRequest struct {
+	Lesson               *Lesson  `protobuf:"bytes,1,opt,name=lesson,proto3" json:"lesson,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreateLessonRequest) Reset()         { *m = CreateLessonRequest{} }
+func (m *CreateLessonRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateLessonRequest) ProtoMessage()    {}
+func (*CreateLessonRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{3}
+}
+func (m *CreateLessonRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateLessonRequest.Unmarshal(m, b)
+}
+func (m *CreateLessonRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateLessonRequest.Marshal(b, m, deterministic)
+}
+func (dst *CreateLessonRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateLessonRequest.Merge(dst, src)
+}
+func (m *CreateLessonRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateLessonRequest.Size(m)
+}
+func (m *CreateLessonRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateLessonRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateLessonRequest proto.InternalMessageInfo
+
+func (m *CreateLessonRequest) GetLesson() *Lesson {
 	if m != nil {
 		return m.Lesson
 	}
 	return nil
 }
 
-type CreateResponse struct {
+type CreateLessonResponse struct {
+	Lesson               *Lesson  `protobuf:"bytes,1,opt,name=lesson,proto3" json:"lesson,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CreateResponse) Reset()         { *m = CreateResponse{} }
-func (m *CreateResponse) String() string { return proto.CompactTextString(m) }
-func (*CreateResponse) ProtoMessage()    {}
-func (*CreateResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_lesson_4e9f42ca6494bd38, []int{3}
+func (m *CreateLessonResponse) Reset()         { *m = CreateLessonResponse{} }
+func (m *CreateLessonResponse) String() string { return proto.CompactTextString(m) }
+func (*CreateLessonResponse) ProtoMessage()    {}
+func (*CreateLessonResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{4}
 }
-func (m *CreateResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CreateResponse.Unmarshal(m, b)
+func (m *CreateLessonResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateLessonResponse.Unmarshal(m, b)
 }
-func (m *CreateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CreateResponse.Marshal(b, m, deterministic)
+func (m *CreateLessonResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateLessonResponse.Marshal(b, m, deterministic)
 }
-func (dst *CreateResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateResponse.Merge(dst, src)
+func (dst *CreateLessonResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateLessonResponse.Merge(dst, src)
 }
-func (m *CreateResponse) XXX_Size() int {
-	return xxx_messageInfo_CreateResponse.Size(m)
+func (m *CreateLessonResponse) XXX_Size() int {
+	return xxx_messageInfo_CreateLessonResponse.Size(m)
 }
-func (m *CreateResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateResponse.DiscardUnknown(m)
+func (m *CreateLessonResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateLessonResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_CreateResponse proto.InternalMessageInfo
+var xxx_messageInfo_CreateLessonResponse proto.InternalMessageInfo
+
+func (m *CreateLessonResponse) GetLesson() *Lesson {
+	if m != nil {
+		return m.Lesson
+	}
+	return nil
+}
+
+// ----------------------------
+// VIDEO-LESSON (Type: 0)
+// ----------------------------
+type VideoLesson struct {
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	VideoId              string   `protobuf:"bytes,2,opt,name=videoId,proto3" json:"videoId,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *VideoLesson) Reset()         { *m = VideoLesson{} }
+func (m *VideoLesson) String() string { return proto.CompactTextString(m) }
+func (*VideoLesson) ProtoMessage()    {}
+func (*VideoLesson) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{5}
+}
+func (m *VideoLesson) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VideoLesson.Unmarshal(m, b)
+}
+func (m *VideoLesson) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VideoLesson.Marshal(b, m, deterministic)
+}
+func (dst *VideoLesson) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VideoLesson.Merge(dst, src)
+}
+func (m *VideoLesson) XXX_Size() int {
+	return xxx_messageInfo_VideoLesson.Size(m)
+}
+func (m *VideoLesson) XXX_DiscardUnknown() {
+	xxx_messageInfo_VideoLesson.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VideoLesson proto.InternalMessageInfo
+
+func (m *VideoLesson) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *VideoLesson) GetVideoId() string {
+	if m != nil {
+		return m.VideoId
+	}
+	return ""
+}
+
+type CreateVideoLessonRequest struct {
+	Lesson               *VideoLesson `protobuf:"bytes,1,opt,name=lesson,proto3" json:"lesson,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
+}
+
+func (m *CreateVideoLessonRequest) Reset()         { *m = CreateVideoLessonRequest{} }
+func (m *CreateVideoLessonRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateVideoLessonRequest) ProtoMessage()    {}
+func (*CreateVideoLessonRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{6}
+}
+func (m *CreateVideoLessonRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateVideoLessonRequest.Unmarshal(m, b)
+}
+func (m *CreateVideoLessonRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateVideoLessonRequest.Marshal(b, m, deterministic)
+}
+func (dst *CreateVideoLessonRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateVideoLessonRequest.Merge(dst, src)
+}
+func (m *CreateVideoLessonRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateVideoLessonRequest.Size(m)
+}
+func (m *CreateVideoLessonRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateVideoLessonRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateVideoLessonRequest proto.InternalMessageInfo
+
+func (m *CreateVideoLessonRequest) GetLesson() *VideoLesson {
+	if m != nil {
+		return m.Lesson
+	}
+	return nil
+}
+
+type CreateVideoLessonResponse struct {
+	Lesson               *VideoLesson `protobuf:"bytes,1,opt,name=lesson,proto3" json:"lesson,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
+}
+
+func (m *CreateVideoLessonResponse) Reset()         { *m = CreateVideoLessonResponse{} }
+func (m *CreateVideoLessonResponse) String() string { return proto.CompactTextString(m) }
+func (*CreateVideoLessonResponse) ProtoMessage()    {}
+func (*CreateVideoLessonResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{7}
+}
+func (m *CreateVideoLessonResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateVideoLessonResponse.Unmarshal(m, b)
+}
+func (m *CreateVideoLessonResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateVideoLessonResponse.Marshal(b, m, deterministic)
+}
+func (dst *CreateVideoLessonResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateVideoLessonResponse.Merge(dst, src)
+}
+func (m *CreateVideoLessonResponse) XXX_Size() int {
+	return xxx_messageInfo_CreateVideoLessonResponse.Size(m)
+}
+func (m *CreateVideoLessonResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateVideoLessonResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateVideoLessonResponse proto.InternalMessageInfo
+
+func (m *CreateVideoLessonResponse) GetLesson() *VideoLesson {
+	if m != nil {
+		return m.Lesson
+	}
+	return nil
+}
+
+// ----------------------------
+// TEXT-LESSON (Type: 1)
+// ----------------------------
+type TextLesson struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TextLesson) Reset()         { *m = TextLesson{} }
+func (m *TextLesson) String() string { return proto.CompactTextString(m) }
+func (*TextLesson) ProtoMessage()    {}
+func (*TextLesson) Descriptor() ([]byte, []int) {
+	return fileDescriptor_lesson_686f9da6819e47ca, []int{8}
+}
+func (m *TextLesson) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TextLesson.Unmarshal(m, b)
+}
+func (m *TextLesson) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TextLesson.Marshal(b, m, deterministic)
+}
+func (dst *TextLesson) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TextLesson.Merge(dst, src)
+}
+func (m *TextLesson) XXX_Size() int {
+	return xxx_messageInfo_TextLesson.Size(m)
+}
+func (m *TextLesson) XXX_DiscardUnknown() {
+	xxx_messageInfo_TextLesson.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TextLesson proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*LessonDetails)(nil), "educonn.lesson.LessonDetails")
-	proto.RegisterType((*LessonMeta)(nil), "educonn.lesson.LessonMeta")
-	proto.RegisterType((*CreateRequest)(nil), "educonn.lesson.CreateRequest")
-	proto.RegisterType((*CreateResponse)(nil), "educonn.lesson.CreateResponse")
+	proto.RegisterType((*Lesson)(nil), "educonn.lesson.Lesson")
+	proto.RegisterType((*LessonBase)(nil), "educonn.lesson.LessonBase")
+	proto.RegisterType((*LessonStatistics)(nil), "educonn.lesson.LessonStatistics")
+	proto.RegisterType((*CreateLessonRequest)(nil), "educonn.lesson.CreateLessonRequest")
+	proto.RegisterType((*CreateLessonResponse)(nil), "educonn.lesson.CreateLessonResponse")
+	proto.RegisterType((*VideoLesson)(nil), "educonn.lesson.VideoLesson")
+	proto.RegisterType((*CreateVideoLessonRequest)(nil), "educonn.lesson.CreateVideoLessonRequest")
+	proto.RegisterType((*CreateVideoLessonResponse)(nil), "educonn.lesson.CreateVideoLessonResponse")
+	proto.RegisterType((*TextLesson)(nil), "educonn.lesson.TextLesson")
 	proto.RegisterEnum("educonn.lesson.Type", Type_name, Type_value)
 }
 
-func init() { proto.RegisterFile("lesson/proto/lesson.proto", fileDescriptor_lesson_4e9f42ca6494bd38) }
+func init() { proto.RegisterFile("lesson/proto/lesson.proto", fileDescriptor_lesson_686f9da6819e47ca) }
 
-var fileDescriptor_lesson_4e9f42ca6494bd38 = []byte{
-	// 334 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x91, 0x5f, 0x4b, 0xc3, 0x30,
-	0x14, 0xc5, 0xd7, 0xd9, 0x55, 0x7b, 0xc7, 0xca, 0xb8, 0xf8, 0x50, 0xe7, 0x1f, 0x46, 0x41, 0x28,
-	0x82, 0x1d, 0x4c, 0x7c, 0x17, 0xdd, 0xc4, 0x81, 0x22, 0xc4, 0x31, 0x7c, 0x93, 0xba, 0xdc, 0x87,
-	0xc2, 0xd6, 0xd4, 0x26, 0x13, 0xf6, 0x1d, 0xfc, 0x04, 0x7e, 0x5a, 0x59, 0xee, 0x64, 0x76, 0xea,
-	0x4b, 0xdb, 0x9c, 0x7b, 0xce, 0xf9, 0x25, 0x29, 0x1c, 0xcc, 0x48, 0x6b, 0x95, 0xf7, 0x8a, 0x52,
-	0x19, 0xd5, 0xe3, 0x45, 0x62, 0x17, 0x18, 0x90, 0x5c, 0x4c, 0x55, 0x9e, 0x27, 0xac, 0x76, 0x4e,
-	0xf9, 0x7d, 0xfe, 0x9e, 0x49, 0x52, 0x95, 0x00, 0x4b, 0x1c, 0x8b, 0x3e, 0x1c, 0x68, 0xdd, 0x5b,
-	0x79, 0x40, 0x26, 0xcd, 0x66, 0x1a, 0x13, 0x70, 0xe7, 0x64, 0xd2, 0xd0, 0xe9, 0x3a, 0x71, 0xb3,
-	0xdf, 0x49, 0xaa, 0xbd, 0x09, 0x9b, 0x1f, 0xc8, 0xa4, 0xc2, 0xfa, 0xf0, 0x0a, 0x1a, 0xb6, 0x30,
-	0xac, 0xdb, 0x40, 0xbc, 0x15, 0x78, 0x61, 0xda, 0x64, 0xf5, 0xac, 0x80, 0xee, 0x6a, 0x82, 0x83,
-	0xd7, 0x3e, 0xec, 0x4a, 0xd6, 0xa2, 0x4f, 0x07, 0x60, 0x43, 0xc0, 0x00, 0xea, 0x99, 0xb4, 0x3b,
-	0xf1, 0x45, 0x3d, 0x93, 0x78, 0x04, 0xfe, 0xb4, 0xa4, 0xd4, 0xa8, 0x72, 0x24, 0x2d, 0xcf, 0x17,
-	0x1b, 0x01, 0x11, 0xdc, 0x3c, 0x9d, 0x53, 0xb8, 0x63, 0x07, 0xf6, 0x1b, 0xbb, 0xd0, 0x94, 0xa4,
-	0xa7, 0x65, 0x56, 0x98, 0x4c, 0xe5, 0xa1, 0x6b, 0x47, 0x3f, 0x25, 0x8c, 0xc1, 0x35, 0xcb, 0x82,
-	0xc2, 0x46, 0xd7, 0x89, 0x83, 0xfe, 0xfe, 0xf6, 0x79, 0xc7, 0xcb, 0x82, 0x84, 0x75, 0x44, 0xb7,
-	0xd0, 0xba, 0x59, 0xc1, 0x48, 0xd0, 0xdb, 0x82, 0xb4, 0xc1, 0x4b, 0xf0, 0xd8, 0xb5, 0xbe, 0xac,
-	0xe3, 0xbf, 0x2f, 0x6b, 0x7d, 0x60, 0xb1, 0x36, 0x47, 0x6d, 0x08, 0xbe, 0x7b, 0x74, 0xa1, 0x72,
-	0x4d, 0x67, 0x87, 0xe0, 0xae, 0x38, 0xe8, 0x43, 0x63, 0x32, 0x1a, 0x0c, 0x1f, 0xdb, 0x35, 0xdc,
-	0x03, 0x77, 0x3c, 0x7c, 0x1e, 0xb7, 0x9d, 0xfe, 0x13, 0x78, 0xdc, 0x83, 0x23, 0xf0, 0x38, 0x88,
-	0xbf, 0x48, 0x95, 0x8d, 0x75, 0x4e, 0xfe, 0x1b, 0x33, 0x2f, 0xaa, 0xbd, 0x7a, 0xf6, 0xf7, 0x5f,
-	0x7c, 0x05, 0x00, 0x00, 0xff, 0xff, 0xf2, 0xfb, 0xb0, 0x88, 0x52, 0x02, 0x00, 0x00,
+var fileDescriptor_lesson_686f9da6819e47ca = []byte{
+	// 453 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xc1, 0x6e, 0xd3, 0x40,
+	0x10, 0xad, 0x13, 0xdb, 0x34, 0x13, 0x88, 0xa2, 0x21, 0xaa, 0xdc, 0xf4, 0x12, 0x19, 0x0e, 0x81,
+	0x83, 0x2b, 0x52, 0x09, 0xee, 0x40, 0x90, 0x22, 0x21, 0x15, 0x2d, 0xa1, 0x42, 0x5c, 0x90, 0x1b,
+	0x0f, 0xd2, 0x8a, 0x62, 0x1b, 0xcf, 0x26, 0xd0, 0xff, 0xe0, 0x0f, 0xf8, 0x51, 0x94, 0xd9, 0x4d,
+	0x71, 0x5d, 0xab, 0x82, 0xde, 0xf6, 0xed, 0xbe, 0x99, 0xf7, 0x66, 0x9e, 0x65, 0x38, 0xbc, 0x20,
+	0xe6, 0x22, 0x3f, 0x2e, 0xab, 0xc2, 0x14, 0xc7, 0x16, 0x24, 0x02, 0x70, 0x40, 0xd9, 0x7a, 0x55,
+	0xe4, 0x79, 0x62, 0x6f, 0xe3, 0xdf, 0x1e, 0x84, 0x6f, 0xe5, 0x88, 0x09, 0xf8, 0xe7, 0x29, 0x53,
+	0xe4, 0x4d, 0xbc, 0x69, 0x7f, 0x36, 0x4e, 0xae, 0x33, 0x13, 0xcb, 0x7a, 0x99, 0x32, 0x29, 0xe1,
+	0xe1, 0x73, 0x08, 0xd8, 0xa4, 0x86, 0xa3, 0x8e, 0x14, 0x4c, 0xda, 0x0b, 0xde, 0x9b, 0xd4, 0x68,
+	0x36, 0x7a, 0xc5, 0xca, 0xd2, 0xf1, 0x19, 0x04, 0x1b, 0x9d, 0x51, 0x11, 0x75, 0xa5, 0xee, 0xa8,
+	0x59, 0x77, 0xb6, 0x7d, 0xb4, 0xc5, 0xca, 0x32, 0xe3, 0x5f, 0x1e, 0xc0, 0x5f, 0x7d, 0x1c, 0x40,
+	0x47, 0x67, 0xe2, 0xb3, 0xa7, 0x3a, 0x3a, 0x43, 0x04, 0x3f, 0x4f, 0xbf, 0x91, 0x18, 0xe9, 0x29,
+	0x39, 0xe3, 0x04, 0xfa, 0x19, 0xf1, 0xaa, 0xd2, 0xa5, 0xd1, 0x45, 0x2e, 0x5a, 0x3d, 0x55, 0xbf,
+	0xc2, 0x29, 0xf8, 0xe6, 0xb2, 0xa4, 0xc8, 0x9f, 0x78, 0xd3, 0xc1, 0x6c, 0xd4, 0xb4, 0xb1, 0xbc,
+	0x2c, 0x49, 0x09, 0x03, 0x0f, 0x20, 0x5c, 0x33, 0x55, 0x8b, 0x2c, 0x0a, 0xa4, 0x8d, 0x43, 0xf1,
+	0x27, 0x18, 0x36, 0x87, 0xc4, 0x11, 0x04, 0x17, 0xfa, 0x2b, 0xb1, 0xd8, 0xeb, 0x2a, 0x0b, 0x70,
+	0x0c, 0xfb, 0x99, 0x66, 0xfb, 0xd0, 0x91, 0x87, 0x2b, 0xbc, 0xad, 0xd8, 0x68, 0xfa, 0xc1, 0xe2,
+	0xb1, 0xab, 0x2c, 0x88, 0xe7, 0xf0, 0xf0, 0x55, 0x45, 0xa9, 0x21, 0xb7, 0x09, 0xfa, 0xbe, 0x26,
+	0x36, 0x98, 0x40, 0x68, 0xfd, 0xb9, 0x98, 0x0e, 0xda, 0xb7, 0xae, 0x1c, 0x2b, 0x7e, 0x03, 0xa3,
+	0xeb, 0x6d, 0xb8, 0x2c, 0x72, 0xa6, 0xff, 0xee, 0xf3, 0x02, 0xfa, 0xb5, 0x5c, 0x6e, 0x24, 0x10,
+	0xc1, 0x3d, 0x49, 0x6a, 0x91, 0xb9, 0x10, 0x76, 0x30, 0x3e, 0x85, 0xc8, 0x1a, 0xa8, 0xc7, 0xea,
+	0x86, 0x39, 0x69, 0x98, 0xb8, 0xf5, 0x53, 0xd8, 0x39, 0x79, 0x07, 0x87, 0x2d, 0x0d, 0xdd, 0x58,
+	0x77, 0xea, 0x78, 0x1f, 0x60, 0x49, 0x3f, 0x8d, 0xbd, 0x7d, 0x7a, 0x04, 0xfe, 0x36, 0x7a, 0xec,
+	0x41, 0x70, 0xb6, 0x78, 0x3d, 0x3f, 0x1d, 0xee, 0xe1, 0x3e, 0xf8, 0xcb, 0xf9, 0xc7, 0xe5, 0xd0,
+	0x9b, 0x7d, 0x81, 0x07, 0x2e, 0x71, 0xaa, 0x36, 0x7a, 0x45, 0xf8, 0x01, 0x42, 0xeb, 0x06, 0x1f,
+	0x35, 0xa5, 0x5a, 0xe2, 0x1b, 0x3f, 0xbe, 0x9d, 0x64, 0xa7, 0x88, 0xf7, 0x66, 0x6b, 0xc0, 0x9a,
+	0xd3, 0x9d, 0xd8, 0xe7, 0x2b, 0xb1, 0x69, 0x7b, 0x9f, 0x9b, 0x3b, 0x1e, 0x3f, 0xf9, 0x07, 0xe6,
+	0x4e, 0xf6, 0x3c, 0x94, 0x9f, 0xc4, 0xc9, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x71, 0xaa, 0xed,
+	0x08, 0x41, 0x04, 0x00, 0x00,
 }

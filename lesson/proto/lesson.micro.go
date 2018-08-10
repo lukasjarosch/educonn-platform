@@ -8,17 +8,21 @@ It is generated from these files:
 	lesson/proto/lesson.proto
 
 It has these top-level messages:
-	LessonDetails
-	LessonMeta
-	CreateRequest
-	CreateResponse
+	Lesson
+	LessonBase
+	LessonStatistics
+	CreateLessonRequest
+	CreateLessonResponse
+	VideoLesson
+	CreateVideoLessonRequest
+	CreateVideoLessonResponse
+	TextLesson
 */
 package educonn_lesson
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "lesson-video/proto"
 
 import (
 	client "github.com/micro/go-micro/client"
@@ -42,33 +46,33 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Client API for Lesson service
+// Client API for LessonService service
 
-type LessonClient interface {
-	Create(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*CreateResponse, error)
+type LessonServiceClient interface {
+	Create(ctx context.Context, in *CreateLessonRequest, opts ...client.CallOption) (*CreateLessonResponse, error)
 }
 
-type lessonClient struct {
+type lessonServiceClient struct {
 	c           client.Client
 	serviceName string
 }
 
-func NewLessonClient(serviceName string, c client.Client) LessonClient {
+func NewLessonServiceClient(serviceName string, c client.Client) LessonServiceClient {
 	if c == nil {
 		c = client.NewClient()
 	}
 	if len(serviceName) == 0 {
 		serviceName = "educonn.lesson"
 	}
-	return &lessonClient{
+	return &lessonServiceClient{
 		c:           c,
 		serviceName: serviceName,
 	}
 }
 
-func (c *lessonClient) Create(ctx context.Context, in *CreateRequest, opts ...client.CallOption) (*CreateResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "Lesson.Create", in)
-	out := new(CreateResponse)
+func (c *lessonServiceClient) Create(ctx context.Context, in *CreateLessonRequest, opts ...client.CallOption) (*CreateLessonResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "LessonService.Create", in)
+	out := new(CreateLessonResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,20 +80,72 @@ func (c *lessonClient) Create(ctx context.Context, in *CreateRequest, opts ...cl
 	return out, nil
 }
 
-// Server API for Lesson service
+// Server API for LessonService service
 
-type LessonHandler interface {
-	Create(context.Context, *CreateRequest, *CreateResponse) error
+type LessonServiceHandler interface {
+	Create(context.Context, *CreateLessonRequest, *CreateLessonResponse) error
 }
 
-func RegisterLessonHandler(s server.Server, hdlr LessonHandler, opts ...server.HandlerOption) {
-	s.Handle(s.NewHandler(&Lesson{hdlr}, opts...))
+func RegisterLessonServiceHandler(s server.Server, hdlr LessonServiceHandler, opts ...server.HandlerOption) {
+	s.Handle(s.NewHandler(&LessonService{hdlr}, opts...))
 }
 
-type Lesson struct {
-	LessonHandler
+type LessonService struct {
+	LessonServiceHandler
 }
 
-func (h *Lesson) Create(ctx context.Context, in *CreateRequest, out *CreateResponse) error {
-	return h.LessonHandler.Create(ctx, in, out)
+func (h *LessonService) Create(ctx context.Context, in *CreateLessonRequest, out *CreateLessonResponse) error {
+	return h.LessonServiceHandler.Create(ctx, in, out)
+}
+
+// Client API for VideoLessonService service
+
+type VideoLessonServiceClient interface {
+	Create(ctx context.Context, in *CreateVideoLessonRequest, opts ...client.CallOption) (*CreateVideoLessonResponse, error)
+}
+
+type videoLessonServiceClient struct {
+	c           client.Client
+	serviceName string
+}
+
+func NewVideoLessonServiceClient(serviceName string, c client.Client) VideoLessonServiceClient {
+	if c == nil {
+		c = client.NewClient()
+	}
+	if len(serviceName) == 0 {
+		serviceName = "educonn.lesson"
+	}
+	return &videoLessonServiceClient{
+		c:           c,
+		serviceName: serviceName,
+	}
+}
+
+func (c *videoLessonServiceClient) Create(ctx context.Context, in *CreateVideoLessonRequest, opts ...client.CallOption) (*CreateVideoLessonResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "VideoLessonService.Create", in)
+	out := new(CreateVideoLessonResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for VideoLessonService service
+
+type VideoLessonServiceHandler interface {
+	Create(context.Context, *CreateVideoLessonRequest, *CreateVideoLessonResponse) error
+}
+
+func RegisterVideoLessonServiceHandler(s server.Server, hdlr VideoLessonServiceHandler, opts ...server.HandlerOption) {
+	s.Handle(s.NewHandler(&VideoLessonService{hdlr}, opts...))
+}
+
+type VideoLessonService struct {
+	VideoLessonServiceHandler
+}
+
+func (h *VideoLessonService) Create(ctx context.Context, in *CreateVideoLessonRequest, out *CreateVideoLessonResponse) error {
+	return h.VideoLessonServiceHandler.Create(ctx, in, out)
 }
