@@ -11,6 +11,7 @@ import (
 	"github.com/micro/go-micro/metadata"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/mgo.v2/bson"
+	"strings"
 )
 
 const (
@@ -32,46 +33,57 @@ func NewLessonService(videoLesson *VideoLessonService, repo *mongodb.LessonRepos
 }
 
 // Create a new Lesson
-func (l *LessonService) Create(ctx context.Context, req *pbLesson.CreateLessonRequest, res *pbLesson.CreateLessonRequest) error {
-	_, ok := metadata.FromContext(ctx)
+func (l *LessonService) Create(ctx context.Context, req *pbLesson.CreateLesson_Request, res *pbLesson.CreateLesson_Response) error {
+
+	// make sure we have a userId
+	md, ok := metadata.FromContext(ctx)
 	if !ok {
 		log.Info().Msg("no metadata in request")
 	}
+	userId := md["X-User-Id"]
+	if string(userId) == "" {
+		log.Error().Msg("x-user-id empty")
+		return merr.BadRequest(config.ServiceName, "%s", errors.MissingUserIdHeader)
+	}
 
-	// LessonBase
-	if req.Lesson.Base.Name == "" {
+	// pre-flight checks
+	if req.Name == "" {
 		return merr.BadRequest(config.ServiceName, "%s", errors.MissingLessonName.Error())
 	}
 
-	// TODO: fetch userId from context
-	userId := bson.NewObjectId()
+	if req.Type == "" {
+		return merr.BadRequest(config.ServiceName, "%s", errors.MissingType.Error())
+	}
 
 	// determine lesson type
-	switch req.Lesson.Base.GetType() {
+	switch strings.ToLower(req.GetType()) {
 
-	case pbLesson.Type_VIDEO:
+	case strings.ToLower(pbLesson.Type(pbLesson.Type_VIDEO).String()):
 
 		// Create video lesson
+		videoLessonRequest := &pbLesson.CreateVideoLessonRequest{
+			Lesson: req.Video,
+		}
 		videoLessonResponse := &pbLesson.CreateVideoLessonResponse{}
-		err := l.videoLessonService.Create(ctx, &pbLesson.CreateVideoLessonRequest{Lesson: req.Lesson.Video}, videoLessonResponse)
+		err := l.videoLessonService.Create(ctx, videoLessonRequest, videoLessonResponse)
 		if err != nil {
 			return err
 		}
 
 		// Create BaseLesson and attach newly created VideoLesson
 		lesson, err := l.lessonRepo.CreateBaseLesson(&mongodb.BaseLesson{
-			Title:       req.Lesson.Base.Name,
-			Description: req.Lesson.Base.Description,
-			Type:        req.Lesson.Base.Type.String(),
+			Title:       req.Name,
+			Description: req.Description,
+			Type:        req.Type,
 			TypeID:      bson.ObjectIdHex(videoLessonResponse.Lesson.Id),
-			UserID:      userId,
+			UserID:      bson.ObjectIdHex(userId),
 		})
 		if err != nil {
 			log.Info().Err(err).Msg(errors.MongoCreateFailed.Error())
 			return merr.BadRequest(config.ServiceName, "%s", errors.MongoCreateFailed)
 		}
 		log.Debug().Str("lesson", lesson.ID.Hex()).
-			Str("type", req.Lesson.Base.Type.String()).
+			Str("type", req.Type).
 			Str("type_id", videoLessonResponse.Lesson.Id).
 			Msg("created Lesson")
 
@@ -89,25 +101,31 @@ func (l *LessonService) Create(ctx context.Context, req *pbLesson.CreateLessonRe
 		})
 
 		// response
-		res.Lesson = req.Lesson
-		res.Lesson.Base.Id = lesson.ID.Hex()
-		res.Lesson.Base.Type = pbLesson.Type_VIDEO
-		res.Lesson.Video.Id = videoLessonResponse.Lesson.Id
-		break
-
-	case pbLesson.Type_TEXT:
-		log.Debug().Msg("TEXT")
+		res.Lesson = &pbLesson.Lesson{
+			Base: &pbLesson.LessonBase{
+				Id:          lesson.ID.Hex(),
+				UserId:      lesson.UserID.Hex(),
+				Type:        pbLesson.Type_VIDEO,
+				Description: lesson.Description,
+				Name:        lesson.Title,
+			},
+			Video: &pbLesson.VideoLesson{
+				Id:      videoLessonResponse.Lesson.Id,
+				VideoId: videoLessonResponse.Lesson.VideoId,
+			},
+			// Stats are nil
+		}
 		break
 
 	default:
-		return merr.BadRequest(config.ServiceName, "%s", errors.UnknownLessonType.Error())
+		return merr.BadRequest(config.ServiceName, "%s: %s", errors.UnknownLessonType.Error(), req.Type)
 		break
 	}
 	return nil
 }
 
 // GetById fetches a Lesson by id. The Lesson message will be aggregated with the correct LessonType
-func (l *LessonService) GetById(ctx context.Context, req *pbLesson.GetLessonByIdRequest, res *pbLesson.GetLessonByIdResponse) error {
+func (l *LessonService) GetById(ctx context.Context, req *pbLesson.GetLesson_ById_Request, res *pbLesson.GetLesson_ById_Response) error {
 
 	// id cannot be empty
 	if req.LessonId == "" {
@@ -122,8 +140,8 @@ func (l *LessonService) GetById(ctx context.Context, req *pbLesson.GetLessonById
 	}
 	log.Debug().Str("lesson", lesson.ID.Hex()).Msg("fetched lesson")
 
-	switch lesson.Type {
-	case pbLesson.Type(pbLesson.Type_VIDEO).String():
+	switch strings.ToLower(lesson.Type) {
+	case strings.ToLower(pbLesson.Type(pbLesson.Type_VIDEO).String()):
 
 		videoResponse := &pbLesson.GetVideoLessonByIdResponse{}
 		err := l.videoLessonService.GetById(ctx, &pbLesson.GetVideoLessonByIdRequest{LessonId: lesson.TypeID.Hex()}, videoResponse)
@@ -150,9 +168,6 @@ func (l *LessonService) GetById(ctx context.Context, req *pbLesson.GetLessonById
 			},
 		}
 
-		break
-	case pbLesson.Type(pbLesson.Type_TEXT).String():
-		log.Debug().Msg("GetById():Type_TEXT")
 		break
 	default:
 		log.Info().Str("lesson", lesson.ID.Hex()).Str("type", lesson.Type).Msg("lesson has unknown type")

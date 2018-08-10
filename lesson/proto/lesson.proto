@@ -5,8 +5,8 @@ package educonn.lesson;
 // LessonService is the top-level service for aggregating lessons
 // A lesson is always an aggregate of a BaseLesson and a TypeLesson (e.g. VideoLesson)
 service LessonService {
-    rpc Create(CreateLessonRequest) returns (CreateLessonResponse) {}
-    rpc GetById(GetLessonByIdRequest) returns (GetLessonByIdResponse) {}
+    rpc Create(CreateLesson.Request) returns (CreateLesson.Response) {}
+    rpc GetById(GetLesson.ById.Request) returns (GetLesson.ById.Response) {}
 }
 
 // VideoLessonService handles the lesson-type VIDEO
@@ -45,20 +45,28 @@ message LessonStatistics {
 }
 
 // Requests & Responses
-message CreateLessonRequest {
-    Lesson lesson = 1;
+message CreateLesson {
+    message Request {
+        string id = 1;
+        string name = 2;
+        string description = 3;
+        string type = 4;
+        VideoLesson video = 5; // optional, only for type=video
+    }
+    message Response {
+        Lesson lesson = 1;
+    }
 }
 
-message CreateLessonResponse {
-    Lesson lesson = 1;
-}
-
-message GetLessonByIdRequest {
-    string lesson_id = 1;
-}
-
-message GetLessonByIdResponse {
-    Lesson lesson = 1;
+message GetLesson {
+    message ById {
+        message Request {
+            string lessonId = 1;
+        }
+        message Response {
+            Lesson lesson = 1;
+        }
+    }
 }
 
 // EVENTS

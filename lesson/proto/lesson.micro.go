@@ -11,10 +11,8 @@ It has these top-level messages:
 	Lesson
 	LessonBase
 	LessonStatistics
-	CreateLessonRequest
-	CreateLessonResponse
-	GetLessonByIdRequest
-	GetLessonByIdResponse
+	CreateLesson
+	GetLesson
 	LessonCreatedEvent
 	VideoLesson
 	CreateVideoLessonRequest
@@ -54,8 +52,8 @@ var _ server.Option
 // Client API for LessonService service
 
 type LessonServiceClient interface {
-	Create(ctx context.Context, in *CreateLessonRequest, opts ...client.CallOption) (*CreateLessonResponse, error)
-	GetById(ctx context.Context, in *GetLessonByIdRequest, opts ...client.CallOption) (*GetLessonByIdResponse, error)
+	Create(ctx context.Context, in *CreateLesson_Request, opts ...client.CallOption) (*CreateLesson_Response, error)
+	GetById(ctx context.Context, in *GetLesson_ById_Request, opts ...client.CallOption) (*GetLesson_ById_Response, error)
 }
 
 type lessonServiceClient struct {
@@ -76,9 +74,9 @@ func NewLessonServiceClient(serviceName string, c client.Client) LessonServiceCl
 	}
 }
 
-func (c *lessonServiceClient) Create(ctx context.Context, in *CreateLessonRequest, opts ...client.CallOption) (*CreateLessonResponse, error) {
+func (c *lessonServiceClient) Create(ctx context.Context, in *CreateLesson_Request, opts ...client.CallOption) (*CreateLesson_Response, error) {
 	req := c.c.NewRequest(c.serviceName, "LessonService.Create", in)
-	out := new(CreateLessonResponse)
+	out := new(CreateLesson_Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -86,9 +84,9 @@ func (c *lessonServiceClient) Create(ctx context.Context, in *CreateLessonReques
 	return out, nil
 }
 
-func (c *lessonServiceClient) GetById(ctx context.Context, in *GetLessonByIdRequest, opts ...client.CallOption) (*GetLessonByIdResponse, error) {
+func (c *lessonServiceClient) GetById(ctx context.Context, in *GetLesson_ById_Request, opts ...client.CallOption) (*GetLesson_ById_Response, error) {
 	req := c.c.NewRequest(c.serviceName, "LessonService.GetById", in)
-	out := new(GetLessonByIdResponse)
+	out := new(GetLesson_ById_Response)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,8 +97,8 @@ func (c *lessonServiceClient) GetById(ctx context.Context, in *GetLessonByIdRequ
 // Server API for LessonService service
 
 type LessonServiceHandler interface {
-	Create(context.Context, *CreateLessonRequest, *CreateLessonResponse) error
-	GetById(context.Context, *GetLessonByIdRequest, *GetLessonByIdResponse) error
+	Create(context.Context, *CreateLesson_Request, *CreateLesson_Response) error
+	GetById(context.Context, *GetLesson_ById_Request, *GetLesson_ById_Response) error
 }
 
 func RegisterLessonServiceHandler(s server.Server, hdlr LessonServiceHandler, opts ...server.HandlerOption) {
@@ -111,11 +109,11 @@ type LessonService struct {
 	LessonServiceHandler
 }
 
-func (h *LessonService) Create(ctx context.Context, in *CreateLessonRequest, out *CreateLessonResponse) error {
+func (h *LessonService) Create(ctx context.Context, in *CreateLesson_Request, out *CreateLesson_Response) error {
 	return h.LessonServiceHandler.Create(ctx, in, out)
 }
 
-func (h *LessonService) GetById(ctx context.Context, in *GetLessonByIdRequest, out *GetLessonByIdResponse) error {
+func (h *LessonService) GetById(ctx context.Context, in *GetLesson_ById_Request, out *GetLesson_ById_Response) error {
 	return h.LessonServiceHandler.GetById(ctx, in, out)
 }
 
