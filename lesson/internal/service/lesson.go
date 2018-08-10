@@ -2,6 +2,7 @@ package service
 
 import "context"
 import (
+	"github.com/lukasjarosch/educonn-platform/lesson/internal/platform/broker"
 	"github.com/lukasjarosch/educonn-platform/lesson/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/lesson/internal/platform/errors"
 	"github.com/lukasjarosch/educonn-platform/lesson/internal/platform/mongodb"
@@ -19,22 +20,23 @@ const (
 type LessonService struct {
 	videoLessonService *VideoLessonService
 	lessonRepo         *mongodb.LessonRepository
+	publisher          *broker.LessonEventPublisher
 }
 
-func NewLessonService(videoLesson *VideoLessonService, repo *mongodb.LessonRepository) *LessonService {
+func NewLessonService(videoLesson *VideoLessonService, repo *mongodb.LessonRepository, publisher *broker.LessonEventPublisher) *LessonService {
 	return &LessonService{
 		videoLessonService: videoLesson,
 		lessonRepo:         repo,
+		publisher:          publisher,
 	}
 }
 
 // Create a new Lesson
 func (l *LessonService) Create(ctx context.Context, req *pbLesson.CreateLessonRequest, res *pbLesson.CreateLessonRequest) error {
-	md, ok := metadata.FromContext(ctx)
+	_, ok := metadata.FromContext(ctx)
 	if !ok {
 		log.Info().Msg("no metadata in request")
 	}
-	log.Info().Interface("md", md).Msg("metadata")
 
 	// LessonBase
 	if req.Lesson.Base.Name == "" {
@@ -73,7 +75,24 @@ func (l *LessonService) Create(ctx context.Context, req *pbLesson.CreateLessonRe
 			Str("type_id", videoLessonResponse.Lesson.Id).
 			Msg("created Lesson")
 
-		// TODO: Pub lesson.events.created
+		// pub: lesson.events.created
+		l.publisher.PublishLessonCreated(ctx, &pbLesson.LessonCreatedEvent{
+			Lesson: &pbLesson.Lesson{
+				Base: &pbLesson.LessonBase{
+					Id:          lesson.ID.Hex(),
+					Name:        lesson.Title,
+					Description: lesson.Description,
+					UserId:      lesson.UserID.Hex(),
+					Type:        pbLesson.Type_VIDEO,
+				},
+			},
+		})
+
+		// response
+		res.Lesson = req.Lesson
+		res.Lesson.Base.Id = lesson.ID.Hex()
+		res.Lesson.Base.Type = pbLesson.Type_VIDEO
+		res.Lesson.Video.Id = videoLessonResponse.Lesson.Id
 		break
 
 	case pbLesson.Type_TEXT:
@@ -84,11 +103,10 @@ func (l *LessonService) Create(ctx context.Context, req *pbLesson.CreateLessonRe
 		return merr.BadRequest(config.ServiceName, "%s", errors.UnknownLessonType.Error())
 		break
 	}
-
-	res.Lesson = req.Lesson
 	return nil
 }
 
+// GetById fetches a Lesson by id. The Lesson message will be aggregated with the correct LessonType
 func (l *LessonService) GetById(ctx context.Context, req *pbLesson.GetLessonByIdRequest, res *pbLesson.GetLessonByIdResponse) error {
 
 	// id cannot be empty
@@ -100,40 +118,39 @@ func (l *LessonService) GetById(ctx context.Context, req *pbLesson.GetLessonById
 	lesson, err := l.lessonRepo.GetById(req.LessonId)
 	if err != nil {
 		log.Debug().Str("lesson", req.LessonId).Err(err).Msg("unable to fetch lesson")
-	    return merr.InternalServerError(config.ServiceName, "%s", err.Error())
+		return merr.InternalServerError(config.ServiceName, "%s", err.Error())
 	}
 	log.Debug().Str("lesson", lesson.ID.Hex()).Msg("fetched lesson")
-
 
 	switch lesson.Type {
 	case pbLesson.Type(pbLesson.Type_VIDEO).String():
 
 		videoResponse := &pbLesson.GetVideoLessonByIdResponse{}
-		err := l.videoLessonService.GetById(ctx, &pbLesson.GetVideoLessonByIdRequest{LessonId:lesson.TypeID.Hex()}, videoResponse)
+		err := l.videoLessonService.GetById(ctx, &pbLesson.GetVideoLessonByIdRequest{LessonId: lesson.TypeID.Hex()}, videoResponse)
 		if err != nil {
-		    log.Info().Str("video_lesson", lesson.TypeID.Hex()).Err(err).Msg("unable to fetch video-lession")
+			log.Info().Str("video_lesson", lesson.TypeID.Hex()).Err(err).Msg("unable to fetch video-lession")
 		}
 
 		res.Lesson = &pbLesson.Lesson{
 			Base: &pbLesson.LessonBase{
-				Id: lesson.ID.Hex(),
-				Type: pbLesson.Type_VIDEO,
+				Id:          lesson.ID.Hex(),
+				Type:        pbLesson.Type_VIDEO,
 				Description: lesson.Description,
-				Name: lesson.Title,
-				UserId: lesson.UserID.Hex(),
+				Name:        lesson.Title,
+				UserId:      lesson.UserID.Hex(),
 			},
 			Stats: &pbLesson.LessonStatistics{
-				Views: lesson.Statistics.ViewCount,
-				Likes: lesson.Statistics.Likes,
+				Views:    lesson.Statistics.ViewCount,
+				Likes:    lesson.Statistics.Likes,
 				Dislikes: lesson.Statistics.Dislikes,
 			},
 			Video: &pbLesson.VideoLesson{
-				Id: videoResponse.Lesson.Id,
+				Id:      videoResponse.Lesson.Id,
 				VideoId: videoResponse.Lesson.VideoId,
 			},
 		}
 
-	break
+		break
 	case pbLesson.Type(pbLesson.Type_TEXT).String():
 		log.Debug().Msg("GetById():Type_TEXT")
 		break

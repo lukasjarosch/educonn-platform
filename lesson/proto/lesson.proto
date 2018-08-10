@@ -61,6 +61,11 @@ message GetLessonByIdResponse {
     Lesson lesson = 1;
 }
 
+// EVENTS
+message LessonCreatedEvent {
+    Lesson lesson = 1;
+}
+
 // ----------------------------
 // VIDEO-LESSON (Type: 0)
 // ----------------------------

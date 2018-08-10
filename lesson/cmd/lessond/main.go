@@ -11,6 +11,8 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/micro/go-plugins/broker/rabbitmq"
+	"github.com/lukasjarosch/educonn-platform/lesson/internal/platform/broker"
 )
 
 func main() {
@@ -27,6 +29,17 @@ func main() {
 	)
 	service.Init()
 
+	// setup rabbitmq
+	rabbitBroker := service.Server().Options().Broker
+	if err := rabbitBroker.Init(rabbitmq.Exchange("educonn")); err != nil {
+		log.Print("Broker Init error: %v", err)
+		log.Fatal().Interface("error", err).Msg("broker Init error")
+	}
+	if err := rabbitBroker.Connect(); err != nil {
+		log.Fatal().Interface("error", err).Msg("broker Connect error")
+	}
+	micro.Broker(rabbitBroker)
+
 	// setup repositories
 	mgoSession, err := mongodb.Dial(config.DbHost, config.DbPort, config.DbUser, config.DbPass, config.DbName)
 	if err != nil {
@@ -41,11 +54,16 @@ func main() {
 	// VideoLessonService handler
 	videoLessonService := lesson.NewVideoLessonService(videoClient, videoLessonRepo)
 
+	// publisher
+	lessonCreatedPublisher := micro.NewPublisher(broker.LessonCreatedTopic, service.Client())
+	lessonEventPublisher := broker.NewLessonEventPublisher(lessonCreatedPublisher)
+
 	// register handler
 	micro.RegisterHandler(service.Server(), videoLessonService)
 	micro.RegisterHandler(service.Server(), lesson.NewLessonService(
 		videoLessonService,
 		lessonRepo,
+		lessonEventPublisher,
 	))
 
 	// fire...

@@ -15,6 +15,7 @@ It has these top-level messages:
 	CreateLessonResponse
 	GetLessonByIdRequest
 	GetLessonByIdResponse
+	LessonCreatedEvent
 	VideoLesson
 	CreateVideoLessonRequest
 	CreateVideoLessonResponse
