@@ -39,8 +39,6 @@ message VideoStatus {
 
 message VideoStatistics {
     int64 viewCount = 1;
-    int64 likeCount = 2;
-    int64 dislikeCound = 3;
 }
 
 message VideoThumbnail {

@@ -22,8 +22,6 @@ type Transcode struct {
 
 type Statistics struct {
 	ViewCount    int64 `bson:"view_count" json:"view_count"`
-	LikeCount    int64 `bson:"like_count" json:"like_count"`
-	DislikeCount int64 `bson:"dislike_count" json:"dislike_count"`
 }
 
 type Storage struct {

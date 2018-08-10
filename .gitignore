@@ -35,6 +35,7 @@ userd
 transcoded
 video-apid
 user-apid
+lessond
 
 .env
 .env-docker

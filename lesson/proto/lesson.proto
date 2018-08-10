@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package educonn.lesson;
+
+// LessonService is the top-level service for aggregating lessons
+// A lesson is always an aggregate of a BaseLesson and a TypeLesson (e.g. VideoLesson)
+service LessonService {
+    rpc Create(CreateLesson.Request) returns (CreateLesson.Response) {}
+    rpc GetById(GetLesson.ById.Request) returns (GetLesson.ById.Response) {}
+}
+
+// VideoLessonService handles the lesson-type VIDEO
+service VideoLessonService {
+    rpc Create(CreateVideoLessonRequest) returns (CreateVideoLessonResponse) {}
+    rpc GetById(GetVideoLessonByIdRequest) returns (GetVideoLessonByIdResponse) {}
+}
+
+enum Type {
+    VIDEO = 0;
+    TEXT = 1;
+}
+
+
+// ----------------------------
+// LESSON
+// ----------------------------
+message Lesson {
+    LessonBase base = 1;
+    LessonStatistics stats = 2;
+    VideoLesson video = 3;
+}
+
+message LessonBase {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    Type type = 4;
+    string userId = 5;
+}
+
+message LessonStatistics {
+    int64 likes = 1;
+    int64 dislikes = 2;
+    int64 views = 3;
+}
+
+// Requests & Responses
+message CreateLesson {
+    message Request {
+        string id = 1;
+        string name = 2;
+        string description = 3;
+        string type = 4;
+        VideoLesson video = 5; // optional, only for type=video
+    }
+    message Response {
+        Lesson lesson = 1;
+    }
+}
+
+message GetLesson {
+    message ById {
+        message Request {
+            string lessonId = 1;
+        }
+        message Response {
+            Lesson lesson = 1;
+        }
+    }
+}
+
+// EVENTS
+message LessonCreatedEvent {
+    Lesson lesson = 1;
+}
+
+// ----------------------------
+// VIDEO-LESSON (Type: 0)
+// ----------------------------
+message VideoLesson {
+    string id = 1;
+    string videoId = 2;
+}
+
+// Requests & Responses
+message CreateVideoLessonRequest {
+    VideoLesson lesson = 1;
+}
+
+message CreateVideoLessonResponse {
+    VideoLesson lesson = 1;
+}
+
+message GetVideoLessonByIdRequest {
+    string lesson_id = 1;
+}
+
+message GetVideoLessonByIdResponse {
+    VideoLesson lesson = 1;
+}
+
+// ----------------------------
+// TEXT-LESSON (Type: 1)
+// ----------------------------
+message TextLesson {
+    string id = 1;
+}
+
