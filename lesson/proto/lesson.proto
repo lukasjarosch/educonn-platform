@@ -6,11 +6,13 @@ package educonn.lesson;
 // A lesson is always an aggregate of a BaseLesson and a TypeLesson (e.g. VideoLesson)
 service LessonService {
     rpc Create(CreateLessonRequest) returns (CreateLessonResponse) {}
+    rpc GetById(GetLessonByIdRequest) returns (GetLessonByIdResponse) {}
 }
 
 // VideoLessonService handles the lesson-type VIDEO
 service VideoLessonService {
     rpc Create(CreateVideoLessonRequest) returns (CreateVideoLessonResponse) {}
+    rpc GetById(GetVideoLessonByIdRequest) returns (GetVideoLessonByIdResponse) {}
 }
 
 enum Type {
@@ -51,6 +53,13 @@ message CreateLessonResponse {
     Lesson lesson = 1;
 }
 
+message GetLessonByIdRequest {
+    string lesson_id = 1;
+}
+
+message GetLessonByIdResponse {
+    Lesson lesson = 1;
+}
 
 // ----------------------------
 // VIDEO-LESSON (Type: 0)
@@ -66,6 +75,14 @@ message CreateVideoLessonRequest {
 }
 
 message CreateVideoLessonResponse {
+    VideoLesson lesson = 1;
+}
+
+message GetVideoLessonByIdRequest {
+    string lesson_id = 1;
+}
+
+message GetVideoLessonByIdResponse {
     VideoLesson lesson = 1;
 }
 

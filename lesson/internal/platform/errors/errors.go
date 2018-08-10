@@ -9,6 +9,7 @@ func (e Error) Error() string {
 const (
 	UnknownLessonType = Error("unknown lesson type")
 	MissingVideoId = Error("missing videoId")
+	MissingLessonId = Error("missing lesson_id")
 	MissingUserId = Error("missing userId")
 	MissingLessonName = Error("missing lesson name")
 	MongoCreateFailed = Error("failed to create mongodb document")

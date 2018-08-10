@@ -48,7 +48,6 @@ func main() {
 		lessonRepo,
 	))
 
-
 	// fire...
 	if err := service.Run(); err != nil {
 		panic(err)

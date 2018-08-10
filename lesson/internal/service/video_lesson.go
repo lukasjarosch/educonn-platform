@@ -64,3 +64,25 @@ func (v *VideoLessonService) Create(ctx context.Context, req *pbLesson.CreateVid
 	}
 	return nil
 }
+
+func (v *VideoLessonService) GetById(ctx context.Context, req *pbLesson.GetVideoLessonByIdRequest, res *pbLesson.GetVideoLessonByIdResponse) error {
+
+	if req.LessonId == "" {
+		return merr.BadRequest(config.ServiceName, "%s", errors.MissingLessonId)
+	}
+
+	// Fetch lesson
+	lesson, err := v.videoLessonRepo.GetById(req.LessonId)
+	if err != nil {
+		log.Debug().Str("lesson", req.LessonId).Err(err).Msg("unable to fetch lesson")
+		return merr.InternalServerError(config.ServiceName, "%s", err.Error())
+	}
+	log.Debug().Str("lesson", lesson.ID.Hex()).Msg("fetched video-lesson")
+
+	res.Lesson = &pbLesson.VideoLesson{
+		Id:      lesson.ID.Hex(),
+		VideoId: lesson.VideoId.Hex(),
+	}
+
+	return nil
+}

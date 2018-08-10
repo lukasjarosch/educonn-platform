@@ -13,9 +13,13 @@ It has these top-level messages:
 	LessonStatistics
 	CreateLessonRequest
 	CreateLessonResponse
+	GetLessonByIdRequest
+	GetLessonByIdResponse
 	VideoLesson
 	CreateVideoLessonRequest
 	CreateVideoLessonResponse
+	GetVideoLessonByIdRequest
+	GetVideoLessonByIdResponse
 	TextLesson
 */
 package educonn_lesson
@@ -50,6 +54,7 @@ var _ server.Option
 
 type LessonServiceClient interface {
 	Create(ctx context.Context, in *CreateLessonRequest, opts ...client.CallOption) (*CreateLessonResponse, error)
+	GetById(ctx context.Context, in *GetLessonByIdRequest, opts ...client.CallOption) (*GetLessonByIdResponse, error)
 }
 
 type lessonServiceClient struct {
@@ -80,10 +85,21 @@ func (c *lessonServiceClient) Create(ctx context.Context, in *CreateLessonReques
 	return out, nil
 }
 
+func (c *lessonServiceClient) GetById(ctx context.Context, in *GetLessonByIdRequest, opts ...client.CallOption) (*GetLessonByIdResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "LessonService.GetById", in)
+	out := new(GetLessonByIdResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for LessonService service
 
 type LessonServiceHandler interface {
 	Create(context.Context, *CreateLessonRequest, *CreateLessonResponse) error
+	GetById(context.Context, *GetLessonByIdRequest, *GetLessonByIdResponse) error
 }
 
 func RegisterLessonServiceHandler(s server.Server, hdlr LessonServiceHandler, opts ...server.HandlerOption) {
@@ -98,10 +114,15 @@ func (h *LessonService) Create(ctx context.Context, in *CreateLessonRequest, out
 	return h.LessonServiceHandler.Create(ctx, in, out)
 }
 
+func (h *LessonService) GetById(ctx context.Context, in *GetLessonByIdRequest, out *GetLessonByIdResponse) error {
+	return h.LessonServiceHandler.GetById(ctx, in, out)
+}
+
 // Client API for VideoLessonService service
 
 type VideoLessonServiceClient interface {
 	Create(ctx context.Context, in *CreateVideoLessonRequest, opts ...client.CallOption) (*CreateVideoLessonResponse, error)
+	GetById(ctx context.Context, in *GetVideoLessonByIdRequest, opts ...client.CallOption) (*GetVideoLessonByIdResponse, error)
 }
 
 type videoLessonServiceClient struct {
@@ -132,10 +153,21 @@ func (c *videoLessonServiceClient) Create(ctx context.Context, in *CreateVideoLe
 	return out, nil
 }
 
+func (c *videoLessonServiceClient) GetById(ctx context.Context, in *GetVideoLessonByIdRequest, opts ...client.CallOption) (*GetVideoLessonByIdResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "VideoLessonService.GetById", in)
+	out := new(GetVideoLessonByIdResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for VideoLessonService service
 
 type VideoLessonServiceHandler interface {
 	Create(context.Context, *CreateVideoLessonRequest, *CreateVideoLessonResponse) error
+	GetById(context.Context, *GetVideoLessonByIdRequest, *GetVideoLessonByIdResponse) error
 }
 
 func RegisterVideoLessonServiceHandler(s server.Server, hdlr VideoLessonServiceHandler, opts ...server.HandlerOption) {
@@ -148,4 +180,8 @@ type VideoLessonService struct {
 
 func (h *VideoLessonService) Create(ctx context.Context, in *CreateVideoLessonRequest, out *CreateVideoLessonResponse) error {
 	return h.VideoLessonServiceHandler.Create(ctx, in, out)
+}
+
+func (h *VideoLessonService) GetById(ctx context.Context, in *GetVideoLessonByIdRequest, out *GetVideoLessonByIdResponse) error {
+	return h.VideoLessonServiceHandler.GetById(ctx, in, out)
 }

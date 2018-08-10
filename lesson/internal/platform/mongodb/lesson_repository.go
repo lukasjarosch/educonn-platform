@@ -5,6 +5,7 @@ import (
 	"github.com/lukasjarosch/educonn-platform/lesson/internal/platform/config"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"github.com/lukasjarosch/educonn-platform/lesson/internal/platform/errors"
 )
 
 type LessonRepository struct {
@@ -40,5 +41,22 @@ func (v *LessonRepository) CreateBaseLesson(baseLesson *BaseLesson) (*BaseLesson
 		return nil, err
 	}
 	return baseLesson, nil
+}
+
+func (v *LessonRepository) GetById(id string)  (*BaseLesson, error) {
+	session := v.session.Clone()
+	defer session.Close()
+
+	if !bson.IsObjectIdHex(id) {
+		return nil, errors.MalformedId
+	}
+
+	lesson := &BaseLesson{}
+
+	err := session.DB(config.DbName).C(config.BaseLessonCollection).FindId(bson.ObjectIdHex(id)).One(lesson)
+	if err != nil {
+		return nil, err
+	}
+	return lesson, nil
 }
 
