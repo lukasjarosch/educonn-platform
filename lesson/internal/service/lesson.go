@@ -14,16 +14,13 @@ import (
 	"strings"
 )
 
-const (
-	VideoServiceName = "educonn.srv.videoClient"
-)
-
 type LessonService struct {
 	videoLessonService *VideoLessonService
 	lessonRepo         *mongodb.LessonRepository
 	publisher          *broker.LessonEventPublisher
 }
 
+// NewLessonService creates a new LessonService
 func NewLessonService(videoLesson *VideoLessonService, repo *mongodb.LessonRepository, publisher *broker.LessonEventPublisher) *LessonService {
 	return &LessonService{
 		videoLessonService: videoLesson,
