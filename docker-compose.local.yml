@@ -115,3 +115,16 @@ services:
     volumes:
       - ./transcode/cmd/transcoded/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+
+  # [eudconn] lesson service
+  lesson:
+    image: derwaldemar/educonn-lesson:dev
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_BROKER: rabbitmq
+    volumes:
+      - ./transcode/cmd/transcoded/.env-docker:/app/.env

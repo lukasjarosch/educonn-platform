@@ -7,6 +7,7 @@ LDFLAGS_MAIL:=-ldflags "-X github.com/lukasjarosch/educonn-platform/mail/interna
 LDFLAGS_VIDEO:=-ldflags "-X github.com/lukasjarosch/educonn-platform/video/internal/platform/config.Version=${VERSION}"
 LDFLAGS_VIDEO_API:=-ldflags "-X github.com/lukasjarosch/educonn-platform/api/video/internal/platform/config.Version=${VERSION}"
 LDFLAGS_TRANSCODE:=-ldflags "-X github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config.Version=${VERSION}"
+LDFLAGS_LESSION:=-ldflags "-X github.com/lukasjarosch/educonn-platform/transcode/lesson/platform/config.Version=${VERSION}"
 
 default: run
 
@@ -16,7 +17,8 @@ test:
 clean:
 	rm -rf ./coverage.out ./coverage-all.out ./video/cmd/videod/videod ./course/cmd/coursed/coursed \
 		./mail/cmd/maild/maild ./user/cmd/userd/userd ./transcode/cmd/transcoded/transcoded \
-		./api/user/cmd/user-apid/user-apid ./api/video/cmd/video-apid/video-apid
+		./api/user/cmd/user-apid/user-apid ./api/video/cmd/video-apid/video-apid \
+		./lesson/cmd/lessond/lessond
 
 
 dev: user mail video transcode user-api video-api
@@ -25,19 +27,21 @@ docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev
 proto: user-proto mail-proto video-proto transcode-proto user-api-proto video-api-proto
 
 # --------- LESSON ---------
-lesson-proto: lesson-video-proto
+lesson-proto:
 	@echo protoc LESSON
 	@protoc -I. --go_out=plugins=micro:. --micro_out=. lesson/proto/lesson.proto
 
-# --------- VIDEO LESSON ---------
-lesson-video-run:
-	@echo Starting the VIDEO LESSON service
-	@cd lesson-video/cmd/lesson-videod && go run main.go
+lesson-run:
+	@echo Starting the LESSON service
+	@cd lesson/cmd/lessond && go run main.go
 
-lesson-video-proto:
-	@echo protoc VIDEO LESSON
-	@protoc -I. --go_out=plugins=micro:. --micro_out=. lesson-video/proto/lesson-video.proto
-	@cd lesson-video/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src lesson-video.proto
+lesson: clean
+	@echo Building LESSON service ...
+	@cd lesson/cmd/lessond && CGO_ENABLED=0 go build ${LDFLAGS_LESSION} -a -installsuffix cgo -o lessond main.go
+
+lesson-docker:
+	@echo Building LESSON docker image. Tags: ${VERSION}, dev
+	@cd lesson/ && docker build -t derwaldemar/educonn-lesson:${VERSION} -t derwaldemar/educonn-lesson:dev .
 
 # --------- VIDEO API ---------
 video-api: clean
