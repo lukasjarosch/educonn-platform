@@ -8,8 +8,8 @@ pipeline {
 		stage('Build') {
 			steps {
                 echo 'Building educonn-user'
-				sh(make educonn-user-proto)
-				sh(make educonn-user)
+				sh("make educonn-user-proto")
+				sh("make educonn-user")
 			}
 		}
 		stage('Test') {
@@ -20,7 +20,7 @@ pipeline {
 		stage('Docker') {
 			steps {
 				echo 'Building educonn-user'
-				sh(make user-docker)
+				sh("make user-docker")
 			}
 		}
 	}
