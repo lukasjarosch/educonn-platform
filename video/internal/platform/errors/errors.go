@@ -13,5 +13,6 @@ const (
 	MissingUserId = Error("The user id is missing")
 	VideoNotFound = Error("Video not found")
 	InvalidVideoId = Error("The provided video id is malformed")
+	MalformedId = Error("malformed id")
 )
 

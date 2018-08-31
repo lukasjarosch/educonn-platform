@@ -21,8 +21,8 @@ func NewEventPublisher(videoCreatedPublisher micro.Publisher, videoProcessedPubl
 	return &EventPublisher{videoCreatedPublisher: videoCreatedPublisher, videoProcessedPublisher:videoProcessedPublisher}
 }
 
-func (p *EventPublisher) PublishVideoCreated(event *pbVideo.VideoCreatedEvent) (err error) {
-	if err = p.videoCreatedPublisher.Publish(context.Background(), event); err != nil {
+func (p *EventPublisher) PublishVideoCreated(ctx context.Context, event *pbVideo.VideoCreatedEvent) (err error) {
+	if err = p.videoCreatedPublisher.Publish(ctx, event); err != nil {
 		log.Warn().Str("topic", VideoCreatedTopic).Interface("error", err).Msg("unable to publish event")
 		return nil
 	}
@@ -30,8 +30,8 @@ func (p *EventPublisher) PublishVideoCreated(event *pbVideo.VideoCreatedEvent) (
 	return nil
 }
 
-func (p EventPublisher) PublishVideoProcessed(event *pbVideo.VideoProcessedEvent) (err error) {
-	if err = p.videoProcessedPublisher.Publish(context.Background(), event); err != nil {
+func (p EventPublisher) PublishVideoProcessed(ctx context.Context, event *pbVideo.VideoProcessedEvent) (err error) {
+	if err = p.videoProcessedPublisher.Publish(ctx, event); err != nil {
 		log.Warn().Str("topic", VideoProcessedTopic).Interface("error", err).Msg("unable to publish event")
 		return nil
 	}

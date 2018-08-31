@@ -19,20 +19,30 @@ import (
 	"fmt"
 	"os"
 	"github.com/rs/zerolog"
+	zipkin "github.com/openzipkin/zipkin-go-opentracing"
+	"github.com/opentracing/opentracing-go"
+	opentrace "github.com/micro/go-plugins/wrapper/trace/opentracing"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/middleware"
+	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/errors"
 )
 
 func main() {
 
 	if os.Getenv("DEV_ENV") != "" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+	}
+
+	tracer, err := initTracing()
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to init tracer")
 	}
 
 	// setup the consumer
-	userCreatedChannel := make(chan *pbUser.UserCreatedEvent)
+	userCreatedChannel := make(chan broker.UserCreatedEvent)
 	userCreatedSubscriber := broker.NewUserCreatedSubscriber(userCreatedChannel)
-	userDeletedChannel := make(chan *pbUser.UserDeletedEvent)
+	userDeletedChannel := make(chan broker.UserDeletedEvent)
 	userDeletedSubscriber := broker.NewUserDeletedSubscriber(userDeletedChannel)
-	videoProcessedChannel := make(chan *pbVideo.VideoProcessedEvent)
+	videoProcessedChannel := make(chan broker.VideoProcessedEvent)
 	videoProcessedSubscriber := broker.NewVideoProcessedSubscriber(videoProcessedChannel)
 
 	// setup micro service
@@ -41,6 +51,14 @@ func main() {
 		micro.Version(config.Version),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*10),
+
+		micro.WrapHandler(opentrace.NewHandlerWrapper(tracer)),
+		micro.WrapSubscriber(opentrace.NewSubscriberWrapper(tracer)),
+		micro.WrapCall(opentrace.NewCallWrapper(tracer)),
+		micro.WrapClient(opentrace.NewClientWrapper(tracer)),
+
+		micro.WrapHandler(middleware.LogHandlerWrapper),
+		micro.WrapSubscriber(middleware.LogSubscriberWrapper),
 	)
 	svc.Init()
 
@@ -121,4 +139,20 @@ func main() {
 	if err := svc.Run(); err != nil {
 		panic(err)
 	}
+}
+
+func initTracing() (opentracing.Tracer, error) {
+	collector, err := zipkin.NewHTTPCollector(config.ZipkinCollectorUrl)
+	if err != nil {
+		return nil, errors.Error("unable to create zipkin collector")
+	}
+	tracer, err := zipkin.NewTracer(
+		zipkin.NewRecorder(collector, true, "9411", config.ServiceName),
+	)
+	if err != nil {
+		return nil, errors.Error("unable to create new zipkin tracer")
+	}
+	opentracing.InitGlobalTracer(tracer)
+
+	return tracer, nil
 }

@@ -2,44 +2,41 @@ package service
 
 import (
 	"context"
-	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
-	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
-	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
-	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
-	"github.com/rs/zerolog/log"
-	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
-	"github.com/micro/go-micro"
-	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
 	"time"
+
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/amazon"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/broker"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/mongodb"
+	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
+	"github.com/micro/go-micro"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type transcodeService struct {
-	sqsConsumer      *amazon.SQSTranscodeEventConsumer
-	sqsContext       context.Context
-	transcoderClient *amazon.ElasticTranscoderClient
-	videoCreatedChan chan *pbVideo.VideoCreatedEvent
+	sqsConsumer                   *amazon.SQSTranscodeEventConsumer
+	transcoderClient              *amazon.ElasticTranscoderClient
+	videoCreatedChan              chan broker.VideoCreatedEvent
 	transcodingCompletedPublisher micro.Publisher
-	transcodingFailedPublisher micro.Publisher
-	transcodeRepository *mongodb.TranscodeRepository
+	transcodingFailedPublisher    micro.Publisher
+	transcodeRepository           *mongodb.TranscodeRepository
 }
 
 func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
-	sqsContext context.Context,
 	transcoderClient *amazon.ElasticTranscoderClient,
-	videoCreatedChan chan *pbVideo.VideoCreatedEvent,
+	videoCreatedChan chan broker.VideoCreatedEvent,
 	completedPublisher micro.Publisher,
 	failedPublisher micro.Publisher,
 	transcodeRepo *mongodb.TranscodeRepository) *transcodeService {
 
 	svc := &transcodeService{
-		sqsConsumer:      sqsConsumer,
-		sqsContext:       sqsContext,
-		transcoderClient: transcoderClient,
-		videoCreatedChan: videoCreatedChan,
-		transcodingCompletedPublisher:completedPublisher,
-		transcodingFailedPublisher: failedPublisher,
-		transcodeRepository:transcodeRepo,
+		sqsConsumer:                   sqsConsumer,
+		transcoderClient:              transcoderClient,
+		videoCreatedChan:              videoCreatedChan,
+		transcodingCompletedPublisher: completedPublisher,
+		transcodingFailedPublisher:    failedPublisher,
+		transcodeRepository:           transcodeRepo,
 	}
 
 	log.Info().Str("topic", broker.VideoCreatedTopic).Str("queue", broker.VideoCreatedQueue).Msg("start consuming VideoCreatedEvents")
@@ -54,7 +51,7 @@ func NewTranscodeService(sqsConsumer *amazon.SQSTranscodeEventConsumer,
 
 func (t *transcodeService) CreateJob(ctx context.Context, request *pbTranscode.CreateJobRequest, response *pbTranscode.CreateJobResponse) error {
 
-	res, err := t.transcoderClient.CreateJob(request.Job.InputKey)
+	res, err := t.transcoderClient.CreateJob(ctx, request.Job.InputKey)
 	if err != nil {
 		log.Warn().Interface("error", err).Msg("unable to create new transcoding job")
 		return err
@@ -75,20 +72,20 @@ func (t *transcodeService) CreateJob(ctx context.Context, request *pbTranscode.C
 		Started:   true,
 	}
 
-	transcodeJob, err := t.transcodeRepository.CreateTranscodingJob(&mongodb.TranscodingJob{
+	transcodeJob, err := t.transcodeRepository.CreateTranscodingJob(ctx, &mongodb.TranscodingJob{
 		Status: mongodb.Status{
-			Completed:false,
-			Error:false,
-			Started:true,
+			Completed: false,
+			Error:     false,
+			Started:   true,
 		},
-		VideoId: bson.ObjectIdHex(request.VideoId),
-		JobId: *res.Job.Id,
-		PipelineId: *res.Job.PipelineId,
-		InputKey: request.Job.InputKey,
+		VideoId:         bson.ObjectIdHex(request.VideoId),
+		JobId:           *res.Job.Id,
+		PipelineId:      *res.Job.PipelineId,
+		InputKey:        request.Job.InputKey,
 		OutputKeyPrefix: *res.Job.OutputKeyPrefix,
-		OutputKey: *res.Job.Output.Key,
-		StartedAt: time.Now(),
-		EndedAt: time.Time{},
+		OutputKey:       *res.Job.Output.Key,
+		StartedAt:       time.Now(),
+		EndedAt:         time.Time{},
 	})
 	if err != nil {
 		log.Warn().Interface("error", err).Msg("failed to create transcoding job in database")
@@ -145,11 +142,11 @@ func (t *transcodeService) awaitVideoCreatedEvent() {
 		req := &pbTranscode.CreateJobRequest{
 			Job: &pbTranscode.TranscodeDetails{
 				PipelineId: config.AwsTranscodePipelineId,
-				InputKey: videoCreated.Video.Storage.RawKey,
+				InputKey:   videoCreated.Event.Video.Storage.RawKey,
 			},
-			VideoId: videoCreated.Video.Id,
+			VideoId: videoCreated.Event.Video.Id,
 		}
-		err := t.CreateJob(context.Background(), req, &pbTranscode.CreateJobResponse{})
+		err := t.CreateJob(videoCreated.Context, req, &pbTranscode.CreateJobResponse{})
 		if err != nil {
 			log.Warn().Interface("error", err).Msg("unable to call CreateJob")
 		}

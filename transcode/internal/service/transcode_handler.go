@@ -29,6 +29,8 @@ func NewTranscodeHandler(completedPublisher micro.Publisher, failedPublisher mic
 }
 
 func (t *transcodeHandler) OnCompleted(message *amazon.ElasticTranscoderMessage) error {
+	ctx := context.Background()
+
 	log.Info().
 		Str("job", message.JobId).
 		Str("pipeline", message.PipelineId).
@@ -67,7 +69,7 @@ func (t *transcodeHandler) OnCompleted(message *amazon.ElasticTranscoderMessage)
 	}
 
 	// Publish
-	t.completedPublisher.Publish(context.Background(), evt)
+	t.completedPublisher.Publish(ctx, evt)
 	log.Info().Str("topic", broker.VideoTranscodingCompleted).Interface("event", evt)
 
 	return nil

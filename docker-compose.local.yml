@@ -15,6 +15,12 @@ services:
     ports:
       - 27017:27017
 
+  # Zipkin
+  zipkin:
+    image: openzipkin/zipkin:latest
+    ports:
+      - 9411:9411
+
   # micro api gateway
   micro:
     command: --registry_address=consul:8500 api --handler=rpc --namespace=educonn.api
@@ -74,6 +80,7 @@ services:
       SMTP_PORT: 2525
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
       MAIL_TEMPLATE_PATH: /app/templates
+      ZIPKIN_COLLECTOR_URL: http://zipkin:9411/api/v1/spans
     volumes:
       - ./mail/cmd/maild/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
@@ -92,8 +99,24 @@ services:
       AWS_REGION: eu-west-1
       AWS_S3_VIDEO_BUCKET: videos.educonn.de
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+      ZIPKIN_COLLECTOR_URL: http://zipkin:9411/api/v1/spans
     volumes:
       - ./video/cmd/videod/.env-docker:/app/.env
+      - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
+
+  # [educonn] video api service
+  video-api:
+    image: derwaldemar/educonn-video-api:dev
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul
+      AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+      ZIPKIN_COLLECTOR_URL: http://zipkin:9411/api/v1/spans
+    volumes:
+      - ./api/user/cmd/user-apid/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
 
   # [educonn] transcode service
@@ -112,6 +135,7 @@ services:
       AWS_TRANSCODE_OUTPUT_PREFIX: transcoded/
       AWS_VIDEO_QUEUE: educonn-videos
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+      ZIPKIN_COLLECTOR_URL: http://zipkin:9411/api/v1/spans
     volumes:
       - ./transcode/cmd/transcoded/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub

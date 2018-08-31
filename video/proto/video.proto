@@ -2,12 +2,14 @@ syntax = "proto3";
 
 package educonn.video;
 
+
 option go_package = "github.com/lukasjarosch/educonn-platform/video/proto";
 
 service Video {
    rpc Create(CreateVideoRequest) returns (CreateVideoResponse) {}
    rpc GetById(GetVideoRequest) returns (GetVideoResponse) {}
    rpc GetByUserId(GetByUserIdRequest) returns (GetByUserIdResponse) {}
+   rpc Update(UpdateVideoRequest) returns (UpdateVideoResponse) {}
 }
 
 // ----------------------------
@@ -17,6 +19,7 @@ message VideoDetails {
    string id = 1;
    string title = 2;
    string description = 3;
+   string userId =  9;
    repeated string tags = 4;
    VideoStatus status = 5;
    VideoStatistics statistics = 6;
@@ -91,6 +94,14 @@ message GetByUserIdResponse {
     repeated VideoDetails videos = 1;
 }
 
+message UpdateVideoRequest {
+   VideoDetails video = 1;
+}
+
+message UpdateVideoResponse {
+    VideoDetails video = 1;
+}
+
 // ----------------------------
 // MISC
 // ----------------------------
@@ -98,3 +109,5 @@ message Error {
     int32 code = 1;
     string description = 2;
 }
+
+message Empty {}

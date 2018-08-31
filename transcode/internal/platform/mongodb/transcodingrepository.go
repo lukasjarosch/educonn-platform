@@ -5,6 +5,8 @@ import (
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"context"
+	"github.com/opentracing/opentracing-go"
 )
 
 type TranscodeRepository struct {
@@ -24,7 +26,10 @@ func NewTranscodeRepository(host string, port string, user string, pass string, 
 }
 
 // CreateTranscodingJob creates a new transcoding job in the DB
-func (t *TranscodeRepository) CreateTranscodingJob(job *TranscodingJob) (*TranscodingJob, error) {
+func (t *TranscodeRepository) CreateTranscodingJob(ctx context.Context, job *TranscodingJob) (*TranscodingJob, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TranscodingRepository.CreateTranscodingJob")
+	defer span.Finish()
+
 	session := t.session.Clone()
 	defer session.Close()
 

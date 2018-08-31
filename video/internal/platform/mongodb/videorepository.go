@@ -7,6 +7,8 @@ import (
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"context"
+	"github.com/opentracing/opentracing-go"
 )
 
 type VideoRepository struct {
@@ -38,7 +40,10 @@ func UnmarshalProtobuf(video *pbVideo.VideoDetails, userId string) *Video {
 }
 
 // CreateVideo will insert a new video entry
-func (v *VideoRepository) CreateVideo(video *Video) (*Video, error) {
+func (v *VideoRepository) CreateVideo(ctx context.Context, video *Video) (*Video, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "VideoRepository.CreateVideo")
+	defer span.Finish()
+
 	session := v.session.Clone()
 	defer session.Close()
 
@@ -51,7 +56,10 @@ func (v *VideoRepository) CreateVideo(video *Video) (*Video, error) {
 	return video, nil
 }
 
-func (v *VideoRepository) UpdateVideo(video *Video) error {
+func (v *VideoRepository) UpdateVideo(ctx context.Context, video *Video) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "VideoRepository.UpdateVideo")
+	defer span.Finish()
+
 	session := v.session.Clone()
 	defer session.Close()
 
@@ -62,7 +70,10 @@ func (v *VideoRepository) UpdateVideo(video *Video) error {
 	return nil
 }
 
-func (v *VideoRepository) FindById(id string) (*Video, error) {
+func (v *VideoRepository) FindById(ctx context.Context, id string) (*Video, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "VideoRepository.FindById")
+	defer span.Finish()
+
 	session := v.session.Clone()
 	defer session.Close()
 
@@ -78,7 +89,10 @@ func (v *VideoRepository) FindById(id string) (*Video, error) {
 	return video, nil
 }
 
-func (v *VideoRepository) FindByRawStorageKey(key string) (*Video, error) {
+func (v *VideoRepository) FindByRawStorageKey(ctx context.Context, key string) (*Video, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "VideoRepository.FindByRawStorageKey")
+	defer span.Finish()
+
 	session := v.session.Clone()
 	defer session.Close()
 
@@ -90,7 +104,10 @@ func (v *VideoRepository) FindByRawStorageKey(key string) (*Video, error) {
 	return video, nil
 }
 
-func (v *VideoRepository) FindByUserId(userId string) ([]*Video, error) {
+func (v *VideoRepository) FindByUserId(ctx context.Context, userId string) ([]*Video, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "VideoRepository.FindByUserId")
+	defer span.Finish()
+
 	session := v.session.Clone()
 	defer session.Close()
 
@@ -110,18 +127,21 @@ func (v *VideoRepository) FindByUserId(userId string) ([]*Video, error) {
 	return videos, nil
 }
 
-func (v *VideoRepository) IncrementViews(videoId bson.ObjectId) error {
+func (v *VideoRepository) IncrementViews(ctx context.Context, videoId bson.ObjectId) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "VideoRepository.IncrementViews")
+	defer span.Finish()
+
 	session := v.session.Clone()
 	defer session.Close()
 
-	video, err := v.FindById(videoId.Hex())
+	video, err := v.FindById(ctx, videoId.Hex())
 	if err != nil {
 	    return err
 	}
 
 	video.Statistics.ViewCount = video.Statistics.ViewCount + 1
 
-	err = v.UpdateVideo(video)
+	err = v.UpdateVideo(ctx, video)
 	if err != nil {
 	    return err
 	}

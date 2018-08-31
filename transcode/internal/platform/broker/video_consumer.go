@@ -10,18 +10,23 @@ const (
 	VideoCreatedQueue = "video-created-queue"
 )
 
-type VideoCreatedSubscriber struct {
-	videoCreatedChan chan *pbVideo.VideoCreatedEvent
+type VideoCreatedEvent struct {
+	Event   *pbVideo.VideoCreatedEvent
+	Context context.Context
 }
 
-func NewVideoCreatedSubscriber(videoCreatedChan chan *pbVideo.VideoCreatedEvent) *VideoCreatedSubscriber {
+type VideoCreatedSubscriber struct {
+	videoCreatedChan chan VideoCreatedEvent
+}
+
+func NewVideoCreatedSubscriber(videoCreatedEventChan chan VideoCreatedEvent) *VideoCreatedSubscriber {
 	return &VideoCreatedSubscriber{
-		videoCreatedChan:videoCreatedChan,
+		videoCreatedChan: videoCreatedEventChan,
 	}
 }
 
 func (v *VideoCreatedSubscriber) Process(ctx context.Context, event *pbVideo.VideoCreatedEvent) error {
-	v.videoCreatedChan <- event
+	v.videoCreatedChan <- VideoCreatedEvent{Context:ctx, Event:event}
 	return nil
 }
 

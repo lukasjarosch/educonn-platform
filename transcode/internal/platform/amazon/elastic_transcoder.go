@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"github.com/lukasjarosch/educonn-platform/transcode/internal/platform/config"
 	"github.com/rs/xid"
+	"context"
+	"github.com/opentracing/opentracing-go"
 )
 
 type ElasticTranscoderClient struct {
@@ -32,7 +34,10 @@ func NewElasticTranscoderClient(accessKey string, secretKey string, region strin
 	return et, nil
 }
 
-func (e *ElasticTranscoderClient) CreateJob(inputKey string) (*elastictranscoder.CreateJobResponse, error){
+func (e *ElasticTranscoderClient) CreateJob(ctx context.Context, inputKey string) (*elastictranscoder.CreateJobResponse, error){
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ElasticTranscoder.CreateJob")
+	defer span.Finish()
+
 	presetId := config.AwsTranscodePresetId
 	pipelineId := config.AwsTranscodePipelineId
 	outputKeyPrefix := config.AwsTranscodeOutputPrefix
@@ -58,6 +63,7 @@ func (e *ElasticTranscoderClient) CreateJob(inputKey string) (*elastictranscoder
 	if err != nil {
 		return nil, err
 	}
+
 
 	return resp, nil
 }

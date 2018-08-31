@@ -17,7 +17,7 @@ import (
 
 func main() {
 	if os.Getenv("DEV_ENV") != "" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	}
 
 	// Init service

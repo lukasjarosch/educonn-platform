@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"net/http"
 	"time"
+	"context"
+	"github.com/opentracing/opentracing-go"
 )
 
 type S3Bucket struct {
@@ -45,7 +47,10 @@ func NewS3Bucket(bucket string, region string, accessKey string, secretKey strin
 // CheckFileExists tries to retrieve the metadata of the file. If no metadata is found, the file does not exist
 // If this method does not return an error, the file does exist. A bucket must be set here, so if you plan on using
 // the default value, do it on your own.
-func (b *S3Bucket) CheckFileExists(file string, bucket string) error {
+func (b *S3Bucket) CheckFileExists(ctx context.Context, file string, bucket string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "S3Bucket.CheckFileExists")
+	defer span.Finish()
+
 	_, err := b.session.HeadObject(&s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(file),

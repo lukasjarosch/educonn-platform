@@ -23,11 +23,11 @@ type userService struct {
 }
 
 type userCreatedEventPublisher interface {
-	PublishUserCreated(event *pb.UserCreatedEvent) (err error)
+	PublishUserCreated(ctx context.Context, event *pb.UserCreatedEvent) (err error)
 }
 
 type userDeletedEventPublisher interface {
-	PublishUserDeleted(event *pb.UserDeletedEvent) (err error)
+	PublishUserDeleted(ctx context.Context, event *pb.UserDeletedEvent) (err error)
 }
 
 // NewUserService creates a new userService
@@ -44,23 +44,26 @@ func NewUserService(repo *mongodb.UserRepository, createdPublisher userCreatedEv
 func (s *userService) Create(ctx context.Context, req *pb.UserDetails, res *pb.UserResponse) error {
 
 	// create user type
-	hashedPass, _ := HashAndSalt([]byte(req.Password))
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
 	user := &mongodb.User{
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Email:     req.Email,
-		Password:  hashedPass,
+		Password:  string(hash),
 	}
 
 	// check if email is already taken
-	existingUser, err := s.repo.FindByEmail(user.Email)
+	existingUser, err := s.repo.FindByEmail(ctx, user.Email)
 	if existingUser != nil {
 		log.Warn().Msg(errors.EmailExists.Error())
 		return errors.EmailExists
 	}
 
 	// create user
-	user, err = s.repo.CreateUser(user)
+	user, err = s.repo.CreateUser(ctx, user)
 	if err != nil {
 		log.Info().Interface("error", err).Msg("unable to create user")
 		return err
@@ -78,7 +81,7 @@ func (s *userService) Create(ctx context.Context, req *pb.UserDetails, res *pb.U
 	}
 
 	// publish user.events.created
-	s.userCreatedEventPublisher.PublishUserCreated(&pb.UserCreatedEvent{
+	s.userCreatedEventPublisher.PublishUserCreated(ctx, &pb.UserCreatedEvent{
 		User: res.User,
 	})
 
@@ -93,13 +96,13 @@ func (s *userService) Get(ctx context.Context, req *pb.UserDetails, res *pb.User
 		if bson.IsObjectIdHex(req.GetId()) == false {
 			return merr.BadRequest(config.ServiceName, "%s", errors.MalformedUserId)
 		}
-		user, err = s.repo.FindById(req.GetId())
+		user, err = s.repo.FindById(ctx, req.GetId())
 		if err != nil {
 			return err
 		}
 	}
 	if req.GetEmail() != "" && req.GetId() == "" {
-		user, err = s.repo.FindByEmail(req.GetEmail())
+		user, err = s.repo.FindByEmail(ctx, req.GetEmail())
 		if err != nil {
 			return err
 		}
@@ -120,7 +123,7 @@ func (s *userService) Get(ctx context.Context, req *pb.UserDetails, res *pb.User
 
 // GetAll fetch all users
 func (s *userService) GetAll(ctx context.Context, req *pb.Request, res *pb.UserResponse) error {
-	users, err := s.repo.GetAll()
+	users, err := s.repo.GetAll(ctx)
 	if err != nil {
 		return merr.InternalServerError(config.ServiceName, "%s", err)
 	}
@@ -159,9 +162,9 @@ func (s *userService) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb
 		return merr.Unauthorized(config.ServiceName, "%s", jwt_handler.Unauthorized)
 	}
 
-	user, _ := s.repo.FindById(req.User.Id)
+	user, _ := s.repo.FindById(ctx, req.User.Id)
 
-	err = s.repo.DeleteUser(req.User.GetId())
+	err = s.repo.DeleteUser(ctx, req.User.GetId())
 	if err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "not found") {
 			return merr.NotFound(config.ServiceName, "%s", errors.UserNotFound)
@@ -174,7 +177,7 @@ func (s *userService) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb
 
 	log.Info().Str("user_id", req.User.Id).Msg("deleted user from database")
 
-	s.userDeletedEventPublisher.PublishUserDeleted(&pb.UserDeletedEvent{
+	s.userDeletedEventPublisher.PublishUserDeleted(ctx, &pb.UserDeletedEvent{
 		User: &pb.UserDetails{
 			Id:        user.ID.Hex(),
 			Email:     user.Email,
@@ -198,7 +201,7 @@ func (s *userService) Auth(ctx context.Context, req *pb.UserDetails, res *pb.Tok
 	}
 
 	// fetch user
-	user, err := s.repo.FindByEmail(req.GetEmail())
+	user, err := s.repo.FindByEmail(ctx, req.GetEmail())
 	if err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "not found") {
 			return merr.NotFound(config.ServiceName, "%s", errors.UserNotFound)

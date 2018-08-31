@@ -7,7 +7,8 @@ import (
 
 	"github.com/evalphobia/aws-sdk-go-wrapper/config"
 	"github.com/evalphobia/aws-sdk-go-wrapper/sqs"
-	log "github.com/sirupsen/logrus"
+	"context"
+	"github.com/rs/zerolog/log"
 )
 
 const TranscodeStatusCompleted = "COMPLETED"
@@ -44,6 +45,18 @@ type ElasticTranscoderMessage struct {
 		ErrorCode int64 `json:"errorCode"`
 	}
 
+}
+
+type Example struct{}
+
+func (e *Example) Handle(ctx context.Context, msg *ElasticTranscoderMessage) error {
+	log.Error().Msg("Handle")
+	return nil
+}
+
+func Handler(ctx context.Context, msg *ElasticTranscoderMessage) error {
+	log.Error().Msg("Handler")
+	return nil
 }
 
 // ElasticTranscodeEventHandler defines the interface for all Elastic Transcode handlers
@@ -114,7 +127,6 @@ func (s *SQSTranscodeEventConsumer) Consume() error {
 	for {
 		message, err := s.FetchMessage()
 		if err != nil {
-			log.Info(err)
 			continue
 		}
 		if message == nil {

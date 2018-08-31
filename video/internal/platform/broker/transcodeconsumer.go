@@ -13,32 +13,42 @@ const (
 	TranscodeFailedQueue = "transcode-failed"
 )
 
-type TranscodeCompletedSubscriber struct {
-	transcodeCompletedChan chan *pbTranscode.TranscodingCompletedEvent
+type TranscodingCompletedEvent struct {
+	Event   *pbTranscode.TranscodingCompletedEvent
+	Context context.Context
 }
 
-func NewTranscodeCompletedSubscriber(transcodeCompletedChan chan *pbTranscode.TranscodingCompletedEvent) *TranscodeCompletedSubscriber{
+type TranscodeCompletedSubscriber struct {
+	transcodeCompletedChan chan TranscodingCompletedEvent
+}
+
+func NewTranscodeCompletedSubscriber(transcodeCompletedChan chan TranscodingCompletedEvent) *TranscodeCompletedSubscriber{
 	return &TranscodeCompletedSubscriber{transcodeCompletedChan:transcodeCompletedChan}
 }
 
 func (t *TranscodeCompletedSubscriber) Process(ctx context.Context, event *pbTranscode.TranscodingCompletedEvent) error {
-	t.transcodeCompletedChan <- event
+	t.transcodeCompletedChan <- TranscodingCompletedEvent{Context:ctx, Event:event}
 	log.Info().Str("topic", TranscodeCompletedTopic).Str("job", event.Transcode.JobId).Msg("received TranscodingCompletedEvent")
 	return nil
 }
 
 // ------------------------------------ //
 
-type TranscodeFailedSubscriber struct {
-	transcodeFailedChan chan *pbTranscode.TranscodingFailedEvent
+type TranscodingFailedEvent struct {
+	Event *pbTranscode.TranscodingFailedEvent
+	Context context.Context
 }
 
-func NewTranscodeFailedSubscriber(transcodeFailedChan chan *pbTranscode.TranscodingFailedEvent) *TranscodeFailedSubscriber{
+type TranscodeFailedSubscriber struct {
+	transcodeFailedChan chan TranscodingFailedEvent
+}
+
+func NewTranscodeFailedSubscriber(transcodeFailedChan chan TranscodingFailedEvent) *TranscodeFailedSubscriber{
 	return &TranscodeFailedSubscriber{transcodeFailedChan:transcodeFailedChan}
 }
 
 func (t *TranscodeFailedSubscriber) Process(ctx context.Context, event *pbTranscode.TranscodingFailedEvent) error {
-	t.transcodeFailedChan<- event
+	t.transcodeFailedChan<- TranscodingFailedEvent{Context:ctx, Event:event}
 	log.Info().Str("topic", TranscodeFailedTopic).Str("job", event.Transcode.JobId).Msg("received TranscodingCompletedEvent")
 	return nil
 }

@@ -14,4 +14,5 @@ const (
 	TokenPrivateKeyFileNotFound = Error("The private key for the auth tokens could not be found, check the path")
 	Unauthorized = Error("You are not authorized to perform this action")
 	PrivateKeyMissing = Error("The JwtTokenHandler does not have access to the private key and therefore cannot sign a token")
+	TokenExpired = Error("JWT token expired")
 )

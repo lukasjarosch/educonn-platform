@@ -8,6 +8,8 @@ import (
 
 	"github.com/alecthomas/template"
 	gomail "github.com/go-mail/mail"
+	"context"
+	"github.com/opentracing/opentracing-go"
 )
 
 //MailRequest struct
@@ -56,7 +58,10 @@ func NewSmtpMail(hostname string, port string, username string, password string)
 	return &SmtpMail{dialer: dialer}, nil
 }
 
-func (m *SmtpMail) SendEmail(request *MailRequest) (bool, error) {
+func (m *SmtpMail) SendEmail(ctx context.Context, request *MailRequest) (bool, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "SmtpMail.SendMail")
+	defer span.Finish()
+
 	mail := gomail.NewMessage()
 
 	mail.SetHeader("From", request.from)

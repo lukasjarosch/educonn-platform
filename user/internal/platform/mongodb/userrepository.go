@@ -7,6 +7,8 @@ import (
 	"github.com/lukasjarosch/educonn-platform/user/internal/platform/config"
 	"time"
 	"github.com/lukasjarosch/educonn-platform/user/internal/platform/errors"
+	"context"
+	"github.com/opentracing/opentracing-go"
 )
 
 type UserRepository struct {
@@ -26,7 +28,10 @@ func NewUserRepository(host string, port string, user string, pass string, dbNam
 }
 
 // CreateUser creates a new user entry
-func (u *UserRepository) CreateUser(user *User) (*User, error) {
+func (u *UserRepository) CreateUser(ctx context.Context, user *User) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.CreateUser")
+	defer span.Finish()
+
 	session := u.session.Clone()
 	defer session.Close()
 
@@ -43,7 +48,10 @@ func (u *UserRepository) CreateUser(user *User) (*User, error) {
 }
 
 // FindByEmail retrieves a user by email
-func (u *UserRepository) FindByEmail(email string) (*User, error) {
+func (u *UserRepository) FindByEmail(ctx context.Context, email string) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.FindByEmail")
+	defer span.Finish()
+
 	session := u.session.Clone()
 	defer session.Close()
 
@@ -57,7 +65,10 @@ func (u *UserRepository) FindByEmail(email string) (*User, error) {
 }
 
 // FindById searches  for an user by ID
-func (u *UserRepository) FindById (id string) (*User, error) {
+func (u *UserRepository) FindById (ctx context.Context, id string) (*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.FindByEmail")
+	defer span.Finish()
+
 	session := u.session.Clone()
 	defer session.Close()
 
@@ -71,7 +82,10 @@ func (u *UserRepository) FindById (id string) (*User, error) {
 }
 
 // GetAll returns all users
-func (u *UserRepository) GetAll() ([]*User, error) {
+func (u *UserRepository) GetAll(ctx context.Context) ([]*User, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.FindByEmail")
+	defer span.Finish()
+
 	session := u.session.Clone()
 	defer session.Close()
 
@@ -84,7 +98,10 @@ func (u *UserRepository) GetAll() ([]*User, error) {
 	return users, nil
 }
 
-func (u *UserRepository) DeleteUser(id string) error {
+func (u *UserRepository) DeleteUser(ctx context.Context, id string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UserRepository.FindByEmail")
+	defer span.Finish()
+
 	session := u.session.Clone()
 	defer session.Close()
 

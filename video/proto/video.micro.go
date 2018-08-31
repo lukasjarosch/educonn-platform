@@ -21,7 +21,10 @@ It has these top-level messages:
 	GetVideoResponse
 	GetByUserIdRequest
 	GetByUserIdResponse
+	UpdateVideoRequest
+	UpdateVideoResponse
 	Error
+	Empty
 */
 package proto
 
@@ -57,6 +60,7 @@ type VideoClient interface {
 	Create(ctx context.Context, in *CreateVideoRequest, opts ...client.CallOption) (*CreateVideoResponse, error)
 	GetById(ctx context.Context, in *GetVideoRequest, opts ...client.CallOption) (*GetVideoResponse, error)
 	GetByUserId(ctx context.Context, in *GetByUserIdRequest, opts ...client.CallOption) (*GetByUserIdResponse, error)
+	Update(ctx context.Context, in *UpdateVideoRequest, opts ...client.CallOption) (*UpdateVideoResponse, error)
 }
 
 type videoClient struct {
@@ -107,12 +111,23 @@ func (c *videoClient) GetByUserId(ctx context.Context, in *GetByUserIdRequest, o
 	return out, nil
 }
 
+func (c *videoClient) Update(ctx context.Context, in *UpdateVideoRequest, opts ...client.CallOption) (*UpdateVideoResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "Video.Update", in)
+	out := new(UpdateVideoResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Video service
 
 type VideoHandler interface {
 	Create(context.Context, *CreateVideoRequest, *CreateVideoResponse) error
 	GetById(context.Context, *GetVideoRequest, *GetVideoResponse) error
 	GetByUserId(context.Context, *GetByUserIdRequest, *GetByUserIdResponse) error
+	Update(context.Context, *UpdateVideoRequest, *UpdateVideoResponse) error
 }
 
 func RegisterVideoHandler(s server.Server, hdlr VideoHandler, opts ...server.HandlerOption) {
@@ -133,4 +148,8 @@ func (h *Video) GetById(ctx context.Context, in *GetVideoRequest, out *GetVideoR
 
 func (h *Video) GetByUserId(ctx context.Context, in *GetByUserIdRequest, out *GetByUserIdResponse) error {
 	return h.VideoHandler.GetByUserId(ctx, in, out)
+}
+
+func (h *Video) Update(ctx context.Context, in *UpdateVideoRequest, out *UpdateVideoResponse) error {
+	return h.VideoHandler.Update(ctx, in, out)
 }

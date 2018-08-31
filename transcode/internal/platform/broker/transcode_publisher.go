@@ -25,8 +25,8 @@ func NewTranscodeEventPublisher(completedPublisher micro.Publisher, failedPublis
 	}
 }
 
-func (t *TranscodeEventPublisher) PublishTranscodingCompleted(event pbTranscode.TranscodingCompletedEvent) (err error) {
-	if err = t.transcodingCompletedPublisher.Publish(context.Background(), event); err != nil {
+func (t *TranscodeEventPublisher) PublishTranscodingCompleted(ctx context.Context, event pbTranscode.TranscodingCompletedEvent) (err error) {
+	if err = t.transcodingCompletedPublisher.Publish(ctx, event); err != nil {
 		log.Warn().Str("topic", VideoTranscodingCompleted).Interface("error", err).Interface("event", event).Msg("unable to publish event")
 		return nil
 	}
@@ -34,8 +34,8 @@ func (t *TranscodeEventPublisher) PublishTranscodingCompleted(event pbTranscode.
 	return nil
 }
 
-func (t *TranscodeEventPublisher) PublishTranscodingFailed(event pbTranscode.TranscodingFailedEvent) (err error) {
-	if err = t.transcodingFailedPublisher.Publish(context.Background(), event); err != nil {
+func (t *TranscodeEventPublisher) PublishTranscodingFailed(ctx context.Context, event pbTranscode.TranscodingFailedEvent) (err error) {
+	if err = t.transcodingFailedPublisher.Publish(ctx, event); err != nil {
 		log.Warn().Str("topic", VideoTranscodingFailed).Interface("error", err).Interface("event", event).Msg("unable to publish event")
 		return nil
 	}

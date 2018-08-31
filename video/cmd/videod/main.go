@@ -10,25 +10,29 @@ import (
 	"github.com/rs/zerolog/log"
 	"time"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/amazon"
-	pbTranscode "github.com/lukasjarosch/educonn-platform/transcode/proto"
 	"github.com/micro/go-micro/server"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/lukasjarosch/educonn-platform/video/internal/platform/mongodb"
 	"os"
 	"github.com/rs/zerolog"
 	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
+	zipkin "github.com/openzipkin/zipkin-go-opentracing"
+	"github.com/opentracing/opentracing-go"
+	"github.com/lukasjarosch/educonn-platform/video/internal/platform/errors"
+	"github.com/lukasjarosch/educonn-platform/video/internal/middleware"
+	opentrace "github.com/micro/go-plugins/wrapper/trace/opentracing"
 )
 
 func main() {
 
 	if os.Getenv("DEV_ENV") != "" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	}
 
-	transcodeCompletedChannel := make(chan *pbTranscode.TranscodingCompletedEvent)
-	transcodeCompletedSubscriber := broker.NewTranscodeCompletedSubscriber(transcodeCompletedChannel)
-	transcodeFailedChannel := make(chan *pbTranscode.TranscodingFailedEvent)
-	transcodeFailedSubscriber := broker.NewTranscodeFailedSubscriber(transcodeFailedChannel)
+	tracer, err := initTracing()
+	if err != nil {
+	    log.Fatal().Err(err).Msg("unable to init tracer")
+	}
 
 	// setup micro service
 	svc := micro.NewService(
@@ -36,8 +40,23 @@ func main() {
 		micro.Version(config.Version),
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*10),
+
+		micro.WrapHandler(opentrace.NewHandlerWrapper(tracer)),
+		micro.WrapSubscriber(opentrace.NewSubscriberWrapper(tracer)),
+		micro.WrapCall(opentrace.NewCallWrapper(tracer)),
+		micro.WrapClient(opentrace.NewClientWrapper(tracer)),
+
+		micro.WrapHandler(middleware.LogHandlerWrapper),
+		micro.WrapSubscriber(middleware.LogSubscriberWrapper),
 	)
 	svc.Init()
+
+	// setup subscriber
+	transcodeCompletedChannel := make(chan broker.TranscodingCompletedEvent)
+	transcodeCompletedSubscriber := broker.NewTranscodeCompletedSubscriber(transcodeCompletedChannel)
+	transcodeFailedChannel := make(chan broker.TranscodingFailedEvent)
+	transcodeFailedSubscriber := broker.NewTranscodeFailedSubscriber(transcodeFailedChannel)
+
 
 	// setup rabbitmq
 	rabbitBroker := svc.Server().Options().Broker
@@ -107,7 +126,24 @@ func main() {
 		),
 	)
 
+
 	if err := svc.Run(); err != nil {
 		panic(err)
 	}
+}
+
+func initTracing() (opentracing.Tracer, error) {
+	collector, err := zipkin.NewHTTPCollector(config.ZipkinCollectorUrl)
+	if err != nil {
+		return nil, errors.Error("unable to create zipkin collector")
+	}
+	tracer, err := zipkin.NewTracer(
+		zipkin.NewRecorder(collector, true, "9411", config.ServiceName),
+	)
+	if err != nil {
+		return nil, errors.Error("unable to create new zipkin tracer")
+	}
+	opentracing.InitGlobalTracer(tracer)
+
+	return tracer, nil
 }

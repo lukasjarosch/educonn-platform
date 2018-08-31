@@ -15,18 +15,23 @@ const (
 	VideoProcessedQueue = "video-processed-queue"
 )
 
-type UserCreatedSubscriber struct {
-	userCreatedChan chan *pbUser.UserCreatedEvent
+type UserCreatedEvent struct {
+	Event *pbUser.UserCreatedEvent
+	Context context.Context
 }
 
-func NewUserCreatedSubscriber(userCreatedChannel chan *pbUser.UserCreatedEvent) *UserCreatedSubscriber {
+type UserCreatedSubscriber struct {
+	userCreatedChan chan UserCreatedEvent
+}
+
+func NewUserCreatedSubscriber(userCreatedChannel chan UserCreatedEvent) *UserCreatedSubscriber {
 	return &UserCreatedSubscriber{
 		userCreatedChan: userCreatedChannel,
 	}
 }
 
 func (s *UserCreatedSubscriber) Process(ctx context.Context, event *pbUser.UserCreatedEvent) error {
-	s.userCreatedChan <- event
+	s.userCreatedChan <- UserCreatedEvent{Event:event, Context:ctx}
 	event.User.Password = "" // unset the password or we would log the plaintext password
 	log.Info().Str("topic", UserCreatedTopic).Str("user", event.User.Id).Msg("received UserCreatedEvent")
 	return nil
@@ -34,18 +39,23 @@ func (s *UserCreatedSubscriber) Process(ctx context.Context, event *pbUser.UserC
 
 // ---------------------------
 
-type UserDeletedSubscriber struct {
-	userDeletedChan chan *pbUser.UserDeletedEvent
+type UserDeletedEvent struct {
+	Event *pbUser.UserDeletedEvent
+	Context context.Context
 }
 
-func NewUserDeletedSubscriber(userDeletedChannel chan *pbUser.UserDeletedEvent) *UserDeletedSubscriber {
+type UserDeletedSubscriber struct {
+	userDeletedChan chan UserDeletedEvent
+}
+
+func NewUserDeletedSubscriber(userDeletedChannel chan UserDeletedEvent) *UserDeletedSubscriber {
 	return &UserDeletedSubscriber{
 		userDeletedChan: userDeletedChannel,
 	}
 }
 
 func (s *UserDeletedSubscriber) Process(ctx context.Context, event *pbUser.UserDeletedEvent) error {
-	s.userDeletedChan <- event
+	s.userDeletedChan <- UserDeletedEvent{Event:event, Context:ctx}
 	event.User.Password = "" // unset the password or we would log the plaintext password
 	log.Info().Str("topic", UserDeletedTopic).Str("user", event.User.Id).Msg("received UserDeletedEvent")
 	return nil
