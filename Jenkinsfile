@@ -13,7 +13,7 @@ node {
 						sh 'go get -u github.com/golang/dep/cmd/dep'
 
 						//or -update
-						sh 'dep ensure'
+						sh 'cd ${GOPATH}/src/github.com/lukasjarosch/educonn-platform && dep ensure'
 
 					}
 		}
