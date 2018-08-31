@@ -6,8 +6,10 @@ pipeline {
 
 	stages {
 		stage('Dep') {
-			echo 'Ensure dependencies'
-			sh('dep ensure -v')
+			steps {
+				echo 'Ensure dependencies'
+				sh('dep ensure -v')
+			}
 		}
 		stage('Build') {
 			steps {
