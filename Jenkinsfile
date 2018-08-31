@@ -5,6 +5,10 @@ pipeline {
 	agent any
 
 	stages {
+		stage('Dep') {
+			echo 'Ensure dependencies'
+			sh('dep ensure -v')
+		}
 		stage('Build') {
 			steps {
                 echo 'Building educonn-user'
