@@ -11,11 +11,9 @@ node {
 
 						sh 'go version'
 						sh 'go get -u github.com/golang/dep/cmd/dep'
-						sh 'go get -u github.com/golang/lint/golint'
-						sh 'go get github.com/tebeka/go2xunit'
 
 						//or -update
-						sh 'cd ${GOPATH}/src/cmd/project/ && dep ensure' 
+						sh 'dep ensure'
 
 					}
 		}
