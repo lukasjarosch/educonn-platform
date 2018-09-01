@@ -25,5 +25,5 @@ RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /go/src/github.com/lukasjarosch/educonn-platform/user/cmd/user/user .
-ENTRYPOINT ["./userd"]
-CMD ["./userd"]
+ENTRYPOINT ["./user"]
+CMD ["./user"]
