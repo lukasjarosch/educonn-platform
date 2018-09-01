@@ -92,6 +92,10 @@ user-docker:
 	@echo "==> Building USER docker image..."
 	docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev -f user/build/Dockerfile .
 
+user-publish:
+	@echo "==> Publishing image version: ${VERSION}"
+	docker push derwaldemar/educonn-user:${VERSION}
+
 # --------- MAIL ---------
 mail: clean
 	@echo Building MAIL service...
