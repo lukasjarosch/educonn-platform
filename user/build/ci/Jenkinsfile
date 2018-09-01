@@ -8,12 +8,11 @@ node {
 						}
 					stage('Build') {
 						echo 'Building'
-						sh('make user-proto')
-						sh('make user')
+						sh('sh ./user/scripts/proto.sh')
+						sh('sh ./user/scripts/build.sh')
 					}
 					stage('Docker') {
 					    echo 'Docker Image'
-					    sh('make user-docker')
 					}
 		}
 	}
