@@ -9,7 +9,9 @@ node {
 					stage('Build') {
 						echo 'Building'
 						dir('src/github.com/lukasjarosch/educonn-platform/') {
-                            sh('./user/scripts/proto.sh')
+		                    withEnv(["GOPATH=${JENKINS_HOME}/go"]) {
+                                sh('./user/scripts/proto.sh')
+		                    }
                             sh('./user/scripts/build.sh')
 						}
 					}
