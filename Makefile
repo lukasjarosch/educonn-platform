@@ -79,7 +79,7 @@ user-api-run:
 
 # --------- USER ---------
 user:
-	@sh -c "'$(CURDIR)'/user/scripts/build.sh"
+	@sh -c "'$(CURDIR)'/user/scripts/build.sh" ${VERSION}
 
 user-proto:
 	@sh -c "'$(CURDIR)'/user/scripts/proto.sh"
@@ -90,7 +90,7 @@ user-run:
 
 user-docker:
 	@echo "==> Building USER docker image..."
-	docker build --no-cache -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev .
+	docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev -f user/build/Dockerfile .
 
 # --------- MAIL ---------
 mail: clean

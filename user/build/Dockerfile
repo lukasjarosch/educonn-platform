@@ -1,23 +1,30 @@
 FROM golang:1.10 as builder
 
-WORKDIR /go/src/github.com/lukasjarosch/educonn-platform
+MAINTAINER lukas.jarosch@mail.com
 
-COPY user .
+# dep
+ADD https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 /usr/bin/dep
+RUN chmod +x /usr/bin/dep
 
-RUN ls -la
+# gopath
+RUN mkdir -p /go/src/github.com/lukasjarosch/educonn-platform/user/
+WORKDIR /go/src/github.com/lukasjarosch/educonn-platform/user/
 
-RUN cd cmd/user && go get -d -v
-RUN cd cmd/user && CGO_ENABLED=0 go build -ldflags "-X github.com/lukasjarosch/educonn-platform/user/internal/platform/config.Version=${VERSION}" -a -installsuffix cgo -o userd main.go
+# vendoring
+COPY user/Gopkg.lock user/Gopkg.toml ./
+RUN dep ensure -vendor-only -v
 
+# build
+COPY user/ ./
+RUN scripts/build.sh
+
+# --------
 
 FROM alpine:latest
-
-ARG ServiceName
-ARG VERSION
 
 RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /go/src/github.com/lukasjarosch/educonn-platform/user/cmd/userd/userd .
+COPY --from=builder /go/src/github.com/lukasjarosch/educonn-platform/user/cmd/user/user .
 ENTRYPOINT ["./userd"]
 CMD ["./userd"]

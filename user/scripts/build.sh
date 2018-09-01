@@ -3,10 +3,7 @@
 # Set the service's name
 SERVICE_NAME=user
 
-# Extract version
-MAIN_VERSION=$(git describe --abbrev=0 --tags || echo "0.1")
-GIT_HASH=$(git log -n 1 --pretty=format:"%h")
-VERSION=${MAIN_VERSION}\-${GIT_HASH}
+VERSION=$1
 
 LD_FLAGS="-X github.com/lukasjarosch/educonn-platform/${SERVICE_NAME}/internal/platform/config.Version=${VERSION}"
 
@@ -17,10 +14,6 @@ DIR="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
 
 # Change into that directory
 cd "$DIR"
-
-# Get the git commit
-GIT_COMMIT=$(git rev-parse HEAD)
-GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
 # Delete old binary
 echo "==> Removing old $SERVICE_NAME binary..."
