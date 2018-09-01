@@ -19,6 +19,11 @@ node {
                             }
                         }
 					}
+					stage('Deploy') {
+                        sshagent (credentials: ['24f14756-d589-4e42-9f16-c2c5f1bbca4a']) {
+                            sh 'ssh -o StrictHostKeyChecking=no 159.89.3.151 uname -a'
+                        }
+					}
 		}
 	}
 }
