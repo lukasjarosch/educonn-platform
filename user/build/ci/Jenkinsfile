@@ -1,0 +1,20 @@
+node {
+	ws("${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}/src/github.com/lukasjarosch/educonn-platform/") {
+		withEnv(["GOPATH=${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}"]) {
+					env.PATH="${GOPATH}/bin:$PATH"
+						stage('Checkout'){
+						echo 'Checking out SCM'
+						checkout scm
+						}
+					stage('Build') {
+						echo 'Building'
+						sh('make user-proto')
+						sh('make user')
+					}
+					stage('Docker') {
+					    echo 'Docker Image'
+					    sh('make user-docker')
+					}
+		}
+	}
+}

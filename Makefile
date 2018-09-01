@@ -78,25 +78,19 @@ user-api-run:
 	@cd api/user/cmd/user-apid && go run main.go
 
 # --------- USER ---------
-user: clean
-	@echo Building USER service...
-	@cd user/cmd/userd && CGO_ENABLED=0 go build ${LDFLAGS_USER} -a -installsuffix cgo -o userd main.go
+user:
+	@sh -c "'$(CURDIR)'/user/scripts/build.sh"
 
 user-proto:
-	@echo protoc USER
-	@cd user/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src user.proto
+	@sh -c "'$(CURDIR)'/user/scripts/proto.sh"
 
 user-run:
 	@echo Starting the USER service
 	@cd user/cmd/userd && go run main.go
 
 user-docker:
-	@echo Building USER docker image ...
-	@cd user && docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev .
-
-user-docker-push-dev:
-	@echo Pushing educonn-user:dev image ...
-	docker push derwaldemar/educonn-user:dev
+	@echo "==> Building USER docker image..."
+	docker build --no-cache -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev .
 
 # --------- MAIL ---------
 mail: clean
