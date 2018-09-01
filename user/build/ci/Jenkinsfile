@@ -13,9 +13,6 @@ node {
 						}
 					}
 					stage('Publish') {
-					    when {
-					        branch 'develop'
-					    }
 					    steps {
 					        withDockerRegistry([ credentialsId: "1f664f6b-8f57-435a-bda6-5de629641b79", url: "" ]) {
 					            sh 'make user-publish'
