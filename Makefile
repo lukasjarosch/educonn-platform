@@ -92,9 +92,9 @@ user-docker:
 	@echo "==> Building USER docker image..."
 	docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:dev -f user/build/Dockerfile .
 
-user-publish:
+user-deploy:
 	@echo "==> Publishing image version: ${VERSION}"
-	docker push derwaldemar/educonn-user:${VERSION}
+	ssh -o StrictHostKeyChecking=no -l manager 159.89.3.151 ~/edu-update-svc.sh educonn_user
 
 # --------- MAIL ---------
 mail: clean
