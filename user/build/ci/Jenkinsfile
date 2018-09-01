@@ -22,7 +22,9 @@ node {
 					stage('Deploy') {
                         sshagent (credentials: ['24f14756-d589-4e42-9f16-c2c5f1bbca4a']) {
                             dir('src/github.com/lukasjarosch/educonn-platform/') {
-                                sh('make user-deploy')
+
+                                def version = sh(script: 'git log -n 1 --pretty=format:"%h"', returnStatus: true)
+	                            def out = sh(script:'ssh -o StrictHostKeyChecking=no -l manager 159.89.3.151 "bash -s /home/manager/edu-update-svc.sh" educonn_user derwaldemar/educonn-user:${version}}', returnStdout: true)
                             }
                         }
 					}

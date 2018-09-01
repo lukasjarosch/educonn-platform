@@ -98,7 +98,6 @@ user-publish:
 
 user-deploy:
 	@echo "==> Deploying image version: ${VERSION}"
-	ssh -o StrictHostKeyChecking=no -l manager 159.89.3.151 "bash -s /home/manager/edu-update-svc.sh" educonn_user
 
 # --------- MAIL ---------
 mail: clean
