@@ -25,7 +25,6 @@ node {
                     commit = sh(script: 'git log -n 1 --pretty=format:"%h"', returnStdout: true).trim()
                     sh "ssh -o StrictHostKeyChecking=no manager@159.89.3.151 'bash edu-update-svc.sh educonn_user derwaldemar/educonn-user:${tag}-${commit}'"
                 }
-
             }
 		}
 	}
