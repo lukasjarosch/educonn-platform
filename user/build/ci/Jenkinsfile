@@ -6,12 +6,14 @@ node {
 						echo 'Checking out SCM'
 						checkout scm
 						}
+					stage('Dependencies') {
+                        sh('go get -u github.com/golang/protobuf/protoc-gen-go')
+                        sh('go get github.com/micro/protoc-gen-micro')
+					}
 					stage('Build') {
 						echo 'Building'
 						dir('src/github.com/lukasjarosch/educonn-platform/') {
-		                    withEnv(["GOPATH=${JENKINS_HOME}/go"]) {
-                                sh('./user/scripts/proto.sh')
-		                    }
+                            sh('./user/scripts/proto.sh')
                             sh('./user/scripts/build.sh')
 						}
 					}
