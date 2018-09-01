@@ -8,7 +8,7 @@ node {
 						}
 					stage('Build') {
 						echo 'Building'
-						dir('/src/github.com/lukasjarosch/educonn-platform/') {
+						dir('src/github.com/lukasjarosch/educonn-platform/') {
                             sh('sh ./user/scripts/proto.sh')
                             sh('sh ./user/scripts/build.sh')
 						}
