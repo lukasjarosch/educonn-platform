@@ -10,7 +10,7 @@ RUN mkdir -p /go/src/github.com/lukasjarosch/educonn-platform/transcode/
 WORKDIR /go/src/github.com/lukasjarosch/educonn-platform/transcode/
 
 # vendoring
-COPY video/Gopkg.lock video/Gopkg.toml ./
+COPY transcode/Gopkg.lock transcode/Gopkg.toml ./
 RUN dep ensure -vendor-only -v
 
 # build
