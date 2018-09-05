@@ -10,7 +10,7 @@ RUN mkdir -p /go/src/github.com/lukasjarosch/educonn-platform/mail/
 WORKDIR /go/src/github.com/lukasjarosch/educonn-platform/mail/
 
 # vendoring
-COPY user/Gopkg.lock user/Gopkg.toml ./
+COPY mail/Gopkg.lock mail/Gopkg.toml ./
 RUN dep ensure -vendor-only -v
 
 # build
