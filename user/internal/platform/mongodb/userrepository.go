@@ -15,7 +15,7 @@ type UserRepository struct {
 
 // NewUserRepository creates a new user repository
 func NewUserRepository(host string, port string, user string, pass string, dbName string) (*UserRepository, error) {
-	connString := fmt.Sprintf("%s:%s/%s", host, port, dbName)
+	connString := fmt.Sprintf("%s:%s@%s:%s/%s", user, pass, host, port, dbName)
 	session, err := mgo.Dial(connString)
 	if err != nil {
 		return nil, err
