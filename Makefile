@@ -150,23 +150,26 @@ video-deploy:
 	@echo "==> Deploying image version: latest-staging"
 
 # --------- TRANSCODE ---------
-transcode: clean
-	@echo Building TRANSCODE service...
-	@cd transcode/cmd/transcoded && CGO_ENABLED=0 go build ${LDFLAGS_TRANSCODE} -a -installsuffix cgo -o transcoded main.go
+transcode:
+	@sh -c "'$(CURDIR)'/transcode/scripts/build.sh" ${VERSION}
 
 transcode-proto:
-	@echo protoc TRANSCODE
-	@cd transcode/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src transcode.proto
+	@sh -c "'$(CURDIR)'/transcode/scripts/proto.sh"
 
 transcode-run:
 	@echo Starting the TRANSCODE service
-	@cd transcode/cmd/transcoded && go run main.go
+	@cd transcode/cmd/transcode && go run main.go
 
 transcode-docker:
-	@echo Building TRANSCODE docker image ...
-	@cd transcode && docker build -t derwaldemar/educonn-transcode:${VERSION} -t derwaldemar/educonn-transcode:dev .
+	@echo "==> Building TRANSCODE docker image..."
+	docker build -t derwaldemar/educonn-transcode:${VERSION} -t derwaldemar/educonn-transcode:latest-staging -f transcode/build/Dockerfile .
 
-transcode-docker-push-dev:
-	@echo Pushing educonn-transcode:dev image ...
-	docker push derwaldemar/educonn-transcode:dev
+transcode-publish:
+	@echo "==> Publishing latest image version"
+	docker push derwaldemar/educonn-transcode:latest-staging
+	docker push derwaldemar/educonn-transcode:${VERSION}
+
+transcode-deploy:
+	@echo "==> Deploying image version: ${VERSION}"
+	@echo "==> Deploying image version: latest-staging"
 
