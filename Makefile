@@ -126,25 +126,28 @@ mail-deploy:
 	@echo "==> Deploying image version: latest-staging"
 
 # --------- VIDEO ---------
-video: clean
-	@echo Building VIDEO service...
-	@cd video/cmd/videod && CGO_ENABLED=0 go build ${LDFLAGS_VIDEO} -a -installsuffix cgo -o videod main.go
+video:
+	@sh -c "'$(CURDIR)'/video/scripts/build.sh" ${VERSION}
 
 video-proto:
-	@echo protoc VIDEO
-	@cd video/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src video.proto
+	@sh -c "'$(CURDIR)'/video/scripts/proto.sh"
 
 video-run:
 	@echo Starting the VIDEO service
-	@cd video/cmd/videod && go run main.go
+	@cd video/cmd/video && go run main.go
 
 video-docker:
-	@echo Building VIDEO docker image ...
-	@cd video && docker build -t derwaldemar/educonn-video:${VERSION} -t derwaldemar/educonn-video:dev .
+	@echo "==> Building VIDEO docker image..."
+	docker build -t derwaldemar/educonn-video:${VERSION} -t derwaldemar/educonn-video:latest-staging -f video/build/Dockerfile .
 
-video-docker-push-dev:
-	@echo Pushing educonn-mail:dev image ...
-	docker push derwaldemar/educonn-mail:dev
+video-publish:
+	@echo "==> Publishing latest image version"
+	docker push derwaldemar/educonn-video:latest-staging
+	docker push derwaldemar/educonn-video:${VERSION}
+
+video-deploy:
+	@echo "==> Deploying image version: ${VERSION}"
+	@echo "==> Deploying image version: latest-staging"
 
 # --------- TRANSCODE ---------
 transcode: clean
