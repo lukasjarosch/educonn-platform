@@ -102,25 +102,28 @@ user-deploy:
 	@echo "==> Deploying image version: latest-staging"
 
 # --------- MAIL ---------
-mail: clean
-	@echo Building MAIL service...
-	@cd mail/cmd/maild && CGO_ENABLED=0 go build ${LDFLAGS_MAIL} -a -installsuffix cgo -o maild main.go
+mail:
+	@sh -c "'$(CURDIR)'/mail/scripts/build.sh" ${VERSION}
 
 mail-proto:
-	@echo protoc MAIL
-	@cd mail/proto && protoc -I. --go_out=plugins=micro:${GOPATH}/src  --micro_out=:${GOPATH}/src mail.proto
+	@sh -c "'$(CURDIR)'/mail/scripts/proto.sh"
 
 mail-run:
 	@echo Starting the MAIL service
 	@cd mail/cmd/maild && go run main.go
 
 mail-docker:
-	@echo Building MAIL docker image ...
-	@cd mail && docker build -t derwaldemar/educonn-mail:${VERSION} -t derwaldemar/educonn-mail:dev .
+	@echo "==> Building MAIL docker image..."
+	docker build -t derwaldemar/educonn-mail:${VERSION} -t derwaldemar/educonn-mail:latest-staging -f mail/build/Dockerfile .
 
-mail-docker-push-dev:
-	@echo Pushing educonn-mail:dev image ...
-	docker push derwaldemar/educonn-mail:dev
+mail-publish:
+	@echo "==> Publishing latest image version"
+	docker push derwaldemar/educonn-user:latest-staging
+	docker push derwaldemar/educonn-user:${VERSION}
+
+mail-deploy:
+	@echo "==> Deploying image version: ${VERSION}"
+	@echo "==> Deploying image version: latest-staging"
 
 # --------- VIDEO ---------
 video: clean
