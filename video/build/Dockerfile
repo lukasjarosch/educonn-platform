@@ -25,6 +25,5 @@ RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /go/src/github.com/lukasjarosch/educonn-platform/video/cmd/video/video .
-COPY --from=builder /go/src/github.com/lukasjarosch/educonn-platform/video/templates ./templates
 ENTRYPOINT ["./video"]
 CMD ["./video"]
