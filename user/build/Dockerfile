@@ -17,7 +17,7 @@ RUN dep ensure -vendor-only -v
 COPY user/ ./
 RUN scripts/build.sh
 
-# --------
+# ---------
 
 FROM alpine:latest
 
