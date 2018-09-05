@@ -58,7 +58,7 @@ func main() {
 	elasticTranscoderChan := make(chan *amazon.ElasticTranscoderMessage)
 	sqsConsumer, err := amazon.NewSQSTranscodeEventConsumer(elasticTranscoderChan, config.AwsAccessKey, config.AwsSecretKey, config.AwsRegion, config.AwsSqsVideoQueueName)
 	if err != nil {
-		log.Fatal().Interface("error", err).Str("queue", config.AwsSqsVideoQueueName).Msg("unable to connect to SQS")
+		log.Fatal().Err( err).Str("queue", config.AwsSqsVideoQueueName).Msg("unable to connect to SQS")
 	}
 	sqsContext, cancel := context.WithCancel(context.Background())
 	defer cancel()
