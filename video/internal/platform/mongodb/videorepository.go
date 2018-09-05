@@ -15,7 +15,7 @@ type VideoRepository struct {
 
 // NewVideoRepository creates a new video repository
 func NewVideoRepository(host string, port string, user string, pass string, dbName string) (*VideoRepository, error) {
-	connString := fmt.Sprintf("%s:%s/%s", host, port, dbName)
+	connString := fmt.Sprintf("%s:%s@%s:%s/%s", user, pass, host, port, dbName)
 	session, err := mgo.Dial(connString)
 	if err != nil {
 		return nil, err
