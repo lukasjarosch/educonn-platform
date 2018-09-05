@@ -25,5 +25,6 @@ RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /go/src/github.com/lukasjarosch/educonn-platform/mail/cmd/mail/mail .
+COPY --from=builder /go/src/github.com/lukasjarosch/educonn-platform/mail/templates ./templates
 ENTRYPOINT ["./mail"]
 CMD ["./mail"]
