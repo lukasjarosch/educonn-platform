@@ -1,0 +1,31 @@
+node {
+	ws("${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}") {
+		withEnv(["GOPATH=${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_ID}"]) {
+            env.PATH="${GOPATH}/bin:$PATH"
+                stage('Checkout'){
+                echo 'Checking out SCM'
+                checkout scm
+                }
+            stage('Build') {
+                echo 'Building'
+                dir('src/github.com/lukasjarosch/educonn-platform/') {
+                    sh('make transcode-docker')
+                }
+            }
+            stage('Publish') {
+                withDockerRegistry([ credentialsId: "1f664f6b-8f57-435a-bda6-5de629641b79", url: "" ]) {
+                    dir('src/github.com/lukasjarosch/educonn-platform/') {
+                        sh('make transcode-publish')
+                    }
+                }
+            }
+            stage('Deploy') {
+                dir('src/github.com/lukasjarosch/educonn-platform/') {
+                    tag = sh(script: "git describe --abbrev=0 --tags || echo '0.1'", returnStdout: true).trim()
+                    commit = sh(script: 'git log -n 1 --pretty=format:"%h"', returnStdout: true).trim()
+                    sh "ssh -o StrictHostKeyChecking=no manager@159.89.3.151 'bash edu-update-svc.sh educonn_transcode derwaldemar/educonn-transcode:${tag}-${commit}'"
+                }
+            }
+		}
+	}
+}
