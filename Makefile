@@ -118,8 +118,8 @@ mail-docker:
 
 mail-publish:
 	@echo "==> Publishing latest image version"
-	docker push derwaldemar/educonn-user:latest-staging
-	docker push derwaldemar/educonn-user:${VERSION}
+	docker push derwaldemar/educonn-mail:latest-staging
+	docker push derwaldemar/educonn-mail:${VERSION}
 
 mail-deploy:
 	@echo "==> Deploying image version: ${VERSION}"
