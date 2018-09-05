@@ -17,7 +17,7 @@ RUN dep ensure -vendor-only -v
 COPY mail/ ./
 RUN scripts/build.sh
 
-# --------
+# ---------
 
 FROM alpine:latest
 
