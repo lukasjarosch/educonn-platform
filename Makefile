@@ -90,7 +90,7 @@ user-run:
 
 user-docker:
 	@echo "==> Building USER docker image..."
-	docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:staging -f user/build/Dockerfile .
+	docker build -t derwaldemar/educonn-user:${VERSION} -t derwaldemar/educonn-user:latest-staging -f user/build/Dockerfile .
 
 user-publish:
 	@echo "==> Publishing latest image version"
