@@ -9,13 +9,13 @@ node {
             stage('Build') {
                 echo 'Building'
                 dir('src/github.com/lukasjarosch/educonn-platform/') {
-                    sh('make mail-docker')
+                    sh('make user-api-docker')
                 }
             }
             stage('Publish') {
                 withDockerRegistry([ credentialsId: "1f664f6b-8f57-435a-bda6-5de629641b79", url: "" ]) {
                     dir('src/github.com/lukasjarosch/educonn-platform/') {
-                        sh('make mail-publish')
+                        sh('make user-api-publish')
                     }
                 }
             }
@@ -23,7 +23,7 @@ node {
                 dir('src/github.com/lukasjarosch/educonn-platform/') {
                     tag = sh(script: "git describe --abbrev=0 --tags || echo '0.1'", returnStdout: true).trim()
                     commit = sh(script: 'git log -n 1 --pretty=format:"%h"', returnStdout: true).trim()
-                    sh "ssh -o StrictHostKeyChecking=no manager@159.89.3.151 'bash edu-update-svc.sh educonn_mail derwaldemar/educonn-mail:${tag}-${commit}'"
+                    sh "ssh -o StrictHostKeyChecking=no manager@159.89.3.151 'bash edu-update-svc.sh educonn_user-api derwaldemar/educonn-user-api:${tag}-${commit}'"
                 }
             }
 		}
