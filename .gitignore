@@ -43,6 +43,9 @@ cmd/lesson/lesson
 *.rsa
 *.rsa.pub
 
+docker-compose.local.yml
+docker-compose.swarm.yml
+
 #IDE files
 *.iml
 .idea/
