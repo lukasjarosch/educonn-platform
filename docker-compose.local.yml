@@ -16,11 +16,24 @@ services:
       - 27017:27017
 
   # micro api gateway
-  micro:
-    command: --registry_address=consul:8500 api --handler=rpc --namespace=educonn.api
+  micro-api:
+    command: api --handler=rpc --namespace=educonn.api
     image: microhq/micro:latest
     ports:
       - 8080:8080
+    depends_on:
+      - consul
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
+
+  # micro web gateway
+  micro-web:
+    command: web --namespace=educonn.web
+    image: microhq/micro:latest
+    ports:
+      - 8082:8082
     depends_on:
       - consul
     environment:

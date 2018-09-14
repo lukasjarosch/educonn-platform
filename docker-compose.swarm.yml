@@ -3,7 +3,7 @@ version: "3.4"
 secrets:
     user-secrets-01:
       external: true
-    transcode-secrets-01:
+    transcode-secrets-02:
       external: true
     mail-secrets-01:
       external: true
@@ -16,25 +16,37 @@ secrets:
 
 services:
 
-  ## CONSUL
-  consul:
-    image: consul
-    environment:
-      TZ: Europe/Berlin
-    ports:
-      - 8500:8500
-
-  ## API
-  micro:
-    command: --registry_address=consul:8500 api --handler=rpc
+  ## API Gateway
+  micro-api:
+    command: api --handler=rpc
     image: microhq/micro:latest
     ports:
       - 8080:8080
     environment:
       TZ: Europe/Berlin
       MICRO_REGISTRY: consul
-      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_REGISTRY_ADDRESS: cluster
+      MICRO_API_NAMESPACE: educonn.api
+    networks:
+      - consul
+    deploy:
+      mode: global
+
+  ## WEB Gateway
+  micro-web:
+    command: web
+    image: microhq/micro:latest
+    ports:
+      - 8082:8082
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: cluster
       MICRO_NAMESPACE: educonn.api
+    networks:
+      - consul
+    deploy:
+      mode: global
 
   ## USER service
   user:
@@ -49,16 +61,32 @@ services:
     environment:
       TZ: Europe/Berlin
       MICRO_REGISTRY: consul
-      MICRO_REGISTRY_ADDRESS: consul:8500
+      MICRO_REGISTRY_ADDRESS: cluster
       MICRO_BROKER: rabbitmq
       JWT_EXPIRE_SECONDS: 15000
-      DB_HOST: 207.154.212.43
+      DB_HOST: mongodb.educonn.de
       DB_PORT: 27017
       DB_NAME: users
       DB_USER: users
       DB_PASS: KLnob2hZTCAwC1rwNryV
       PRIVATE_KEY_PATH: /app/auth.rsa
       PUBLIC_KEY_PATH: /app/auth.rsa.pub
+    networks:
+      - consul
+
+  # USER-API service
+  user-api:
+    image: derwaldemar/educonn-user-api:latest-staging
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: cluster
+      AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+    secrets:
+      - source: educonn-auth-pub
+        target: /app/auth.rsa.pub
+    networks:
+      - consul
 
   # MAIL service
   mail:
@@ -66,7 +94,7 @@ services:
     environment:
       TZ: Europe/Berlin
       MICRO_REGISTRY: consul
-      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_REGISTRY_ADDRESS: cluster
       MICRO_BROKER: rabbitmq
       SMTP_HOST: smtp.mailtrap.io
       SMTP_PORT: 2525
@@ -77,6 +105,8 @@ services:
         target: /app/.env
       - source: educonn-auth-pub
         target: /app/auth.rsa.pub
+    networks:
+      - consul
 
   ## VIDEO service
   video:
@@ -84,12 +114,12 @@ services:
     environment:
       TZ: Europe/Berlin
       MICRO_REGISTRY: consul
-      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_REGISTRY_ADDRESS: cluster
       MICRO_BROKER: rabbitmq
       AWS_REGION: eu-west-1
       AWS_S3_VIDEO_BUCKET: videos.educonn.de
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
-      DB_HOST: 207.154.212.43
+      DB_HOST: mongodb.educonn.de
       DB_PORT: 27017
       DB_NAME: videos
       DB_USER: videos
@@ -99,6 +129,22 @@ services:
         target: /app/.env
       - source: educonn-auth-pub
         target: /app/auth.rsa.pub
+    networks:
+      - consul
+
+  # VIDEO-API service
+  video-api:
+    image: derwaldemar/educonn-video-api:latest-staging
+    environment:
+      TZ: Europe/Berlin
+      MICRO_REGISTRY: consul
+      MICRO_REGISTRY_ADDRESS: cluster
+      AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+    secrets:
+      - source: educonn-auth-pub
+        target: /app/auth.rsa.pub
+    networks:
+      - consul
 
   ## TRANSCODE service
   transcode:
@@ -106,22 +152,23 @@ services:
     environment:
       TZ: Europe/Berlin
       MICRO_REGISTRY: consul
-      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_REGISTRY_ADDRESS: cluster
       MICRO_BROKER: rabbitmq
       AWS_REGION: eu-west-1
       AWS_TRANSCODE_PRESET: 1351620000001-100070
       AWS_TRANSCODE_PIPELINE: 1532629797407-jfd8uk
       AWS_TRANSCODE_OUTPUT_PREFIX: transcoded/
       AWS_VIDEO_QUEUE: educonn-videos
-      DB_HOST: mongodb
+      DB_HOST: mongodb.educonn.de
       DB_PORT: 27017
       DB_NAME: transcode
       DB_USER: transcode
       DB_PASS: SJC4AUxF2F0r40ko2kF0
-
     secrets:
-      - source: transcode-secrets-01
+      - source: transcode-secrets-02
         target: /app/.env
+    networks:
+      - consul
 
 networks:
   default:
@@ -129,5 +176,4 @@ networks:
       name: educonn-backend
   consul:
     external:
-      name: consul-net
-
+      name: consul
