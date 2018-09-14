@@ -27,21 +27,28 @@ docker-push-dev: user-docker-push-dev mail-docker-push-dev video-docker-push-dev
 proto: user-proto mail-proto video-proto transcode-proto user-api-proto video-api-proto
 
 # --------- LESSON ---------
+lesson:
+	@sh -c "'$(CURDIR)'/lesson/scripts/build.sh" ${VERSION}
+
 lesson-proto:
-	@echo protoc LESSON
-	@protoc -I. --go_out=plugins=micro:. --micro_out=. lesson/proto/lesson.proto
+	@sh -c "'$(CURDIR)'/lesson/scripts/proto.sh"
 
 lesson-run:
-	@echo Starting the LESSON service
-	@cd lesson/cmd/lessond && go run main.go
-
-lesson: clean
-	@echo Building LESSON service ...
-	@cd lesson/cmd/lessond && CGO_ENABLED=0 go build ${LDFLAGS_LESSION} -a -installsuffix cgo -o lessond main.go
+	@echo Starting the USER service
+	docker-compose -f docker-compose.local.yml up lesson
 
 lesson-docker:
-	@echo Building LESSON docker image. Tags: ${VERSION}, dev
-	@cd lesson/ && docker build -t derwaldemar/educonn-lesson:${VERSION} -t derwaldemar/educonn-lesson:dev .
+	@echo "==> Building USER docker image..."
+	docker build -t derwaldemar/educonn-lesson:${VERSION} -t derwaldemar/educonn-lesson:latest-staging -f lesson/build/Dockerfile .
+
+lesson-publish:
+	@echo "==> Publishing latest image version"
+	docker push derwaldemar/educonn-lesson:latest-staging
+	docker push derwaldemar/educonn-lesson:${VERSION}
+
+lesson-deploy:
+	@echo "==> Deploying image version: ${VERSION}"
+	@echo "==> Deploying image version: latest-staging"
 
 # --------- VIDEO API ---------
 video-api:
