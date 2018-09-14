@@ -29,13 +29,13 @@ _testmain.go
 vendor/
 
 # Service specific binaries
-video
-mail
-user
-transcode
-video-apd
-user-api
-lesson
+cmd/video/video
+cmd/mail/mail
+cmd/user/user
+cmd/transcode/transcode
+cmd/video-apd/video-api
+cmd/user-api/user-api
+cmd/lesson/lesson
 
 .env
 .env-docker
