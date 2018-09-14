@@ -44,21 +44,28 @@ lesson-docker:
 	@cd lesson/ && docker build -t derwaldemar/educonn-lesson:${VERSION} -t derwaldemar/educonn-lesson:dev .
 
 # --------- VIDEO API ---------
-video-api: clean
-	@echo Buildung VIDEO API service ...
-	@cd api/video/cmd/video-apid && CGO_ENABLED=0 go build ${LDFLAGS_VIDEO_API} -a -installsuffix cgo -o video-apid main.go
+video-api:
+	@sh -c "'$(CURDIR)'/video-api/scripts/build.sh" ${VERSION}
 
 video-api-proto:
-	@echo protoc VIDEO API
-	@protoc -I. --go_out=plugins=micro:. --micro_out=. api/video/proto/video_api.proto
-
-video-api-docker:
-	@echo Building VIDEO API docker image ...
-	@cd api/video && docker build -t derwaldemar/educonn-video-api:${VERSION} -t derwaldemar/educonn-video-api:dev .
+	@sh -c "'$(CURDIR)'/video-api/scripts/proto.sh"
 
 video-api-run:
-	@echo Starting the VIDEO API service
-	@cd api/video/cmd/video-apid && go run main.go
+	@echo Starting the VIDEO-API service
+	@cd user-api/cmd/video-api && go run main.go
+
+video-api-docker:
+	@echo "==> Building VIDEO-API docker image..."
+	docker build -t derwaldemar/educonn-video-api:${VERSION} -t derwaldemar/educonn-video-api:latest-staging -f video-api/build/Dockerfile .
+
+video-api-publish:
+	@echo "==> Publishing latest image version"
+	docker push derwaldemar/educonn-video-api:latest-staging
+	docker push derwaldemar/educonn-video-api:${VERSION}
+
+video-api-deploy:
+	@echo "==> Deploying image version: ${VERSION}"
+	@echo "==> Deploying image version: latest-staging"
 
 # --------- USER API ---------
 user-api:
