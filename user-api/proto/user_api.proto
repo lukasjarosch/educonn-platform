@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package educonn.api.user;
+package educonn.user_api;
 
 import "user/proto/user.proto";
 import "video/proto/video.proto";

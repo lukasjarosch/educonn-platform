@@ -2,15 +2,15 @@ package service
 
 import (
 	"context"
-	pb "github.com/lukasjarosch/educonn-platform/api/user/proto"
+	pb "github.com/lukasjarosch/educonn-platform/user-api/proto"
 	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	merr "github.com/micro/go-micro/errors"
 	"github.com/rs/zerolog/log"
 	"net/mail"
 	"github.com/micro/go-micro/metadata"
-	"github.com/lukasjarosch/educonn-platform/api/user/internal/platform/config"
-	"github.com/lukasjarosch/educonn-platform/api/user/internal/platform/errors"
+	"github.com/lukasjarosch/educonn-platform/user-api/internal/platform/config"
+	"github.com/lukasjarosch/educonn-platform/user-api/internal/platform/errors"
 	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
 )
 

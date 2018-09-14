@@ -30,25 +30,33 @@ services:
 
   # [educonn] user service
   user:
-    image: derwaldemar/educonn-user:dev
+    image: derwaldemar/educonn-user:latest-staging
     depends_on:
       - consul
     environment:
+      DEV_ENV: 1
       TZ: Europe/Berlin
       MICRO_REGISTRY: consul
-      MICRO_REGISTRY_ADDRESS: consul
+      MICRO_REGISTRY_ADDRESS: consul:8500
       MICRO_BROKER: rabbitmq
+      MICRO_BROKER_ADDRESS: amqp://ccqcaopy:0RUtNCAQZ4YCsVnoswu1M9uqLyhOeDCX@sheep.rmq.cloudamqp.com/ccqcaopy
+      JWT_EXPIRE_SECONDS: 15000
       PRIVATE_KEY_PATH: /app/auth.rsa
       PUBLIC_KEY_PATH: /app/auth.rsa.pub
+      DB_HOST: mongodb.educonn.de
+      DB_PORT: 27017
+      DB_NAME: users
+      DB_USER: users
+      DB_PASS: KLnob2hZTCAwC1rwNryV
       JWT_EXPIRE_SECONDS: 15000
+      ZIPKIN_COLLECTOR_URL: http://localhost:9411/api/v1/spans
     volumes:
-      - ./user/cmd/userd/.env-docker:/app/.env
       - ./educonn_auth.rsa:/app/auth.rsa
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
 
   # [educonn] user api service
   user-api:
-    image: derwaldemar/educonn-user-api:dev
+    image: derwaldemar/educonn-user-api:latest-staging
     depends_on:
       - consul
     environment:
@@ -62,7 +70,7 @@ services:
 
   # [educonn] mail service
   mail:
-    image: derwaldemar/educonn-mail:dev
+    image: derwaldemar/educonn-mail:latest-staging
     depends_on:
       - consul
     environment:
@@ -70,8 +78,11 @@ services:
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul
       MICRO_BROKER: rabbitmq
+      MICRO_BROKER_ADDRESS: amqp://ccqcaopy:0RUtNCAQZ4YCsVnoswu1M9uqLyhOeDCX@sheep.rmq.cloudamqp.com/ccqcaopy
       SMTP_HOST: smtp.mailtrap.io
       SMTP_PORT: 2525
+      SMTP_USER: 0f92ba981e4a2f
+      SMTP_PASS: 09f0dcb79f8f24
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
       MAIL_TEMPLATE_PATH: /app/templates
     volumes:
@@ -81,7 +92,7 @@ services:
 
   # [educonn] video service
   video:
-    image: derwaldemar/educonn-video:dev
+    image: derwaldemar/educonn-video:latest-staging
     depends_on:
       - consul
     environment:
@@ -89,16 +100,24 @@ services:
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul
       MICRO_BROKER: rabbitmq
+      MICRO_BROKER_ADDRESS: amqp://ccqcaopy:0RUtNCAQZ4YCsVnoswu1M9uqLyhOeDCX@sheep.rmq.cloudamqp.com/ccqcaopy
+      AWS_ACCESS_KEY: AKIAIRN3LRRR4KKFJYYA
+      AWS_SECRET_KEY: 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
       AWS_REGION: eu-west-1
       AWS_S3_VIDEO_BUCKET: videos.educonn.de
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+      DB_HOST: mongodb.educonn.de
+      DB_PORT: 27017
+      DB_NAME: videos
+      DB_USER: videos
+      DB_PASS: 7P2i1x4WguWJdMIzIVHG
     volumes:
       - ./video/cmd/videod/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
 
   # [educonn] transcode service
   transcode:
-    image: derwaldemar/educonn-transcode:dev
+    image: derwaldemar/educonn-transcode:latest-staging
     depends_on:
       - consul
     environment:
@@ -106,12 +125,20 @@ services:
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul
       MICRO_BROKER: rabbitmq
+      MICRO_BROKER_ADDRESS: amqp://ccqcaopy:0RUtNCAQZ4YCsVnoswu1M9uqLyhOeDCX@sheep.rmq.cloudamqp.com/ccqcaopy
+      AWS_ACCESS_KEY: AKIAJYVKJTTWUTSFTXYA
+      AWS_SECRET_KEY: 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
       AWS_REGION: eu-west-1
       AWS_TRANSCODE_PRESET: 1351620000001-100070
       AWS_TRANSCODE_PIPELINE: 1532629797407-jfd8uk
       AWS_TRANSCODE_OUTPUT_PREFIX: transcoded/
       AWS_VIDEO_QUEUE: educonn-videos
       AUTH_PUBLIC_KEY_PATH: /app/auth.rsa.pub
+      DB_HOST: mongodb.educonn.de
+      DB_PORT: 27017
+      DB_NAME: transcode
+      DB_USER: transcode
+      DB_PASS: SJC4AUxF2F0r40ko2kF0
     volumes:
       - ./transcode/cmd/transcoded/.env-docker:/app/.env
       - ./educonn_auth.rsa.pub:/app/auth.rsa.pub
@@ -126,5 +153,10 @@ services:
       MICRO_REGISTRY: consul
       MICRO_REGISTRY_ADDRESS: consul
       MICRO_BROKER: rabbitmq
+      MICRO_BROKER_ADDRESS: amqp://ccqcaopy:0RUtNCAQZ4YCsVnoswu1M9uqLyhOeDCX@sheep.rmq.cloudamqp.com/ccqcaopy
+      DB_HOST: mongodb
+      DB_PORT: 27017
+      DB_NAME: lessons
+      DB_USER: lessons
     volumes:
       - ./transcode/cmd/transcoded/.env-docker:/app/.env

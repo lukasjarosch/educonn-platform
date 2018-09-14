@@ -61,21 +61,28 @@ video-api-run:
 	@cd api/video/cmd/video-apid && go run main.go
 
 # --------- USER API ---------
-user-api: clean
-	@echo Buildung USER API service ...
-	@cd api/user/cmd/user-apid && CGO_ENABLED=0 go build ${LDFLAGS_USER_API} -a -installsuffix cgo -o user-apid main.go
+user-api:
+	@sh -c "'$(CURDIR)'/user-api/scripts/build.sh" ${VERSION}
 
 user-api-proto:
-	@echo protoc USER API
-	@protoc -I. --go_out=plugins=micro:. --micro_out=. api/user/proto/user_api.proto
-
-user-api-docker:
-	@echo Building USER API docker image ...
-	@cd api/user && docker build -t derwaldemar/educonn-user-api:${VERSION} -t derwaldemar/educonn-user-api:dev .
+	@sh -c "'$(CURDIR)'/user-api/scripts/proto.sh"
 
 user-api-run:
-	@echo Starting the USER API service
-	@cd api/user/cmd/user-apid && go run main.go
+	@echo Starting the USER-API service
+	@cd user-api/cmd/user-api && go run main.go
+
+user-api-docker:
+	@echo "==> Building USER-API docker image..."
+	docker build -t derwaldemar/educonn-user-api:${VERSION} -t derwaldemar/educonn-user-api:latest-staging -f user-api/build/Dockerfile .
+
+user-api-publish:
+	@echo "==> Publishing latest image version"
+	docker push derwaldemar/educonn-user-api:latest-staging
+	docker push derwaldemar/educonn-user-api:${VERSION}
+
+user-api-deploy:
+	@echo "==> Deploying image version: ${VERSION}"
+	@echo "==> Deploying image version: latest-staging"
 
 # --------- USER ---------
 user:
@@ -86,7 +93,8 @@ user-proto:
 
 user-run:
 	@echo Starting the USER service
-	@cd user/cmd/userd && go run main.go
+	#@cd user/cmd/user && go run main.go
+	docker-compose -f docker-compose.local.yml up user
 
 user-docker:
 	@echo "==> Building USER docker image..."
@@ -158,7 +166,7 @@ transcode-proto:
 
 transcode-run:
 	@echo Starting the TRANSCODE service
-	@cd transcode/cmd/transcode && go run main.go
+	cd transcode/cmd/transcode && go run main.go
 
 transcode-docker:
 	@echo "==> Building TRANSCODE docker image..."
