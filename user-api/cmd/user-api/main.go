@@ -1,18 +1,20 @@
 package main
 
 import (
-	"github.com/micro/go-micro"
 	"os"
-	"github.com/rs/zerolog/log"
+	"time"
+
+	"github.com/micro/go-micro"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	"github.com/lukasjarosch/educonn-platform/user-api/internal/middleware"
 	"github.com/lukasjarosch/educonn-platform/user-api/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/user/pkg/jwt_handler"
+
 	pbUser"github.com/lukasjarosch/educonn-platform/user/proto"
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	api "github.com/lukasjarosch/educonn-platform/user-api/internal/service"
-	_ "github.com/joho/godotenv/autoload"
-	"time"
 )
 
 func main() {

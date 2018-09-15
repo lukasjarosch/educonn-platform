@@ -83,7 +83,7 @@ user-api-proto:
 
 user-api-run:
 	@echo Starting the USER-API service
-	@cd user-api/cmd/user-api && go run main.go
+	@cd user-api/cmd/user-api && go run main.go plugins.go
 
 user-api-docker:
 	@echo "==> Building USER-API docker image..."
