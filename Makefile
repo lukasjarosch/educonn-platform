@@ -195,3 +195,28 @@ transcode-deploy:
 	@echo "==> Deploying image version: ${VERSION}"
 	@echo "==> Deploying image version: latest-staging"
 
+
+# --------- LESSON-API ---------
+lesson-api:
+	@sh -c "'$(CURDIR)'/lesson-api/scripts/build.sh" ${VERSION}
+
+lesson-api-proto:
+	@sh -c "'$(CURDIR)'/lesson-api/scripts/proto.sh"
+
+lesson-api-run:
+	@echo Starting the LESSON-API service
+	cd lesson-api/cmd/lesson-api && go run main.go
+
+lesson-api-docker:
+	@echo "==> Building lesson-api docker image..."
+	docker build -t derwaldemar/educonn-lesson-api:${VERSION} -t derwaldemar/educonn-lesson-api:latest-staging -f lesson-api/build/Dockerfile .
+
+lesson-api-publish:
+	@echo "==> Publishing latest image version"
+	docker push derwaldemar/educonn-lesson-api:latest-staging
+	docker push derwaldemar/educonn-lesson-api:${VERSION}
+
+lesson-api-deploy:
+	@echo "==> Deploying image version: ${VERSION}"
+	@echo "==> Deploying image version: latest-staging"
+

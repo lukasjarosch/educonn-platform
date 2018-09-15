@@ -28,7 +28,7 @@ RUN dep ensure -vendor-only -v
 
 # build
 COPY ${SERVICE}/ ./
-RUN ${SERVICE}/build.sh
+RUN scripts/build.sh
 
 # ---------
 

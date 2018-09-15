@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package educonn.lesson.api;
+
+option go_package = "github.com/lukasjarosch/educonn-platform/lesson-api/proto";
+
+service LessonApi{
+}
+
+// ----------------------------
+// LESSON-API RESOURCE
+// ----------------------------
+
+
+// ----------------------------
+// EVENTS
+// ----------------------------
+
+
+// ----------------------------
+// MISC
+// ----------------------------
+message Error {
+    int32 code = 1;
+    string description = 2;
+}
+
