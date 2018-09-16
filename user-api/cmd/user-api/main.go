@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/micro/go-micro"
-	ot "github.com/micro/go-plugins/wrapper/trace/opentracing"
 	"github.com/opentracing/opentracing-go"
 	zipkin "github.com/openzipkin/zipkin-go-opentracing"
 	"github.com/rs/zerolog"
@@ -31,9 +30,8 @@ func main() {
 		micro.RegisterInterval(time.Second*10),
 	)
 	service.Init(
-		micro.WrapHandler(ot.NewHandlerWrapper(opentracing.GlobalTracer())),
-		micro.WrapClient(ot.NewClientWrapper(opentracing.GlobalTracer())),
-		micro.WrapCall(ot.NewCallWrapper(opentracing.GlobalTracer())),
+		micro.WrapHandler(wrapper.NewTraceHandlerWrapper(opentracing.GlobalTracer())),
+		micro.WrapCall(wrapper.NewTraceCallWrapper(opentracing.GlobalTracer())),
 		micro.WrapHandler(wrapper.RequestIdWrapper),
 		micro.WrapHandler(wrapper.NewLogWrapper),
 	)

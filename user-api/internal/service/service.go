@@ -114,8 +114,6 @@ func (u *User) Delete(ctx context.Context, req *pb.DeleteRequest, res *pb.Delete
 }
 
 func (u *User) Login(ctx context.Context, req *pb.LoginRequest, res *pb.LoginResponse) error {
-	span := opentracing.SpanFromContext(ctx)
-	span.SetOperationName("login")
 
 	if req.Email == "" {
 		return merr.BadRequest(config.ServiceName, "%s", errors.EmailMissing.Error())
@@ -130,16 +128,12 @@ func (u *User) Login(ctx context.Context, req *pb.LoginRequest, res *pb.LoginRes
 		Password: req.Password,
 	}
 
-	span.LogKV("event", "call userClient.Auth")
-
 	// login
 	response, err := u.userClient.Auth(ctx, user)
 	if err != nil {
 		log.Debug().Interface("error", err).Str("email", req.Email).Msgf("user login failed")
-		span.LogKV("event", "auth failed")
 		return err
 	}
-	span.LogKV("event", "auth suceeded")
 
 	res.Token = response.Token
 

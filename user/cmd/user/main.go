@@ -15,7 +15,6 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
 	_ "github.com/micro/go-plugins/broker/rabbitmq"
-	ot "github.com/micro/go-plugins/wrapper/trace/opentracing"
 	"github.com/opentracing/opentracing-go"
 	zipkin "github.com/openzipkin/zipkin-go-opentracing"
 	"github.com/rs/zerolog"
@@ -33,9 +32,9 @@ func main() {
 		micro.RegisterInterval(time.Second*10),
 	)
 	svc.Init(
-		micro.WrapHandler(ot.NewHandlerWrapper(opentracing.GlobalTracer())),
-		micro.WrapClient(ot.NewClientWrapper(opentracing.GlobalTracer())),
-		micro.WrapCall(ot.NewCallWrapper(opentracing.GlobalTracer())),
+		micro.WrapHandler(wrapper.NewTraceHandlerWrapper(opentracing.GlobalTracer())),
+		micro.WrapCall(wrapper.NewTraceCallWrapper(opentracing.GlobalTracer())),
+		micro.WrapSubscriber(wrapper.NewTraceSubscriberWrapper(opentracing.GlobalTracer())),
 		micro.WrapHandler(wrapper.RequestIdWrapper),
 		micro.WrapHandler(wrapper.NewLogWrapper),
 	)
