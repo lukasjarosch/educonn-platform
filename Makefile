@@ -107,7 +107,9 @@ user-proto:
 
 user-run:
 	@echo Starting the USER service
-	#@cd user/cmd/user && go run main.go
+	@cd user/cmd/user && go run main.go
+
+user-run-docker:
 	docker-compose -f docker-compose.local.yml up user
 
 user-docker:

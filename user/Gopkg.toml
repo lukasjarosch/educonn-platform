@@ -64,3 +64,11 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "github.com/apache/thrift"
+  version = "0.11.0"
+
+[[override]]
+  branch = "master"
+  name = "github.com/apache/thrift"
