@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	InitTracer("http://localhost:9411/api/v1/spans", "9411", config.ServiceName)
+	InitTracer(config.ZipkinConnectionString, "9411", config.ServiceName)
 
 	// setup service
 	service := micro.NewService(
