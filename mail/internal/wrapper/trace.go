@@ -108,13 +108,12 @@ func NewTraceSubscriberWrapper(ot opentracing.Tracer) server.SubscriberWrapper {
 		return func(ctx context.Context, msg server.Message) error {
 			name := "Pub to " + msg.Topic()
 			ctx, span, err := traceIntoContext(ctx, ot, name)
-			span.LogKV("event", "pub: "+msg.Topic())
+			span.LogKV("event", "sub: "+msg.Topic())
 			if err != nil {
 				return err
 			}
 			defer span.Finish()
 			err = next(ctx, msg)
-			span.LogKV("event", "pubbed: "+msg.Topic())
 
 			return err
 		}
