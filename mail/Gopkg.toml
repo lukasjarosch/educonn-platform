@@ -58,6 +58,10 @@
   version = "1.0.2"
 
 [[constraint]]
+  name = "github.com/openzipkin/zipkin-go-opentracing"
+  version = "0.3.4"
+
+[[constraint]]
   name = "github.com/rs/xid"
   version = "1.2.1"
 
