@@ -134,7 +134,7 @@ mail-proto:
 
 mail-run:
 	@echo Starting the MAIL service
-	@cd mail/cmd/maild && go run main.go
+	@cd mail/cmd/mail && go run main.go
 
 mail-docker:
 	@echo "==> Building MAIL docker image..."
