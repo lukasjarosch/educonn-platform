@@ -38,6 +38,7 @@ func main() {
 	)
 	svc.Init(
 		micro.WrapHandler(wrapper.NewTraceHandlerWrapper(opentracing.GlobalTracer())),
+		micro.WrapSubscriber(wrapper.NewTraceSubscriberWrapper(opentracing.GlobalTracer())),
 		micro.WrapCall(wrapper.NewTraceCallWrapper(opentracing.GlobalTracer())),
 		micro.WrapSubscriber(wrapper.NewTraceSubscriberWrapper(opentracing.GlobalTracer())),
 		micro.WrapHandler(wrapper.RequestIdWrapper),
