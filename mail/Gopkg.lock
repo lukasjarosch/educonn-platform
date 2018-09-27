@@ -11,6 +11,11 @@
   revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
 
 [[projects]]
+  name = "github.com/armon/go-metrics"
+  packages = ["."]
+  revision = "3df31a1ada83e310c2e24b267c8e8b68836547b4"
+
+[[projects]]
   name = "github.com/go-log/log"
   packages = [
     ".",
@@ -32,19 +37,24 @@
   version = "v1.2.0"
 
 [[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/hashicorp/consul"
   packages = [
     "api",
     "watch"
   ]
-  revision = "e716d1b5f8be252b3e53906c6d5632e0228f30fa"
-  version = "v1.2.2"
+  revision = "48d287ef690ada66634885640f3444dbf7b71d18"
+  version = "v1.2.3"
 
 [[projects]]
   name = "github.com/hashicorp/go-cleanhttp"
   packages = ["."]
-  revision = "e8ab9daed8d1ddd2d3c4efba338fe2eeae2e4f18"
-  version = "v0.5.0"
+  revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
 
 [[projects]]
   branch = "master"
@@ -55,8 +65,7 @@
 [[projects]]
   name = "github.com/hashicorp/serf"
   packages = ["coordinate"]
-  revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
-  version = "v0.8.1"
+  revision = "19bbd39e421bdf3559d5025fb2c760f5ffa56233"
 
 [[projects]]
   name = "github.com/joho/godotenv"
@@ -64,17 +73,17 @@
     ".",
     "autoload"
   ]
-  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
-  version = "v1.2.0"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
 
 [[projects]]
-  branch = "develop"
   name = "github.com/lukasjarosch/educonn-platform"
   packages = [
     "user/proto",
     "video/proto"
   ]
-  revision = "28feadac26e5ead6520427d2646cee3aaf834f8e"
+  revision = "e94fde338f24ad6257dc45ff5d29007007f72f4d"
+  version = "0.2"
 
 [[projects]]
   branch = "master"
@@ -121,8 +130,8 @@
 [[projects]]
   name = "github.com/micro/go-plugins"
   packages = ["broker/rabbitmq"]
-  revision = "ef99d1c8d00bae39357b58bb3ff53486a8482484"
-  version = "v0.12.1"
+  revision = "55f1924faa0a682544de8fa5a06e39771a2817d4"
+  version = "v0.13.0"
 
 [[projects]]
   branch = "master"
@@ -149,8 +158,8 @@
 [[projects]]
   name = "github.com/miekg/dns"
   packages = ["."]
-  revision = "5a2b9fab83ff0f8bfc99684bd5f43a37abe560f1"
-  version = "v1.0.8"
+  revision = "426ea785a99b1dad4755492b923feb327d9251a6"
+  version = "v1.0.9"
 
 [[projects]]
   name = "github.com/mitchellh/go-homedir"
@@ -167,8 +176,7 @@
 [[projects]]
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "fa473d140ef3c6adf42d6b391fe76707f1f243c8"
-  version = "v1.0.0"
+  revision = "06020f85339e21b2478f756a78e295255ffa4d6a"
 
 [[projects]]
   branch = "master"
@@ -177,16 +185,31 @@
   revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 
 [[projects]]
+  name = "github.com/opentracing/opentracing-go"
+  packages = [
+    ".",
+    "log"
+  ]
+  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
+  version = "v1.0.2"
+
+[[projects]]
   name = "github.com/pborman/uuid"
   packages = ["."]
-  revision = "e790cca94e6cc75c7064b1332e63811d4aae1a53"
-  version = "v1.1"
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
 
 [[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/rs/xid"
+  packages = ["."]
+  revision = "15d26544def341f036c5f8dca987a4cbe575032c"
+  version = "v1.2.1"
 
 [[projects]]
   name = "github.com/rs/zerolog"
@@ -212,7 +235,7 @@
     "ed25519",
     "ed25519/internal/edwards25519"
   ]
-  revision = "0709b304e793a5edb4a2c0145f281ecdc20838a4"
+  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
   branch = "master"
@@ -225,7 +248,13 @@
     "ipv4",
     "ipv6"
   ]
-  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
+  revision = "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "d0be0721c37eeb5299f245a996a483160fc36940"
 
 [[projects]]
   branch = "v3"
@@ -236,6 +265,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "24b1204e14cc0218f98545b73b700b298638f24a9c295e2eace75dacd8462f30"
+  inputs-digest = "63de27efe6ccdac3f414a6ccbcdfeb1d4e73d489545b13eb1f3e56c2ddfef5f7"
   solver-name = "gps-cdcl"
   solver-version = 1

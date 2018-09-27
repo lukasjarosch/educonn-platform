@@ -83,7 +83,7 @@ user-api-proto:
 
 user-api-run:
 	@echo Starting the USER-API service
-	@cd user-api/cmd/user-api && go run main.go
+	@cd user-api/cmd/user-api && go run main.go plugins.go
 
 user-api-docker:
 	@echo "==> Building USER-API docker image..."
@@ -107,7 +107,9 @@ user-proto:
 
 user-run:
 	@echo Starting the USER service
-	#@cd user/cmd/user && go run main.go
+	@cd user/cmd/user && go run main.go
+
+user-run-docker:
 	docker-compose -f docker-compose.local.yml up user
 
 user-docker:
@@ -132,7 +134,7 @@ mail-proto:
 
 mail-run:
 	@echo Starting the MAIL service
-	@cd mail/cmd/maild && go run main.go
+	@cd mail/cmd/mail && go run main.go
 
 mail-docker:
 	@echo "==> Building MAIL docker image..."

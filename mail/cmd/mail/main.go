@@ -1,12 +1,19 @@
 package main
 
 import (
-	"github.com/rs/zerolog/log"
 	"time"
+
+	"github.com/opentracing/opentracing-go"
+	"github.com/rs/zerolog/log"
 
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
+	zipkin "github.com/openzipkin/zipkin-go-opentracing"
 
+	"fmt"
+	"os"
+
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/broker"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/config"
 	"github.com/lukasjarosch/educonn-platform/mail/internal/platform/mail"
@@ -15,17 +22,10 @@ import (
 	pbUser "github.com/lukasjarosch/educonn-platform/user/proto"
 	pbVideo "github.com/lukasjarosch/educonn-platform/video/proto"
 	"github.com/micro/go-micro/server"
-	_ "github.com/joho/godotenv/autoload"
-	"fmt"
-	"os"
 	"github.com/rs/zerolog"
 )
 
 func main() {
-
-	if os.Getenv("DEV_ENV") != "" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
 
 	// setup the consumer
 	userCreatedChannel := make(chan *pbUser.UserCreatedEvent)
@@ -121,4 +121,31 @@ func main() {
 	if err := svc.Run(); err != nil {
 		panic(err)
 	}
+}
+func InitLogging(instanceId string) {
+	log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+
+	if os.Getenv("DEV_ENV") != "" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
+	log.Logger = log.Logger.With().Str("instance_id", instanceId).Logger()
+}
+
+func InitTracer(zipkinURL string, hostPort string, serviceName string) {
+	log.Debug().Msg("Initialize tracing")
+	collector, err := zipkin.NewHTTPCollector(zipkinURL)
+	if err != nil {
+		log.Error().Msgf("unable to create Zipkin HTTP collector: %v", err)
+		return
+	}
+	tracer, err := zipkin.NewTracer(
+		zipkin.NewRecorder(collector, true, hostPort, serviceName),
+	)
+	if err != nil {
+		log.Error().Msgf("unable to create Zipkin tracer: %v", err)
+		return
+	}
+	opentracing.InitGlobalTracer(tracer)
+	return
 }
