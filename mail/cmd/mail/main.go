@@ -8,6 +8,7 @@ import (
 
 	"github.com/micro/go-micro"
 	"github.com/micro/go-plugins/broker/rabbitmq"
+	zipkin "github.com/openzipkin/zipkin-go-opentracing"
 
 	"fmt"
 	"os"
@@ -25,7 +26,6 @@ import (
 )
 
 func main() {
-
 
 	// setup the consumer
 	userCreatedChannel := make(chan *pbUser.UserCreatedEvent)
