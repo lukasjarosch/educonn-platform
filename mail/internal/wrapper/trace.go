@@ -48,6 +48,7 @@ func (o *otWrapper) Call(ctx context.Context, req client.Request, rsp interface{
 func (o *otWrapper) Publish(ctx context.Context, p client.Message, opts ...client.PublishOption) error {
 	name := fmt.Sprintf("Pub to %s", p.Topic())
 	ctx, span, err := traceIntoContext(ctx, o.ot, name)
+	span.LogKV("event", "sub: "+p.Topic())
 	if err != nil {
 		return err
 	}
@@ -106,7 +107,7 @@ func NewTraceHandlerWrapper(ot opentracing.Tracer) server.HandlerWrapper {
 func NewTraceSubscriberWrapper(ot opentracing.Tracer) server.SubscriberWrapper {
 	return func(next server.SubscriberFunc) server.SubscriberFunc {
 		return func(ctx context.Context, msg server.Message) error {
-			name := "Pub to " + msg.Topic()
+			name := "Sub to " + msg.Topic()
 			ctx, span, err := traceIntoContext(ctx, ot, name)
 			span.LogKV("event", "sub: "+msg.Topic())
 			if err != nil {
