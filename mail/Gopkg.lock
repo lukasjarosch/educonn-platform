@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/Shopify/sarama"
+  packages = ["."]
+  revision = "a6144ae922fd99dd0ea5046c8137acfb7fab0914"
+  version = "v1.18.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/alecthomas/template"
   packages = [
@@ -11,9 +17,39 @@
   revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
 
 [[projects]]
+  name = "github.com/apache/thrift"
+  packages = ["lib/go/thrift"]
+  revision = "327ebb6c2b6df8bf075da02ef45a2a034e9b79ba"
+  version = "0.11.0"
+
+[[projects]]
   name = "github.com/armon/go-metrics"
   packages = ["."]
   revision = "3df31a1ada83e310c2e24b267c8e8b68836547b4"
+
+[[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/eapache/go-resiliency"
+  packages = ["breaker"]
+  revision = "ea41b0fad31007accc7f806884dcdf3da98b79ce"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/eapache/go-xerial-snappy"
+  packages = ["."]
+  revision = "776d5712da21bc4762676d614db1d8a64f4238b0"
+
+[[projects]]
+  name = "github.com/eapache/queue"
+  packages = ["."]
+  revision = "44cc805cf13205b55f69e14bcb69867d1ae92f98"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/go-log/log"
@@ -25,16 +61,34 @@
   version = "v0.1.0"
 
 [[projects]]
+  name = "github.com/go-logfmt/logfmt"
+  packages = ["."]
+  revision = "390ab7935ee28ec6b286364bba9b4dd6410cb3d5"
+  version = "v0.3.0"
+
+[[projects]]
   name = "github.com/go-mail/mail"
   packages = ["."]
   revision = "63235f23494bf20d713a585bce40b2a0675c2f77"
   version = "2.2.0"
 
 [[projects]]
+  name = "github.com/gogo/protobuf"
+  packages = ["proto"]
+  revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
   version = "v1.2.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/golang/snappy"
+  packages = ["."]
+  revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 
 [[projects]]
   name = "github.com/google/uuid"
@@ -77,12 +131,19 @@
   version = "v1.3.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/kr/logfmt"
+  packages = ["."]
+  revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
+
+[[projects]]
+  branch = "develop"
   name = "github.com/lukasjarosch/educonn-platform"
   packages = [
     "user/proto",
     "video/proto"
   ]
-  revision = "51dc1371db90c80a91e9a9086fa12927dab8c50e"
+  revision = "387944dd0068645002889a7ef186dd2f19cfab4c"
 
 [[projects]]
   branch = "master"
@@ -184,13 +245,33 @@
   revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/opentracing-contrib/go-observer"
+  packages = ["."]
+  revision = "a52f2342449246d5bcc273e65cbdcfa5f7d6c63c"
+
+[[projects]]
   name = "github.com/opentracing/opentracing-go"
   packages = [
     ".",
+    "ext",
     "log"
   ]
   revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
   version = "v1.0.2"
+
+[[projects]]
+  name = "github.com/openzipkin/zipkin-go-opentracing"
+  packages = [
+    ".",
+    "flag",
+    "thrift/gen-go/scribe",
+    "thrift/gen-go/zipkincore",
+    "types",
+    "wire"
+  ]
+  revision = "26cf9707480e6b90e5eff22cf0bbf05319154232"
+  version = "v0.3.4"
 
 [[projects]]
   name = "github.com/pborman/uuid"
@@ -199,10 +280,25 @@
   version = "v1.2"
 
 [[projects]]
+  name = "github.com/pierrec/lz4"
+  packages = [
+    ".",
+    "internal/xxh32"
+  ]
+  revision = "bb6bfd13c6a262f1943c0446eb25b7f54c1fb9a2"
+  version = "v2.0.6"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/rcrowley/go-metrics"
+  packages = ["."]
+  revision = "e2704e165165ec55d062f5919b4b29494e9fa790"
 
 [[projects]]
   name = "github.com/rs/xid"
@@ -264,6 +360,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2566348a2b646d60361efb14baff9c219289221e253e41eb678ccc13c80e1e4e"
+  inputs-digest = "fa80244e4a53c873eb5ef385c844560fdabf97e9d2275130587ac426dfbf942b"
   solver-name = "gps-cdcl"
   solver-version = 1
