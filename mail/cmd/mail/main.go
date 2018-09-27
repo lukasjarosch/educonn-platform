@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/lukasjarosch/educonn-platform/mail/internal/wrapper"
 	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog/log"
 
@@ -26,14 +27,7 @@ import (
 )
 
 func main() {
-
-	// setup the consumer
-	userCreatedChannel := make(chan *pbUser.UserCreatedEvent)
-	userCreatedSubscriber := broker.NewUserCreatedSubscriber(userCreatedChannel)
-	userDeletedChannel := make(chan *pbUser.UserDeletedEvent)
-	userDeletedSubscriber := broker.NewUserDeletedSubscriber(userDeletedChannel)
-	videoProcessedChannel := make(chan *pbVideo.VideoProcessedEvent)
-	videoProcessedSubscriber := broker.NewVideoProcessedSubscriber(videoProcessedChannel)
+	InitTracer(config.ZipkinConnectionString, "9411", config.ServiceName)
 
 	// setup micro service
 	svc := micro.NewService(
@@ -42,7 +36,23 @@ func main() {
 		micro.RegisterTTL(time.Second*30),
 		micro.RegisterInterval(time.Second*10),
 	)
-	svc.Init()
+	svc.Init(
+		micro.WrapHandler(wrapper.NewTraceHandlerWrapper(opentracing.GlobalTracer())),
+		micro.WrapCall(wrapper.NewTraceCallWrapper(opentracing.GlobalTracer())),
+		micro.WrapSubscriber(wrapper.NewTraceSubscriberWrapper(opentracing.GlobalTracer())),
+		micro.WrapHandler(wrapper.RequestIdWrapper),
+		micro.WrapHandler(wrapper.NewLogWrapper),
+	)
+
+	InitLogging(svc.Server().Options().Id)
+
+	// setup the consumer
+	userCreatedChannel := make(chan *pbUser.UserCreatedEvent)
+	userCreatedSubscriber := broker.NewUserCreatedSubscriber(userCreatedChannel)
+	userDeletedChannel := make(chan *pbUser.UserDeletedEvent)
+	userDeletedSubscriber := broker.NewUserDeletedSubscriber(userDeletedChannel)
+	videoProcessedChannel := make(chan *pbVideo.VideoProcessedEvent)
+	videoProcessedSubscriber := broker.NewVideoProcessedSubscriber(videoProcessedChannel)
 
 	// setup rabbitmq
 	rabbitBroker := svc.Server().Options().Broker
