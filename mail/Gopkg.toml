@@ -39,7 +39,7 @@
 
 [[constraint]]
   name = "github.com/joho/godotenv"
-  version = "1.2.0"
+  version = "1.3.0"
 
 [[constraint]]
   name = "github.com/lukasjarosch/educonn-platform"
@@ -51,11 +51,11 @@
 
 [[constraint]]
   name = "github.com/micro/go-plugins"
-  version = "0.12.1"
+  version = "0.13.0"
 
 [[constraint]]
   name = "github.com/rs/zerolog"
-  version = "1.8.0"
+  version = "1.9.1"
 
 [prune]
   go-tests = true

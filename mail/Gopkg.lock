@@ -11,6 +11,11 @@
   revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
 
 [[projects]]
+  name = "github.com/armon/go-metrics"
+  packages = ["."]
+  revision = "3df31a1ada83e310c2e24b267c8e8b68836547b4"
+
+[[projects]]
   name = "github.com/go-log/log"
   packages = [
     ".",
@@ -32,19 +37,24 @@
   version = "v1.2.0"
 
 [[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/hashicorp/consul"
   packages = [
     "api",
     "watch"
   ]
-  revision = "e716d1b5f8be252b3e53906c6d5632e0228f30fa"
-  version = "v1.2.2"
+  revision = "48d287ef690ada66634885640f3444dbf7b71d18"
+  version = "v1.2.3"
 
 [[projects]]
   name = "github.com/hashicorp/go-cleanhttp"
   packages = ["."]
-  revision = "e8ab9daed8d1ddd2d3c4efba338fe2eeae2e4f18"
-  version = "v0.5.0"
+  revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
 
 [[projects]]
   branch = "master"
@@ -55,8 +65,7 @@
 [[projects]]
   name = "github.com/hashicorp/serf"
   packages = ["coordinate"]
-  revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
-  version = "v0.8.1"
+  revision = "19bbd39e421bdf3559d5025fb2c760f5ffa56233"
 
 [[projects]]
   name = "github.com/joho/godotenv"
@@ -64,8 +73,8 @@
     ".",
     "autoload"
   ]
-  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
-  version = "v1.2.0"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "develop"
@@ -74,7 +83,7 @@
     "user/proto",
     "video/proto"
   ]
-  revision = "28feadac26e5ead6520427d2646cee3aaf834f8e"
+  revision = "51dc1371db90c80a91e9a9086fa12927dab8c50e"
 
 [[projects]]
   branch = "master"
@@ -121,8 +130,8 @@
 [[projects]]
   name = "github.com/micro/go-plugins"
   packages = ["broker/rabbitmq"]
-  revision = "ef99d1c8d00bae39357b58bb3ff53486a8482484"
-  version = "v0.12.1"
+  revision = "55f1924faa0a682544de8fa5a06e39771a2817d4"
+  version = "v0.13.0"
 
 [[projects]]
   branch = "master"
@@ -149,8 +158,8 @@
 [[projects]]
   name = "github.com/miekg/dns"
   packages = ["."]
-  revision = "5a2b9fab83ff0f8bfc99684bd5f43a37abe560f1"
-  version = "v1.0.8"
+  revision = "f4db2ca6edc3af0ee51bf332099cc480bcf3ef9d"
+  version = "v1.0.10"
 
 [[projects]]
   name = "github.com/mitchellh/go-homedir"
@@ -167,8 +176,7 @@
 [[projects]]
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "fa473d140ef3c6adf42d6b391fe76707f1f243c8"
-  version = "v1.0.0"
+  revision = "06020f85339e21b2478f756a78e295255ffa4d6a"
 
 [[projects]]
   branch = "master"
@@ -179,8 +187,8 @@
 [[projects]]
   name = "github.com/pborman/uuid"
   packages = ["."]
-  revision = "e790cca94e6cc75c7064b1332e63811d4aae1a53"
-  version = "v1.1"
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -196,8 +204,8 @@
     "internal/json",
     "log"
   ]
-  revision = "77db4b4f350e31be66a57c332acb7721cf9ff9bb"
-  version = "v1.8.0"
+  revision = "338f9bc14084d22cb8eeacd6492861f8449d715c"
+  version = "v1.9.1"
 
 [[projects]]
   branch = "master"
@@ -212,7 +220,7 @@
     "ed25519",
     "ed25519/internal/edwards25519"
   ]
-  revision = "0709b304e793a5edb4a2c0145f281ecdc20838a4"
+  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
   branch = "master"
@@ -225,7 +233,13 @@
     "ipv4",
     "ipv6"
   ]
-  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
+  revision = "4dfa2610cdf3b287375bbba5b8f2a14d3b01d8de"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "c2ed4eda69e7f62900806e4cd6e45f0429f859fa"
 
 [[projects]]
   branch = "v3"
@@ -236,6 +250,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "24b1204e14cc0218f98545b73b700b298638f24a9c295e2eace75dacd8462f30"
+  inputs-digest = "2566348a2b646d60361efb14baff9c219289221e253e41eb678ccc13c80e1e4e"
   solver-name = "gps-cdcl"
   solver-version = 1
