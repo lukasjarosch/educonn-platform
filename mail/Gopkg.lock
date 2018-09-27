@@ -17,10 +17,10 @@
   revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
 
 [[projects]]
+  branch = "master"
   name = "github.com/apache/thrift"
   packages = ["lib/go/thrift"]
-  revision = "327ebb6c2b6df8bf075da02ef45a2a034e9b79ba"
-  version = "0.11.0"
+  revision = "a9235805469bff4c15bdd939240edb7eb9aec34f"
 
 [[projects]]
   name = "github.com/armon/go-metrics"
@@ -360,6 +360,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fa80244e4a53c873eb5ef385c844560fdabf97e9d2275130587ac426dfbf942b"
+  inputs-digest = "d598f403bb3678c468622fadbd4b826a8278c35d20943f387b0bf28b991b376a"
   solver-name = "gps-cdcl"
   solver-version = 1
