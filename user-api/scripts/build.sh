@@ -25,4 +25,4 @@ export CGO_ENABLED=0
 # Build!
 echo "==> Building $SERVICE_NAME..."
 cd cmd/$SERVICE_NAME
-go build -ldflags="${LD_FLAGS}" -a -installsuffix cgo -o $SERVICE_NAME main.go
+go build -ldflags="${LD_FLAGS}" -a -installsuffix cgo -o $SERVICE_NAME main.go plugins.go

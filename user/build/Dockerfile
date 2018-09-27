@@ -9,12 +9,11 @@ RUN wget https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 
 RUN mkdir -p /go/src/github.com/lukasjarosch/educonn-platform/user/
 WORKDIR /go/src/github.com/lukasjarosch/educonn-platform/user/
 
-# vendoring
-COPY user/Gopkg.lock user/Gopkg.toml ./
-RUN dep ensure -vendor-only -v
 
 # build
+COPY user/Gopkg.lock user/Gopkg.toml ./
 COPY user/ ./
+RUN dep ensure -v
 RUN scripts/build.sh
 
 # ---------
