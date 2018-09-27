@@ -81,7 +81,7 @@ func (v *videoService) Create(ctx context.Context, req *pbVideo.CreateVideoReque
 	fileKey := req.Video.Storage.RawKey
 	err = v.s3Bucket.CheckFileExists(fileKey, config.AwsS3VideoBucket)
 	if err != nil {
-		log.Warn().Str("key", fileKey).Msg("key does not exist in bucket")
+		log.Warn().Str("key", fileKey).Err(err).Msg("key does not exist in bucket")
 		res.Errors = append(res.Errors, &pbVideo.Error{
 			Description: errors.RawVideoFileS3NotFound.Error(),
 			Code:        404,
