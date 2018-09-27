@@ -11,12 +11,7 @@
   branch = "master"
   name = "github.com/apache/thrift"
   packages = ["lib/go/thrift"]
-  revision = "0f6e52abcce49102f4032393e6651cebb82ec29c"
-
-[[projects]]
-  name = "github.com/armon/go-metrics"
-  packages = ["."]
-  revision = "3df31a1ada83e310c2e24b267c8e8b68836547b4"
+  revision = "12f8b14fff9888dbfe6f5d6c64dc462254922a31"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -91,18 +86,25 @@
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 
 [[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/hashicorp/consul"
   packages = [
     "api",
     "watch"
   ]
-  revision = "e716d1b5f8be252b3e53906c6d5632e0228f30fa"
-  version = "v1.2.2"
+  revision = "48d287ef690ada66634885640f3444dbf7b71d18"
+  version = "v1.2.3"
 
 [[projects]]
   name = "github.com/hashicorp/go-cleanhttp"
   packages = ["."]
-  revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
+  revision = "e8ab9daed8d1ddd2d3c4efba338fe2eeae2e4f18"
+  version = "v0.5.0"
 
 [[projects]]
   branch = "master"
@@ -113,7 +115,8 @@
 [[projects]]
   name = "github.com/hashicorp/serf"
   packages = ["coordinate"]
-  revision = "4b67f2c2b2bb5b748d934a6d48221062e43d2274"
+  revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
+  version = "v0.8.1"
 
 [[projects]]
   name = "github.com/joho/godotenv"
@@ -121,8 +124,8 @@
     ".",
     "autoload"
   ]
-  revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
-  version = "v1.2.0"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
@@ -174,12 +177,9 @@
 
 [[projects]]
   name = "github.com/micro/go-plugins"
-  packages = [
-    "broker/rabbitmq",
-    "wrapper/trace/opentracing"
-  ]
-  revision = "ef99d1c8d00bae39357b58bb3ff53486a8482484"
-  version = "v0.12.1"
+  packages = ["broker/rabbitmq"]
+  revision = "55f1924faa0a682544de8fa5a06e39771a2817d4"
+  version = "v0.13.0"
 
 [[projects]]
   branch = "master"
@@ -206,8 +206,8 @@
 [[projects]]
   name = "github.com/miekg/dns"
   packages = ["."]
-  revision = "5a2b9fab83ff0f8bfc99684bd5f43a37abe560f1"
-  version = "v1.0.8"
+  revision = "426ea785a99b1dad4755492b923feb327d9251a6"
+  version = "v1.0.9"
 
 [[projects]]
   name = "github.com/mitchellh/go-homedir"
@@ -224,7 +224,8 @@
 [[projects]]
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "06020f85339e21b2478f756a78e295255ffa4d6a"
+  revision = "fa473d140ef3c6adf42d6b391fe76707f1f243c8"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -264,8 +265,8 @@
 [[projects]]
   name = "github.com/pborman/uuid"
   packages = ["."]
-  revision = "e790cca94e6cc75c7064b1332e63811d4aae1a53"
-  version = "v1.1"
+  revision = "adf5a7427709b9deb95d29d3fa8a2bf9cfd388f1"
+  version = "v1.2"
 
 [[projects]]
   name = "github.com/pierrec/lz4"
@@ -320,7 +321,7 @@
     "ed25519",
     "ed25519/internal/edwards25519"
   ]
-  revision = "182538f80094b6a8efaade63a8fd8e0d9d5843dd"
+  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
   branch = "master"
@@ -333,7 +334,13 @@
     "ipv4",
     "ipv6"
   ]
-  revision = "8a410e7b638dca158bf9e766925842f6651ff828"
+  revision = "26e67e76b6c3f6ce91f7c52def5af501b4e0f3a2"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  revision = "d0be0721c37eeb5299f245a996a483160fc36940"
 
 [[projects]]
   branch = "v2"
@@ -350,6 +357,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f2bb3b95a609b6801ab7971dfb1a726fde5e255c8791adf3f3b4675717b83355"
+  inputs-digest = "f1416b1e0e71092a2208af32935a5ff9a0518c5adc853392c7524ee9ac3ea3bc"
   solver-name = "gps-cdcl"
   solver-version = 1
